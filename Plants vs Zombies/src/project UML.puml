@@ -1,0 +1,273 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+
+package "model (Data & Logic)" {
+    class User {
+        - username: String
+        - passwordHash: String
+        - nickname: String
+        - email: String
+        - gender: String
+        - securityQuestionId: int
+        - securityAnswer: String
+        + getUsername(): String
+        + getPasswordHash(): String
+        + getNickname(): String
+        + getEmail(): String
+        + getWallet(): Wallet
+        + getCollection(): Collection
+        + getGreenhouse(): Greenhouse
+        + getQuestLog(): QuestLog
+        + getNewsList(): List<News>
+    }
+
+    class Wallet {
+        - coins: int
+        - gems: int
+        + addCoins(amount: int): void
+        + spendCoins(amount: int): boolean
+        + addGems(amount: int): void
+        + spendGems(amount: int): boolean
+    }
+
+    class Collection {
+        - unlockedPlants: Map<PlantType, Integer>
+        - seenZombies: List<ZombieType>
+        + unlockPlant(plant: PlantType): void
+        + addSeedPacket(plant: PlantType, quantity: int): void
+        + markZombieSeen(zombie: ZombieType): void
+        + getUnlockedPlants(): List<PlantType>
+        + getSeedPacketCount(plant: PlantType): int
+    }
+
+    class Greenhouse {
+        - pots: List<GreenhousePot>
+        + getPot(x: int, y: int): GreenhousePot
+        + showStatus(): void
+    }
+
+    class GreenhousePot {
+        - x: int
+        - y: int
+        - status: PotStatus
+        - plantType: PlantType
+        - growthStart: long
+        - growthDuration: long
+        + isReady(): boolean
+        + plantSeed(plant: PlantType): void
+        + harvest(): HarvestResult
+        + growInstantly(): void
+    }
+
+    enum PotStatus {
+        LOCKED
+        EMPTY
+        GROWING
+        READY
+    }
+
+    class HarvestResult {
+        - coins: int
+        - seedPacket: PlantType
+    }
+
+    class ShopItem {
+        - id: int
+        - name: String
+        - priceCoins: int
+        - priceGems: int
+        - quantity: int
+        - isPermanent: boolean
+        - plantType: PlantType
+    }
+
+    class DailyOffer {
+        - date: String
+        - discountedPriceCoins: int
+        - plantType: PlantType
+        - purchased: boolean
+    }
+
+    class Quest {
+        - id: int
+        - description: String
+        - page: String
+        - rewardCoins: int
+        - rewardItem: String
+        - isCompleted: boolean
+    }
+
+    class QuestLog {
+        - quests: Map<String, List<Quest>>
+        + getPage(page: String): List<Quest>
+        + completeQuest(id: int): void
+    }
+
+    class News {
+        - id: int
+        - message: String
+        - type: String
+        - isRead: boolean
+    }
+
+    ' PlantType, ZombieType, LeaderboardEntry are defined by another team
+    class PlantType << (T,white) to be implemented >>
+    class ZombieType << (T,white) to be implemented >>
+    class LeaderboardEntry << (T,white) to be implemented >>
+
+    User *-- Wallet
+    User *-- Collection
+    User *-- Greenhouse
+    User *-- QuestLog
+    User *-- "many" News
+    Greenhouse *-- "20" GreenhousePot
+    GreenhousePot --> PotStatus : "has status"
+    GreenhousePot ..> HarvestResult : "returns"
+    GreenhousePot --> PlantType
+    Collection --> PlantType
+    Collection --> ZombieType
+    HarvestResult --> PlantType
+    ShopItem --> PlantType
+    DailyOffer --> PlantType
+}
+
+package "controller (System Management)" {
+    class MenuManager {
+        - menuStack: Stack<Menu>
+        - activeUser: User
+        + pushMenu(menu: Menu): void
+        + popMenu(): void
+        + getActiveMenu(): Menu
+        + loginUser(user: User): void
+        + logoutUser(): void
+        + cheat(amount: int, type: String): void
+        + getLeaderboard(): List<LeaderboardEntry>
+    }
+
+    class UserManager {
+        - users: HashMap<String, User>
+        + register(...): boolean
+        + authenticate(username: String, pass: String): User
+        + forgetPassword(username: String, email: String): boolean
+        + changePassword(user: User, oldPass: String, newPass: String): boolean
+        + isUsernameTaken(username: String): boolean
+        + validateEmail(email: String): boolean
+        + validatePassword(password: String): boolean
+        + saveAll(): void
+        + loadAll(): void
+    }
+
+    class GameState {
+        - currentDifficulty: int
+        + setDifficulty(level: int): void
+        + getDifficulty(): int
+    }
+
+    MenuManager --> User : "tracks active"
+    MenuManager --> UserManager : "uses"
+    MenuManager --> GameState : "uses"
+    MenuManager --> LeaderboardEntry
+    UserManager *-- User : "manages"
+}
+
+package "view (The Menus)" {
+    abstract class Menu {
+        # menuManager: MenuManager
+        # name: String
+        + showMenu(): void
+        + {abstract} executeCommand(command: String): void
+    }
+
+    class RegisterMenu {
+        + executeCommand(command: String): void
+        + registerUser(): void
+        + pickQuestion(): void
+    }
+    class LoginMenu {
+        + executeCommand(command: String): void
+        + login(): void
+        + forgetPassword(): void
+    }
+    class MainMenu {
+        + executeCommand(command: String): void
+        + logout(): void
+    }
+    class GameMenu {
+        + executeCommand(command: String): void
+        + enterChapter(chapterName: String): void
+        + showTopBar(): void
+    }
+    class SettingsMenu {
+        + executeCommand(command: String): void
+        + changeDifficulty(level: int): void
+    }
+    class NewsMenu {
+        + executeCommand(command: String): void
+        + showUnread(): void
+        + showAll(): void
+    }
+    class ProfileMenu {
+        + executeCommand(command: String): void
+        + changeUsername(username: String): void
+        + changeNickname(nickname: String): void
+        + changeEmail(email: String): void
+        + changePassword(oldPass: String, newPass: String): void
+        + showInfo(): void
+    }
+    class CollectionMenu {
+        + executeCommand(command: String): void
+        + showPlants(): void
+        + showZombies(): void
+        + upgradePlant(name: String): void
+        + purchasePlant(name: String): void
+    }
+    class PlantSelectionMenu {
+        + executeCommand(command: String): void
+        + showAvailablePlants(): void
+        + addPlant(type: PlantType): void
+        + removePlant(type: PlantType): void
+        + boostPlant(type: PlantType): void
+        + startGame(): void
+    }
+    class GreenhouseMenu {
+        + executeCommand(command: String): void
+        + showGreenhouse(): void
+        + plantPot(x: int, y: int): void
+        + collect(x: int, y: int): void
+        + grow(x: int, y: int): void
+    }
+    class ShopMenu {
+        + executeCommand(command: String): void
+        + listPermanent(): void
+        + showDaily(): void
+        + buyItem(id: int, count: int, plantType: PlantType): void
+    }
+    class TravelLogMenu {
+        + executeCommand(command: String): void
+        + showPage(page: String): void
+    }
+    class LeaderboardMenu {
+        + executeCommand(command: String): void
+        + sortBy(column: String): void
+        + show(): void
+    }
+
+    Menu <|-- RegisterMenu
+    Menu <|-- LoginMenu
+    Menu <|-- MainMenu
+    Menu <|-- GameMenu
+    Menu <|-- SettingsMenu
+    Menu <|-- NewsMenu
+    Menu <|-- ProfileMenu
+    Menu <|-- CollectionMenu
+    Menu <|-- PlantSelectionMenu
+    Menu <|-- GreenhouseMenu
+    Menu <|-- ShopMenu
+    Menu <|-- TravelLogMenu
+    Menu <|-- LeaderboardMenu
+
+    Menu --> MenuManager : "triggers state changes"
+}
+@enduml
