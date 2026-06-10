@@ -1,7 +1,11 @@
 @startuml
+left to right direction
 skinparam classAttributeIconSize 0
 skinparam monochrome true
 skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 60
 
 package "model (Data & Logic)" {
     class User {
@@ -290,4 +294,1110 @@ package "view (The Menus)" {
 
     Menu --> MenuManager : "triggers state changes"
 }
+
+package "Core Gameplay (Entities & Engine)" {
+
+    enum GameStatus {
+      PLANT_SELECTION_READY
+      RUNNING
+      WON
+      LOST
+    }
+
+    enum SeasonType {
+      ANCIENT_EGYPT
+      FROSTBITE_CAVES
+      BIG_WAVE_BEACH
+      DARK_AGES
+    }
+
+    enum TileType {
+      EGYPT_GROUND
+      TOMBSTONE
+      FROSTBITE_GROUND
+      SLIPPERY_UP
+      SLIPPERY_DOWN
+      FROZEN_TILE
+      BEACH_GROUND
+      WATER
+      LOW_TIDE
+      DARK_GROUND
+      NECROMANCY
+    }
+
+    enum FallingSunType {
+      NORMAL
+      SPECIAL
+      RADIOACTIVE
+    }
+
+    enum LootType {
+      COIN
+      DIAMOND
+      POT
+      PLANT_FOOD
+      NONE
+    }
+
+    enum ProjectileType {
+      PEA
+      FIRE
+      ICE
+      POISON
+      LOBBED
+      PIERCING
+      HOMING
+      REFLECTED
+      HUNTER_ICE
+      LASER
+    }
+
+    enum ProjectileTrajectory {
+      STRAIGHT
+      ARC
+      HOMING
+      INSTANT_LINE
+    }
+
+    enum DamageMode {
+      ARMOR_FIRST
+      IGNORE_ARMOR
+      AREA_DAMAGE
+      INSTANT_KILL
+    }
+
+    enum PlantCategory {
+      SUN_PRODUCER
+      SHOOTER
+      LOBBER
+      EXPLOSIVE
+      MELEE
+      WALL
+      MODIFIER
+      STRIKE_THROUGH
+      HOMING
+      MINT
+    }
+
+    enum PlantTag {
+      DAY
+      NIGHT
+      SHROOM
+      RAMP_UP
+      PEA
+      ICE
+      FIRE
+      STACK
+      CHARGE
+      MAGIC
+      POISON
+      WATER
+      AOE
+      TRAP
+      MOVE_ZOMBIES
+      SUN
+      EXPLOSIVE
+    }
+
+    enum TargetingMode {
+      SAME_LANE
+      NEAREST
+      GLOBAL_LOCK
+      RANDOM
+    }
+
+    enum ZombieEffectType {
+      CHILLED
+      FROZEN
+      HYPNOTIZED
+      BURNING
+      POISONED
+      CAT_TRANSFORMED
+      OCTOPUS_BLOCKED
+      SPINNING
+      UNDERWATER
+    }
+
+    interface IMovable {
+      +move(deltaX:float) : void
+    }
+
+    abstract class GameObject {
+      +positionX : float
+      +positionY : int
+      +health : int
+      +isAlive : boolean
+      --
+      +takeDamage(amount:int) : void
+      +die() : void
+      +update(tickCount:int) : void
+    }
+
+    interface IAttacker {
+      +attack(target:GameObject) : void
+      +getDamage() : int
+      +getRange() : int
+    }
+
+    interface ISunProducer {
+      +produceSun() : int
+    }
+
+    interface IUpgradable {
+      +level : int
+      +upgrade() : void
+    }
+
+    interface IFreezable {
+      +freeze(duration:int) : void
+      +melt() : void
+    }
+
+    interface IWall {
+      +block(zombie:Zombie) : void
+      +getHealth() : int
+    }
+
+    interface IIceEffect {
+      +chill(target:Zombie) : void
+      +getSlowFactor() : float
+    }
+
+    interface IChargeable {
+      +charge() : void
+      +isReady() : boolean
+    }
+
+    interface IGrowable {
+      +grow() : void
+      +isMature() : boolean
+    }
+
+    interface IModifier {
+      +modify(target:Plant) : void
+    }
+
+    interface IFireEffect {
+      +burn(target:Zombie) : void
+      +getBurnDamage() : int
+    }
+
+    interface IPoisonEffect {
+      +poison(target:Zombie) : void
+    }
+
+    abstract class Plant {
+      +id : int
+      +name : String
+      +cost : int
+      +baseHp : int
+      +currentHp : int
+      +rechargeTime : float
+      +actionInterval : float
+      +level : int
+      +cooldownRemaining : float
+      +plantTags : List<PlantTag>
+      +levelUpgrades : List<Upgrade>
+      +type : String
+      +sunCost : int
+      +attackPower : int
+      +location : GridPosition
+      +category : PlantCategory
+      +canStack : boolean
+      +isBoostedByPlantFood : boolean
+      --
+      +onPlantFood() : void
+      +onTick() : void
+      +upgrade() : void
+      +canPlantOn(tile:Tile) : boolean
+      +applyPlantFoodEffect() : void
+      +resetCooldown() : void
+    }
+
+    class SunProducerPlant {
+      +sunAmount : int
+      +productionInterval : float
+      --
+      +produceSun() : int
+    }
+
+    class ShooterPlant {
+      +damage : int
+      +projectileType : ProjectileType
+      +multiShot : int
+      --
+      +attack(target:GameObject) : void
+      +getDamage() : int
+      +getRange() : int
+    }
+
+    class LobberPlant {
+      +damage : int
+      +splashRadius : float
+      --
+      +attack(target:GameObject) : void
+      +getDamage() : int
+      +getRange() : int
+    }
+
+    class ExplosivePlant {
+      +explosionDamage : int
+      +explosionRadius : float
+      +instantUse : boolean
+    }
+
+    class MeleePlant {
+      +attackCooldown : float
+      +areaEffect : boolean
+      --
+      +attack(target:GameObject) : void
+      +getDamage() : int
+      +getRange() : int
+      +charge() : void
+      +isReady() : boolean
+    }
+
+    class WallPlant {
+      +reflectDamage : int
+      --
+      +block(zombie:Zombie) : void
+      +getHealth() : int
+    }
+
+    class ModifierPlant {
+      +modify(target:Plant) : void
+    }
+
+    class HomingPlant {
+      +targetingMode : TargetingMode
+      --
+      +attack(target:GameObject) : void
+      +getDamage() : int
+      +getRange() : int
+    }
+
+    class StrikeThroughPlant {
+      +pierceCount : int
+    }
+
+    abstract class Zombie {
+      +speed : float
+      +attackDamage : int
+      +armor : ArmorDecorator
+      +waveCost : int
+      +isHypnotized : boolean
+      +currentPosition : ContinuousPosition
+      +lane : int
+      +currentHealth : int
+      +damageToPlant : int
+      +abilities : List<ZombieAbility>
+      +effects : List<ZombieEffect>
+      +isGlowing : boolean
+      +isBoss : boolean
+      +initialWaveCost : int
+      --
+      +onReachPlant(plant:Plant) : void
+      +onDeath() : void
+      +specialBehavior() : void
+      +receiveProjectile(projectile:Projectile) : void
+      +attackPlant(plant:Plant) : void
+      +dropLoot() : LootType
+      +isDead() : boolean
+    }
+
+    interface ZombieState {
+      +handleMovement()
+      +handleAttack()
+    }
+
+    interface PlantState {
+      +handleAttack()
+    }
+
+    abstract class ArmorDecorator {
+      +armorHp : int
+      --
+      +absorbDamage(amount:int) : int
+    }
+
+    class "Basic Group" as BasicGroup
+    class "Heavy Group" as HeavyGroup
+    class "Utility Group" as UtilityGroup
+    class "Special Movement Group" as SpecialMovementGroup
+    class "Special Combat Group" as SpecialCombatGroup
+    class "Spawn Group" as SpawnGroup
+
+    class GridPosition {
+      +x : int
+      +y : int
+    }
+
+    class ContinuousPosition {
+      +x : float
+      +y : int
+    }
+
+    class TickClock {
+      +ticksPerSecond : int
+      +currentTick : int
+      --
+      +advance(count:int) : void
+      +toSeconds(ticks:int) : float
+      +getElapsedSeconds() : float
+    }
+
+    class GameSession {
+      +status : GameStatus
+      +currentSunAmount : int
+      +plantFoodCount : int
+      +currentWaveNumber : int
+      --
+      +advanceTime(count:int) : void
+      +collectSun(position:GridPosition) : boolean
+      +plantPlant(type:String, position:GridPosition) : boolean
+      +pluckPlant(position:GridPosition) : Plant
+      +feedPlant(position:GridPosition) : boolean
+      +releaseNuke() : void
+      +win() : void
+      +lose() : void
+    }
+
+    class GameCommandController {
+      --
+      +advanceTime(count:int) : void
+      +collectSun(x:int, y:int) : void
+      +showSunAmount() : int
+      +plantPlant(type:String, x:int, y:int) : void
+      +pluckPlant(x:int, y:int) : void
+      +feedPlant(x:int, y:int) : void
+      +showMap() : String
+      +showPlantsStatus() : String
+      +showTileStatus(x:int, y:int) : String
+      +zombiesInfo() : String
+      +releaseNuke() : void
+      +cheatAddSuns(count:int) : void
+      +cheatAddPlantFood() : void
+      +cheatRemoveCooldown() : void
+      +cheatSpawnZombie(type:String, x:int, y:int) : void
+    }
+
+    class Board {
+      +rows : int
+      +columns : int
+      +seasonType : SeasonType
+      --
+      +getTile(position:GridPosition) : Tile
+      +getZombiesInLane(row:int) : List<Zombie>
+      +getPlantsInLane(row:int) : List<Plant>
+      +getLawnMower(row:int) : LawnMower
+      +isInside(position:GridPosition) : boolean
+      +printMap() : String
+    }
+
+    class Tile {
+      +position : GridPosition
+      +type : TileType
+      +canPlant : boolean
+      +canStackPlants : boolean
+      +slipDeltaRow : int
+      +isWater : boolean
+      +isLowTideSpawn : boolean
+      --
+      +addPlant(plant:Plant) : boolean
+      +removePlant() : Plant
+      +addZombie(zombie:Zombie) : void
+      +removeZombie(zombie:Zombie) : void
+      +hasObstacle() : boolean
+      +getStatus() : String
+      +hasAdjacentFirePlant(board:Board) : boolean
+      +moveZombieBySlip(zombie:Zombie) : void
+    }
+
+    abstract class TileObstacle {
+      +health : int
+      +blocksStraightProjectiles : boolean
+      +canPlantOn : boolean
+      --
+      +takeDamage(amount:int) : void
+      +destroy() : void
+    }
+
+    class Tombstone {
+      +initialHealth : int
+      --
+      +turnIntoNormalGround(tile:Tile) : void
+    }
+
+    class FrozenBlock {
+      +initialHealth : int
+      +meltRatePerSecond : int
+      +containsPlantOrZombie : boolean
+      +adjacentFireMeltRatePerSecond : int
+      +blocksPlantsAndZombiesUntilBroken : boolean
+      --
+      +meltByFire() : void
+      +takeProjectileDamage(amount:int) : void
+      +releaseContent() : void
+    }
+
+    class Sun {
+      +type : FallingSunType
+      +amount : int
+      +groundPosition : GridPosition
+      +remainingFallSeconds : float
+      +isFalling : boolean
+      +zombieExplosionDamage : int
+      +plantExplosionDamage : int
+      +zombieExplosionRadius : int
+      +plantExplosionRadius : int
+      --
+      +collect(session:GameSession) : void
+      +reachGround() : void
+      +explode(board:Board) : void
+      +convertToNormalAfterGround() : void
+    }
+
+    class SunManager {
+      +currentSunAmount : int
+      +lastSkyDropTick : int
+      +normalSunChance : float
+      +specialSunChance : float
+      +radioactiveSunChance : float
+      +skySunFallDurationSeconds : float
+      --
+      +calculateDropIntervalSeconds(elapsedSeconds:float) : float
+      +dropSkySun(board:Board) : Sun
+      +producePlantSun(plant:Plant) : Sun
+      +collectSun(position:GridPosition) : boolean
+      +addSuns(count:int) : void
+      +showSunAmount() : int
+      +isSkyDropAllowed(seasonType:SeasonType) : boolean
+    }
+
+    class PlantFoodInventory {
+      +count : int
+      +maxCapacity : int
+      --
+      +addFromGlowingZombie(zombie:Zombie) : boolean
+      +feedPlant(plant:Plant) : boolean
+      +cheatAddPlantFood() : boolean
+    }
+
+    class Upgrade {
+      +level : int
+      +coinCost : int
+      +seedPacketCost : int
+      +damageBonus : int
+      +healthBonus : int
+      +sunCostReduction : int
+      --
+      +applyTo(plant:Plant) : void
+    }
+
+    class SeedPacketInventory {
+      +packetsByPlant : Map<String, Integer>
+      --
+      +getPackets(plantType:String) : int
+      +spendPackets(plantType:String, count:int) : boolean
+      +addPackets(plantType:String, count:int) : void
+    }
+
+    class PlantStatusView {
+      +plantType : String
+      +requiredSun : int
+      +plantableNow : boolean
+      +cooldownRemainingSeconds : float
+    }
+
+    class Wave {
+      +waveNumber : int
+      +waveCost : int
+      +delayTicks : int
+      +isFinalWave : boolean
+      +zombies : List<Zombie>
+      +previousWaveHealthLostRatio : float
+      +previousHealthLossThreshold : float
+      --
+      +canStartAfter(previous:Wave) : boolean
+      +isCleared() : boolean
+    }
+
+    class WaveController {
+      +currentWaveNumber : int
+      +baseWaveCost : int
+      +waveGrowthRate : float
+      +finalWaveMultiplier : float
+      --
+      +calculateWaveCost(number:int) : int
+      +startNextWaveIfReady() : void
+      +startFinalWave() : void
+      +isGameWon() : boolean
+      +startWaveMessage(wave:Wave) : String
+      +finalWaveMessage() : String
+    }
+
+    class ZombieSpawner {
+      --
+      +spawnRandomZombiesUntilCost(waveCost:int) : List<Zombie>
+      +spawnZombie(type:String, position:ContinuousPosition) : Zombie
+      +chooseRandomLane(board:Board) : int
+    }
+
+    class LawnMower {
+      +relatedRow : int
+      +activated : boolean
+      +destroyedZombies : List<Zombie>
+      +secondReachCausesLoss : boolean
+      --
+      +trigger(zombies:List<Zombie>) : void
+      +canKill(zombie:Zombie) : boolean
+      +handleZombieAtEnd(zombie:Zombie, session:GameSession) : void
+    }
+
+    class Projectile {
+      +type : ProjectileType
+      +trajectory : ProjectileTrajectory
+      +currentPosition : ContinuousPosition
+      +movementSpeed : float
+      +damageAmount : int
+      +sourcePlant : Plant
+      +target : GameObject
+      +pierceCount : int
+      +splashRadius : float
+      +ignoresObstacles : boolean
+      +damageMode : DamageMode
+      +isReflected : boolean
+      --
+      +update(tickCount:int) : void
+      +move() : void
+      +canHit(target:GameObject) : boolean
+      +hit(target:GameObject) : void
+      +hitObstacle(obstacle:TileObstacle) : void
+      +reflectToPlants() : void
+      +isExpired() : boolean
+    }
+
+    class ProjectileResolver {
+      --
+      +resolveMovement(projectile:Projectile, board:Board) : void
+      +resolveCollision(projectile:Projectile, board:Board) : void
+      +applyDamage(projectile:Projectile, target:GameObject) : void
+      +applySpecialEffect(projectile:Projectile, target:Zombie) : void
+      +isBlockedByTombstone(projectile:Projectile, tombstone:Tombstone) : boolean
+      +canLobberIgnoreObstacle(projectile:Projectile) : boolean
+      +canPoisonIgnoreArmor(projectile:Projectile) : boolean
+    }
+
+    class ArmorPiece {
+      +name : String
+      +health : int
+      +magnetic : boolean
+      --
+      +absorbDamage(amount:int) : int
+      +isBroken() : boolean
+    }
+
+    class ZombieAbility {
+      +name : String
+      +description : String
+      +cooldownSeconds : float
+      --
+      +execute(zombie:Zombie, session:GameSession) : void
+    }
+
+    class ZombieEffect {
+      +type : ZombieEffectType
+      +remainingSeconds : float
+      --
+      +apply(target:GameObject) : void
+      +expire() : void
+    }
+
+    class LootDropService {
+      +dropChance : float
+      +coinDropAmount : int
+      +diamondDropAmount : int
+      --
+      +rollLoot(zombie:Zombie) : LootType
+      +applyLoot(type:LootType, session:GameSession) : void
+    }
+
+    class GamePrinter {
+      --
+      +showMap(session:GameSession) : String
+      +showPlantsStatus(session:GameSession) : List<PlantStatusView>
+      +showTileStatus(board:Board, position:GridPosition) : String
+      +zombiesInfo(board:Board) : String
+    }
+
+    class ArcadeMachine {
+      +health : int
+      +position : ContinuousPosition
+      --
+      +push(deltaX:float) : void
+      +instantKill(target:GameObject) : void
+    }
+
+    class Barrel {
+      +health : int
+      +position : ContinuousPosition
+      +blocksProjectiles : boolean
+      +blocksZombies : boolean
+      --
+      +breakAndSpawnImps() : List<ImpZombie>
+    }
+
+    class Dynamite {
+      +remainingSeconds : float
+      +isExtinguished : boolean
+      --
+      +explodeAndReverseDirection(owner:ProspectorZombie) : void
+      +extinguishByIce() : void
+    }
+
+    class CatCurse {
+      +caster : WizardZombie
+      --
+      +transform(plant:Plant) : void
+      +restoreWhenCasterDies() : void
+    }
+
+    class OctopusBlock {
+      +health : int
+      --
+      +blockPlant(plant:Plant) : void
+      +destroy() : void
+    }
+
+    class PlantUpgradePath {
+      +fromPlantType : String
+      +toPlantType : String
+      +sunCost : int
+      --
+      +canApply(plant:Plant) : boolean
+      +apply(plant:Plant) : Plant
+    }
+
+    class MintPlant {
+      +durationSeconds : float
+      --
+      +applyFamilyPlantFoodEffect(board:Board) : void
+      +disappearAfterDuration() : void
+    }
+
+    class BasicZombie
+    class ConeheadZombie
+    class BucketheadZombie
+    class KnightZombie
+    class BlockheadZombie
+    class Gargantuar
+    class ImpZombie
+    class FootballZombie
+    class ArcadeZombie
+    class ParasolZombie
+    class TurquoiseZombie
+    class ProspectorZombie
+    class PianistZombie
+    class NewspaperZombie
+    class BarrelRollerZombie
+    class RaZombie
+    class ExplorerZombie
+    class TombRaiserZombie
+    class DodoRiderZombie
+    class HunterZombie
+    class Troglobite
+    class FishermanZombie
+    class SnorkelZombie
+    class OctopusZombie
+    class JesterZombie
+    class WizardZombie
+    class KingZombie
+    class ImpDragon
+
+    class Sunflower
+    class TwinSunflower
+    class SunShroom
+    class PrimalSunflower
+    class GoldBloom
+    class PeaShooter
+    class Repeater
+    class Threepeater
+    class SnowPea
+    class FirePea
+    class CabbagePult
+    class KernelPult
+    class MelonPult
+    class WinterMelon
+    class CherryBomb
+    class PotatoMine
+    class Jalapeno
+    class BonkChoy
+    class PhatBeet
+    class Chomper
+    class WallNut
+    class TallNut
+    class Endurian
+    class ExplodeONut
+    class Torchwood
+    class MagnetShroom
+    class CatTail
+    class Caulipower
+    class Cactus
+    class FumeShroom
+
+    Plant --|> GameObject
+    Zombie --|> GameObject
+
+    SunProducerPlant --|> Plant
+    ShooterPlant --|> Plant
+    LobberPlant --|> Plant
+    ExplosivePlant --|> Plant
+    MeleePlant --|> Plant
+    WallPlant --|> Plant
+    ModifierPlant --|> Plant
+    HomingPlant --|> Plant
+    StrikeThroughPlant --|> Plant
+    MintPlant --|> Plant
+
+    BasicGroup --|> Zombie
+    HeavyGroup --|> Zombie
+    UtilityGroup --|> Zombie
+    SpecialMovementGroup --|> Zombie
+    SpecialCombatGroup --|> Zombie
+    SpawnGroup --|> Zombie
+
+    Plant ..|> IUpgradable
+    GameObject ..|> IFreezable
+    Zombie ..|> IMovable
+    Zombie ..|> IFreezable
+    SunProducerPlant ..|> ISunProducer
+    ShooterPlant ..|> IAttacker
+    LobberPlant ..|> IAttacker
+    MeleePlant ..|> IAttacker
+    MeleePlant ..|> IChargeable
+    WallPlant ..|> IWall
+    ModifierPlant ..|> IModifier
+    HomingPlant ..|> IAttacker
+    StrikeThroughPlant ..|> IAttacker
+
+    Zombie "1" --> "1" ArmorDecorator : armor
+
+    ArmorPiece --|> ArmorDecorator
+    TileObstacle --|> GameObject
+    Tombstone --|> TileObstacle
+    FrozenBlock --|> TileObstacle
+    Sun --|> GameObject
+    Projectile --|> GameObject
+
+    GameSession o-- TickClock
+    GameSession o-- Board
+    GameSession o-- SunManager
+    GameSession o-- WaveController
+    GameSession o-- PlantFoodInventory
+    GameSession --> GameCommandController
+    GameSession --> LootDropService
+    GameCommandController --> GameSession
+
+    Board *-- Tile
+    Board *-- LawnMower
+    Tile o-- Plant
+    Tile o-- Zombie
+    Tile o-- TileObstacle
+
+    SunManager o-- Sun
+    SunManager --> Board
+    SunManager --> Plant
+
+    PlantFoodInventory --> Plant
+    SeedPacketInventory --> Upgrade
+    PlantStatusView --> Plant
+
+    WaveController o-- Wave
+    WaveController --> ZombieSpawner
+    Wave o-- Zombie
+    ZombieSpawner ..> Zombie
+
+    LawnMower o-- Zombie : destroyedZombies
+    LawnMower --> Board
+
+    ShooterPlant ..> Projectile : creates
+    LobberPlant ..> Projectile : creates
+    HomingPlant ..> Projectile : creates
+    StrikeThroughPlant ..> Projectile : creates
+    ExplosivePlant ..> Projectile : area damage
+    Projectile --> ProjectileType
+    Projectile --> ProjectileTrajectory
+    Projectile --> DamageMode
+    Projectile --> Zombie
+    Projectile --> Plant
+    Projectile --> TileObstacle
+    ProjectileResolver --> Projectile
+    ProjectileResolver --> Board
+    ProjectileResolver --> ArmorPiece
+
+    Zombie o-- ArmorPiece
+    Zombie o-- ZombieAbility
+    Zombie o-- ZombieEffect
+    LootDropService --> Zombie
+    LootDropService --> GameSession
+    GamePrinter --> GameSession
+    GamePrinter --> Board
+
+    BasicZombie --|> Zombie
+    ConeheadZombie --|> Zombie
+    BucketheadZombie --|> Zombie
+    KnightZombie --|> Zombie
+    BlockheadZombie --|> Zombie
+    Gargantuar --|> Zombie
+    ImpZombie --|> Zombie
+    FootballZombie --|> Zombie
+    ArcadeZombie --|> Zombie
+    ParasolZombie --|> Zombie
+    TurquoiseZombie --|> Zombie
+    ProspectorZombie --|> Zombie
+    PianistZombie --|> Zombie
+    NewspaperZombie --|> Zombie
+    BarrelRollerZombie --|> Zombie
+    RaZombie --|> Zombie
+    ExplorerZombie --|> Zombie
+    TombRaiserZombie --|> Zombie
+    DodoRiderZombie --|> Zombie
+    HunterZombie --|> Zombie
+    Troglobite --|> Zombie
+    FishermanZombie --|> Zombie
+    SnorkelZombie --|> Zombie
+    OctopusZombie --|> Zombie
+    JesterZombie --|> Zombie
+    WizardZombie --|> Zombie
+    KingZombie --|> Zombie
+    ImpDragon --|> Zombie
+
+    ArcadeZombie o-- ArcadeMachine
+    BarrelRollerZombie o-- Barrel
+    ProspectorZombie o-- Dynamite
+    WizardZombie o-- CatCurse
+    OctopusZombie o-- OctopusBlock
+
+    ConeheadZombie o-- ArmorPiece : cone hp 370
+    BucketheadZombie o-- ArmorPiece : bucket hp 1100
+    KnightZombie o-- ArmorPiece : helmet and shoulder hp 1600
+    BlockheadZombie o-- ArmorPiece : block hp 2200
+    NewspaperZombie o-- ArmorPiece : newspaper
+
+    Gargantuar ..> ImpZombie : throws at half health
+    FootballZombie ..> GameObject : instant kill while running
+    ArcadeMachine ..> GameObject : instant kill on push
+    ParasolZombie ..> Projectile : blocks lobbed hits
+    TurquoiseZombie ..> SunManager : steals 25 suns per second
+    TurquoiseZombie ..> Projectile : fires 4-tile laser
+    ProspectorZombie ..> Dynamite : explodes after 10 seconds
+    PianistZombie ..> Zombie : randomly changes lanes
+    Barrel ..> ImpZombie : spawns two imps
+    RaZombie ..> Sun : steals ground suns
+    ExplorerZombie ..> Plant : burns close plants
+    ExplorerZombie ..> Projectile : fire and ice affect torch
+    TombRaiserZombie ..> Tombstone : creates two random tombstones
+    DodoRiderZombie ..> WallPlant : flies over selected obstacles
+    DodoRiderZombie ..> TallNut : cannot fly over
+    HunterZombie ..> FrozenBlock : freezes plant after three hits
+    Troglobite ..> FrozenBlock : pushes
+    FishermanZombie ..> Plant : hooks one tile right
+    SnorkelZombie ..> Tile : dives under water
+    SnorkelZombie ..> LobberPlant : vulnerable while underwater
+    OctopusZombie ..> OctopusBlock : disables plant
+    JesterZombie ..> Projectile : reflects straight projectiles
+    WizardZombie ..> CatCurse : transforms plants into cats
+    KingZombie ..> BasicZombie : promotes to knight
+    ImpDragon ..> Projectile : immune to fire
+    PlantUpgradePath --> Plant
+
+    Sunflower --|> SunProducerPlant
+    TwinSunflower --|> SunProducerPlant
+    SunShroom --|> SunProducerPlant
+    PrimalSunflower --|> SunProducerPlant
+    GoldBloom --|> SunProducerPlant
+
+    PeaShooter --|> ShooterPlant
+    Repeater --|> ShooterPlant
+    Threepeater --|> ShooterPlant
+    SnowPea --|> ShooterPlant
+    FirePea --|> ShooterPlant
+
+    CabbagePult --|> LobberPlant
+    KernelPult --|> LobberPlant
+    MelonPult --|> LobberPlant
+    WinterMelon --|> LobberPlant
+
+    CherryBomb --|> ExplosivePlant
+    PotatoMine --|> ExplosivePlant
+    Jalapeno --|> ExplosivePlant
+
+    BonkChoy --|> MeleePlant
+    PhatBeet --|> MeleePlant
+    Chomper --|> MeleePlant
+
+    WallNut --|> WallPlant
+    TallNut --|> WallPlant
+    Endurian --|> WallPlant
+    ExplodeONut --|> WallPlant
+
+    Torchwood --|> ModifierPlant
+    MagnetShroom --|> ModifierPlant
+
+    CatTail --|> HomingPlant
+    Caulipower --|> HomingPlant
+
+    Cactus --|> StrikeThroughPlant
+    FumeShroom --|> StrikeThroughPlant
+
+    note right of SunProducerPlant
+    Sunflower
+    TwinSunflower
+    SunShroom
+    PrimalSunflower
+    GoldBloom
+    end note
+
+    note right of ShooterPlant
+    PeaShooter
+    Repeater
+    Threepeater
+    SnowPea
+    FirePea
+    end note
+
+    note right of LobberPlant
+    CabbagePult
+    KernelPult
+    MelonPult
+    WinterMelon
+    end note
+
+    note right of ExplosivePlant
+    CherryBomb
+    PotatoMine
+    Jalapeno
+    end note
+
+    note right of MeleePlant
+    BonkChoy
+    PhatBeet
+    Chomper
+    end note
+
+    note right of WallPlant
+    WallNut
+    TallNut
+    Endurian
+    ExplodeONut
+    end note
+
+    note right of ModifierPlant
+    Torchwood
+    MagnetShroom
+    end note
+
+    note right of HomingPlant
+    CatTail
+    Caulipower
+    end note
+
+    note right of StrikeThroughPlant
+    Cactus
+    FumeShroom
+    end note
+
+    note right of PlantState
+    ActiveState
+    CooldownState
+    FrozenPlantState
+    ChargingState
+    end note
+
+    note right of ArmorDecorator
+    ConeArmorDecorator
+    BucketArmorDecorator
+    KnightArmorDecorator
+    end note
+
+    note right of BasicGroup
+    BasicZombie
+    ConeheadZombie
+    BucketheadZombie
+    end note
+
+    note right of HeavyGroup
+    Gargantuar
+    FootballZombie
+    end note
+
+    note right of UtilityGroup
+    PianistZombie
+    WizardZombie
+    KingZombie
+    TombRaiserZombie
+    FishermanZombie
+    end note
+
+    note right of SpecialMovementGroup
+    DodoRiderZombie
+    ProspectorZombie
+    SnorkelZombie
+    Troglobite
+    end note
+
+    note right of SpecialCombatGroup
+    ExplorerZombie
+    HunterZombie
+    ParasolZombie
+    TurquoiseZombie
+    RaZombie
+    end note
+
+    note right of SpawnGroup
+    BarrelRollerZombie
+    ArcadeZombie
+    NewspaperZombie
+    ImpDragon
+    end note
+
+    note right of GameSession
+    Covers grading items:
+    game status and current sun amount.
+    end note
+
+    note right of Wave
+    Covers zombie wave list,
+    wave number, and delay.
+    end note
+
+    note right of Plant
+    Covers plant type, health,
+    sun cost, location, and attack power.
+    end note
+
+    note right of Zombie
+    Covers zombie health, movement speed,
+    damage to plant, and abilities.
+    end note
+
+    note right of Sun
+    Covers sun amount, ground position,
+    and remaining fall time.
+    end note
+
+    note right of LawnMower
+    Covers related row, activation state,
+    and zombie destruction.
+    end note
+
+    note right of Projectile
+    Covers projectile damage amount,
+    current position, and movement speed.
+    end note
+}
+
+MenuManager ..> GameSession : "Initializes Game"
+MenuManager ..> GameCommandController : "Sends Commands"
+GameState ..> GameSession : "Passes Difficulty"
 @enduml
