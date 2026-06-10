@@ -12,10 +12,14 @@ package "model (Data & Logic)" {
         - gender: String
         - securityQuestionId: int
         - securityAnswer: String
+        - gameProgress: int
+        - maxMuPoint: int
         + getUsername(): String
         + getPasswordHash(): String
         + getNickname(): String
         + getEmail(): String
+        + getGameProgress(): int
+        + getMaxMuPoint(): int
         + getWallet(): Wallet
         + getCollection(): Collection
         + getGreenhouse(): Greenhouse
@@ -34,11 +38,13 @@ package "model (Data & Logic)" {
 
     class Collection {
         - unlockedPlants: Map<PlantType, Integer>
+        - lockedPlants: List<PlantType>
         - seenZombies: List<ZombieType>
         + unlockPlant(plant: PlantType): void
         + addSeedPacket(plant: PlantType, quantity: int): void
         + markZombieSeen(zombie: ZombieType): void
         + getUnlockedPlants(): List<PlantType>
+        + getLockedPlants(): List<PlantType>
         + getSeedPacketCount(plant: PlantType): int
     }
 
@@ -55,6 +61,7 @@ package "model (Data & Logic)" {
         - plantType: PlantType
         - growthStart: long
         - growthDuration: long
+        - lastHarvestTime: long
         + isReady(): boolean
         + plantSeed(plant: PlantType): void
         + harvest(): HarvestResult
@@ -90,13 +97,25 @@ package "model (Data & Logic)" {
         - purchased: boolean
     }
 
+    enum QuestCategory {
+        ADVENTURE
+        SPECIAL
+        MINIGAME
+        CHALLENGE
+        MYSTERY
+    }
+
     class Quest {
         - id: int
         - description: String
         - page: String
+        - category: QuestCategory
         - rewardCoins: int
         - rewardItem: String
+        - currentProgress: int
+        - targetProgress: int
         - isCompleted: boolean
+        + updateProgress(amount: int): void
     }
 
     class QuestLog {
@@ -110,9 +129,9 @@ package "model (Data & Logic)" {
         - message: String
         - type: String
         - isRead: boolean
+        + markAsRead(): void
     }
 
-    ' PlantType, ZombieType, LeaderboardEntry are defined by another team
     class PlantType << (T,white) to be implemented >>
     class ZombieType << (T,white) to be implemented >>
     class LeaderboardEntry << (T,white) to be implemented >>
@@ -131,6 +150,7 @@ package "model (Data & Logic)" {
     HarvestResult --> PlantType
     ShopItem --> PlantType
     DailyOffer --> PlantType
+    Quest --> QuestCategory
 }
 
 package "controller (System Management)" {
