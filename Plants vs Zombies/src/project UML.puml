@@ -6,8 +6,9 @@ skinparam shadowing false
 skinparam linetype ortho
 skinparam nodesep 50
 skinparam ranksep 60
+hide circle
 
-package "model (Data & Logic)" {
+package "System, Meta & Menus" {
     class User {
         - username: String
         - passwordHash: String
@@ -24,20 +25,34 @@ package "model (Data & Logic)" {
         + getEmail(): String
         + getGameProgress(): int
         + getMaxMuPoint(): int
-        + getWallet(): Wallet
+        + getWallet(): PlayerWallet
         + getCollection(): Collection
         + getGreenhouse(): Greenhouse
         + getQuestLog(): QuestLog
         + getNewsList(): List<News>
     }
 
-    class Wallet {
+    class PlayerWallet {
         - coins: int
         - gems: int
         + addCoins(amount: int): void
         + spendCoins(amount: int): boolean
         + addGems(amount: int): void
         + spendGems(amount: int): boolean
+        + convertGemsToCoin(gems: int): void
+    }
+
+    class Inventory {
+        - seedPackets: Map
+        - plantFoodCount: int
+        - boosts: Map
+        + addSeedPackets(plant: String, count: int): void
+        + useSeedPacket(plant: String): boolean
+        + addPlantFood(): void
+        + usePlantFood(): boolean
+        + addBoost(plant: String): void
+        + consumeBoost(plant: String): boolean
+        + hasBoost(plant: String): boolean
     }
 
     class Collection {
@@ -53,23 +68,46 @@ package "model (Data & Logic)" {
     }
 
     class Greenhouse {
-        - pots: List<GreenhousePot>
-        + getPot(x: int, y: int): GreenhousePot
+        - pots: Pot[][]
+        - rows: int
+        - cols: int
+        + showGreenhouse(): void
+        + unlockPot(x: int, y: int): void
+        + plantPot(x: int, y: int): void
+        + collect(x: int, y: int): void
+        + accelerateGrowth(x: int, y: int): void
+        + enterShop(): Shop
+        + getPot(x: int, y: int): Pot
         + showStatus(): void
     }
 
-    class GreenhousePot {
+    class Pot {
         - x: int
         - y: int
+        - locked: boolean
         - status: PotStatus
+        - plant: GreenhousePlant
         - plantType: PlantType
         - growthStart: long
         - growthDuration: long
         - lastHarvestTime: long
+        + isLocked(): boolean
+        + isEmpty(): boolean
         + isReady(): boolean
+        + unlock(): void
         + plantSeed(plant: PlantType): void
         + harvest(): HarvestResult
         + growInstantly(): void
+    }
+
+    class GreenhousePlant {
+        - type: String
+        - isMarigold: boolean
+        - plantedAt: long
+        - growthHours: int
+        + getRemainingHours(): double
+        + isFullyGrown(): boolean
+        + harvest(): String
     }
 
     enum PotStatus {
@@ -84,6 +122,13 @@ package "model (Data & Logic)" {
         - seedPacket: PlantType
     }
 
+    class Shop {
+        - dailyOffer: DailyOffer
+        + showPermanentItems(): void
+        + showDailyOffer(): void
+        + buyItem(itemId: String, count: int, plantType: String): void
+    }
+
     class ShopItem {
         - id: int
         - name: String
@@ -95,10 +140,50 @@ package "model (Data & Logic)" {
     }
 
     class DailyOffer {
-        - date: String
+        - offerId: String
+        - offerDate: String
         - discountedPriceCoins: int
-        - plantType: PlantType
+        - plantType: String
+        - price: int
         - purchased: boolean
+        + isAvailableToday(): boolean
+        + purchase(): void
+    }
+
+    abstract class Quest {
+        - id: String
+        - title: String
+        - description: String
+        - page: String
+        - category: QuestCategory
+        - priority: QuestPriority
+        - rewardCoins: int
+        - rewardItem: String
+        - currentProgress: int
+        - targetProgress: int
+        - completed: boolean
+        - isCompleted: boolean
+        + updateProgress(amount: int): void
+        + checkCompletion(): boolean
+        + grantReward(): void
+    }
+
+    class StoryQuest {
+        - targetStage: int
+        - targetChapter: int
+    }
+
+    class DailyQuest {
+        - date: String
+        + isExpired(): boolean
+    }
+
+    class EpicQuest {
+        - gemReward: int
+    }
+
+    class RepeatableQuest {
+        - completionCount: int
     }
 
     enum QuestCategory {
@@ -109,17 +194,31 @@ package "model (Data & Logic)" {
         MYSTERY
     }
 
-    class Quest {
-        - id: int
-        - description: String
-        - page: String
-        - category: QuestCategory
-        - rewardCoins: int
-        - rewardItem: String
-        - currentProgress: int
-        - targetProgress: int
-        - isCompleted: boolean
-        + updateProgress(amount: int): void
+    enum QuestPriority {
+        CRITICAL
+        HIGH
+        MEDIUM
+        LOW
+    }
+
+    class Reward {
+        - type: RewardType
+        - amount: int
+        - plantType: String
+        + apply(wallet: PlayerWallet, inventory: Inventory): void
+    }
+
+    enum RewardType {
+        CURRENCY_COINS
+        CURRENCY_GEMS
+        UNLOCKABLE
+        INVENTORY
+    }
+
+    class TravelLog {
+        - currentPage: String
+        + changePage(pageName: String): void
+        + showPage(): void
     }
 
     class QuestLog {
@@ -136,28 +235,46 @@ package "model (Data & Logic)" {
         + markAsRead(): void
     }
 
-    class PlantType << (T,white) to be implemented >>
-    class ZombieType << (T,white) to be implemented >>
-    class LeaderboardEntry << (T,white) to be implemented >>
+    class Leaderboard {
+        - entries: LeaderboardEntry[]
+        + sortBy(column: String, ascending: boolean): void
+        + display(): void
+        + updateEntry(username: String): void
+    }
 
-    User *-- Wallet
-    User *-- Collection
-    User *-- Greenhouse
-    User *-- QuestLog
-    User *-- "many" News
-    Greenhouse *-- "20" GreenhousePot
-    GreenhousePot --> PotStatus : "has status"
-    GreenhousePot ..> HarvestResult : "returns"
-    GreenhousePot --> PlantType
-    Collection --> PlantType
-    Collection --> ZombieType
-    HarvestResult --> PlantType
-    ShopItem --> PlantType
-    DailyOffer --> PlantType
-    Quest --> QuestCategory
-}
+    class LeaderboardEntry {
+        - username: String
+        - lastChapter: int
+        - lastStage: int
+        - minigamesCompleted: int
+        - dailyQuestsCompleted: int
+        - nonDailyQuestsCompleted: int
+        - highScore: int
+        + getUsername(): String
+    }
 
-package "controller (System Management)" {
+    class ScoredGame {
+        - date: String
+        - sunSeed: long
+        - score: int
+        + calculateScore(events: ScoreEvent[]): int
+        + getScore(): int
+    }
+
+    class ScoreEvent {
+        - type: ScoreEventType
+        - timestamp: int
+        - value: int
+    }
+
+    enum ScoreEventType {
+        MULTI_HIT
+        SPEED_KILL
+        SIMULTANEOUS_KILLS
+        CHAIN_KILL
+        EFFICIENT_SUN
+    }
+
     class MenuManager {
         - menuStack: Stack<Menu>
         - activeUser: User
@@ -189,14 +306,6 @@ package "controller (System Management)" {
         + getDifficulty(): int
     }
 
-    MenuManager --> User : "tracks active"
-    MenuManager --> UserManager : "uses"
-    MenuManager --> GameState : "uses"
-    MenuManager --> LeaderboardEntry
-    UserManager *-- User : "manages"
-}
-
-package "view (The Menus)" {
     abstract class Menu {
         # menuManager: MenuManager
         # name: String
@@ -278,24 +387,11 @@ package "view (The Menus)" {
         + show(): void
     }
 
-    Menu <|-- RegisterMenu
-    Menu <|-- LoginMenu
-    Menu <|-- MainMenu
-    Menu <|-- GameMenu
-    Menu <|-- SettingsMenu
-    Menu <|-- NewsMenu
-    Menu <|-- ProfileMenu
-    Menu <|-- CollectionMenu
-    Menu <|-- PlantSelectionMenu
-    Menu <|-- GreenhouseMenu
-    Menu <|-- ShopMenu
-    Menu <|-- TravelLogMenu
-    Menu <|-- LeaderboardMenu
-
-    Menu --> MenuManager : "triggers state changes"
+    class PlantType << (T,white) to be implemented >>
+    class ZombieType << (T,white) to be implemented >>
 }
 
-package "Core Gameplay (Entities & Engine)" {
+package "Core Gameplay" {
 
     enum GameStatus {
       PLANT_SELECTION_READY
@@ -487,6 +583,11 @@ package "Core Gameplay (Entities & Engine)" {
     }
 
     abstract class Plant {
+      -health : int
+      -freezeLevel : int
+      -frozen : boolean
+      -fireTag : boolean
+      -boosted : boolean
       +id : int
       +name : String
       +cost : int
@@ -506,6 +607,11 @@ package "Core Gameplay (Entities & Engine)" {
       +canStack : boolean
       +isBoostedByPlantFood : boolean
       --
+      +takeDamage(amount : int) : void
+      +addFreezeLevel() : void
+      +unfreeze() : void
+      +isFrozen() : boolean
+      +boost() : void
       +onPlantFood() : void
       +onTick() : void
       +upgrade() : void
@@ -581,6 +687,10 @@ package "Core Gameplay (Entities & Engine)" {
     }
 
     abstract class Zombie {
+      -health : int
+      -speed : double
+      -row : int
+      -col : double
       +speed : float
       +attackDamage : int
       +armor : ArmorDecorator
@@ -596,6 +706,9 @@ package "Core Gameplay (Entities & Engine)" {
       +isBoss : boolean
       +initialWaveCost : int
       --
+      +move() : void
+      +takeDamage(amount : int) : void
+      +isAlive() : boolean
       +onReachPlant(plant:Plant) : void
       +onDeath() : void
       +specialBehavior() : void
@@ -627,6 +740,16 @@ package "Core Gameplay (Entities & Engine)" {
     class "Special Combat Group" as SpecialCombatGroup
     class "Spawn Group" as SpawnGroup
 
+    class Position {
+        -x : double
+        -y : double
+        +getX() : double
+        +getY() : double
+        +setX(x : double) : void
+        +setY(y : double) : void
+        +distanceTo(p : Position) : double
+    }
+
     class GridPosition {
       +x : int
       +y : int
@@ -644,6 +767,21 @@ package "Core Gameplay (Entities & Engine)" {
       +advance(count:int) : void
       +toSeconds(ticks:int) : float
       +getElapsedSeconds() : float
+    }
+
+    class TimeManager {
+        -ticksPerSecond : int
+        -currentTick : int
+        +advanceTime(ticks : int) : void
+        +spawnSun() : void
+        +updateWaves() : void
+        +updateEffects() : void
+        +getCurrentTick() : int
+    }
+
+    class Tick {
+        -value : int
+        +toSeconds() : double
     }
 
     class GameSession {
@@ -681,20 +819,33 @@ package "Core Gameplay (Entities & Engine)" {
       +cheatSpawnZombie(type:String, x:int, y:int) : void
     }
 
-    class Board {
-      +rows : int
-      +columns : int
-      +seasonType : SeasonType
-      --
-      +getTile(position:GridPosition) : Tile
-      +getZombiesInLane(row:int) : List<Zombie>
-      +getPlantsInLane(row:int) : List<Plant>
-      +getLawnMower(row:int) : LawnMower
-      +isInside(position:GridPosition) : boolean
-      +printMap() : String
+    class GameBoard {
+        -rows : int
+        -cols : int
+        -tiles : Tile[][]
+        -lawnMowers : LawnMower[]
+        -currentChapter : Chapter
+        -currentStage : Stage
+        -timeManager : TimeManager
+        +columns : int
+        +seasonType : SeasonType
+        --
+        +showMap() : void
+        +getTile(x : int, y : int) : Tile
+        +getTile(position:GridPosition) : Tile
+        +placePlant(plant : Plant, x : int, y : int) : void
+        +removePlant(x : int, y : int) : void
+        +getZombiesInLane(row:int) : List<Zombie>
+        +getPlantsInLane(row:int) : List<Plant>
+        +getLawnMower(row:int) : LawnMower
+        +isInside(position:GridPosition) : boolean
+        +printMap() : String
     }
 
-    class Tile {
+    abstract class Tile {
+      -position : Position
+      -plantable : boolean
+      -passable : boolean
       +position : GridPosition
       +type : TileType
       +canPlant : boolean
@@ -703,14 +854,45 @@ package "Core Gameplay (Entities & Engine)" {
       +isWater : boolean
       +isLowTideSpawn : boolean
       --
+      +canPlant() : boolean
+      +getPlant() : Plant
+      +setPlant(p : Plant) : void
+      +getZombies() : Zombie[]
+      +showStatus() : void
       +addPlant(plant:Plant) : boolean
       +removePlant() : Plant
       +addZombie(zombie:Zombie) : void
       +removeZombie(zombie:Zombie) : void
       +hasObstacle() : boolean
       +getStatus() : String
-      +hasAdjacentFirePlant(board:Board) : boolean
+      +hasAdjacentFirePlant(board:GameBoard) : boolean
       +moveZombieBySlip(zombie:Zombie) : void
+    }
+
+    class NormalTile
+    class GraveTile {
+        -health : int
+        -hasSun : boolean
+        -hasPlantFood : boolean
+        +takeDamage(amount : int) : void
+        +isDestroyed() : boolean
+        +dropReward() : void
+    }
+    class IceTile {
+        -direction : String
+        +slideZombie(z : Zombie) : void
+    }
+    class WaterTile {
+        -flooded : boolean
+        +isFlooded() : boolean
+        +hasLilyPad() : boolean
+    }
+    class LowTideTile {
+        +surfaceZombie() : void
+    }
+    class NecromancyTile {
+        +canSpawnZombie() : boolean
+        +spawnZombie() : void
     }
 
     abstract class TileObstacle {
@@ -741,6 +923,9 @@ package "Core Gameplay (Entities & Engine)" {
     }
 
     class Sun {
+      -value : int
+      -position : Position
+      -remainingTime : int
       +type : FallingSunType
       +amount : int
       +groundPosition : GridPosition
@@ -751,9 +936,12 @@ package "Core Gameplay (Entities & Engine)" {
       +zombieExplosionRadius : int
       +plantExplosionRadius : int
       --
+      +getValue() : int
+      +expire() : void
+      +isExpired() : boolean
       +collect(session:GameSession) : void
       +reachGround() : void
-      +explode(board:Board) : void
+      +explode(board:GameBoard) : void
       +convertToNormalAfterGround() : void
     }
 
@@ -766,7 +954,7 @@ package "Core Gameplay (Entities & Engine)" {
       +skySunFallDurationSeconds : float
       --
       +calculateDropIntervalSeconds(elapsedSeconds:float) : float
-      +dropSkySun(board:Board) : Sun
+      +dropSkySun(board:GameBoard) : Sun
       +producePlantSun(plant:Plant) : Sun
       +collectSun(position:GridPosition) : boolean
       +addSuns(count:int) : void
@@ -809,15 +997,120 @@ package "Core Gameplay (Entities & Engine)" {
       +cooldownRemainingSeconds : float
     }
 
+    abstract class Chapter {
+        -name : String
+        -stages : Stage[]
+        +startChapter() : void
+        +getStage(index : int) : Stage
+        +applyChapterEffects() : void
+    }
+
+    class AncientEgypt {
+        +spawnTornado(wave : Wave) : void
+        +createGraves() : void
+    }
+
+    class FrostbiteCaves {
+        +applyColdWind(rows : int[]) : void
+        +spawnFrozenZombies() : void
+        +createIceTiles() : void
+    }
+
+    class BigWaveBeach {
+        -currentWaterLevel : int
+        -maxWaterCol : int
+        +updateWaterLevel() : void
+        +floodPlants() : void
+    }
+
+    class DarkAges {
+        +spawnGravesPerWave() : void
+        +activateNecromancy() : void
+    }
+
+    abstract class Stage {
+        -number : int
+        -waveCount : int
+        -waves : Wave[]
+        +startStage() : void
+        +finishStage() : boolean
+        +getCurrentWave() : Wave
+    }
+
+    class NormalStage {
+        +startStage() : void
+    }
+
+    class BossStage {
+        +startBossFight() : void
+    }
+
+    abstract class SpecialStage {
+        +applySpecialRules() : void
+        +checkLoseCondition() : boolean
+    }
+
+    class ConveyorBeltStage {
+        -beltIntervalSecs : int
+        +deliverNextPlant() : void
+    }
+
+    class LockedPlantsStage {
+        -lockedSlots : int[]
+        +applyLocks() : void
+    }
+
+    class SaveOurSeedsStage {
+        -protectedPlants : Plant[]
+        +checkProtectedPlants() : boolean
+    }
+
+    class TimedWarStage {
+        -timeLimit : int
+        -killTarget : int
+        -sunTarget : int
+        -elapsed : int
+        +updateTimer() : void
+        +checkWinCondition() : boolean
+    }
+
+    class NightOpsStage {
+        +blockSkySun() : void
+    }
+
+    class DeadLineStage {
+        -deadLineCol : int
+        +checkZombieCrossed() : boolean
+    }
+
+    class LoveYourPlantsStage {
+        -maxPlantLosses : int
+        -lostCount : int
+        +onPlantDestroyed() : void
+    }
+
+    class PlantWhatYouGetStage {
+        -initialSun : int
+        -started : boolean
+        +startZombieWaves() : void
+        +blockSunAndSunflower() : void
+    }
+
     class Wave {
+      -number : int
+      -isFinalWave : boolean
+      -spawnDelay : int
+      -timeBetweenSpawns : int
+      -zombies : Zombie[]
       +waveNumber : int
       +waveCost : int
       +delayTicks : int
-      +isFinalWave : boolean
-      +zombies : List<Zombie>
       +previousWaveHealthLostRatio : float
       +previousHealthLossThreshold : float
       --
+      +startWave() : void
+      +spawnZombie() : void
+      +isFinished() : boolean
       +canStartAfter(previous:Wave) : boolean
       +isCleared() : boolean
     }
@@ -840,15 +1133,20 @@ package "Core Gameplay (Entities & Engine)" {
       --
       +spawnRandomZombiesUntilCost(waveCost:int) : List<Zombie>
       +spawnZombie(type:String, position:ContinuousPosition) : Zombie
-      +chooseRandomLane(board:Board) : int
+      +chooseRandomLane(board:GameBoard) : int
     }
 
     class LawnMower {
+      -row : int
+      -used : boolean
       +relatedRow : int
       +activated : boolean
       +destroyedZombies : List<Zombie>
       +secondReachCausesLoss : boolean
       --
+      +trigger() : void
+      +killZombiesInRow() : void
+      +isUsed() : boolean
       +trigger(zombies:List<Zombie>) : void
       +canKill(zombie:Zombie) : boolean
       +handleZombieAtEnd(zombie:Zombie, session:GameSession) : void
@@ -879,8 +1177,8 @@ package "Core Gameplay (Entities & Engine)" {
 
     class ProjectileResolver {
       --
-      +resolveMovement(projectile:Projectile, board:Board) : void
-      +resolveCollision(projectile:Projectile, board:Board) : void
+      +resolveMovement(projectile:Projectile, board:GameBoard) : void
+      +resolveCollision(projectile:Projectile, board:GameBoard) : void
       +applyDamage(projectile:Projectile, target:GameObject) : void
       +applySpecialEffect(projectile:Projectile, target:Zombie) : void
       +isBlockedByTombstone(projectile:Projectile, tombstone:Tombstone) : boolean
@@ -926,8 +1224,138 @@ package "Core Gameplay (Entities & Engine)" {
       --
       +showMap(session:GameSession) : String
       +showPlantsStatus(session:GameSession) : List<PlantStatusView>
-      +showTileStatus(board:Board, position:GridPosition) : String
-      +zombiesInfo(board:Board) : String
+      +showTileStatus(board:GameBoard, position:GridPosition) : String
+      +zombiesInfo(board:GameBoard) : String
+    }
+
+    class Tornado {
+        -lane : int
+        -extraCols : int
+        +spawn() : void
+        +moveZombie(z : Zombie) : void
+    }
+
+    class ColdWind {
+        -affectedRows : int[]
+        +apply(board : GameBoard) : void
+    }
+
+    class IceBlock {
+        -health : int
+        -attachedPlant : Plant
+        +takeDamage(amount : int) : void
+        +melt() : void
+        +isDestroyed() : boolean
+    }
+
+    abstract class MiniGame {
+        -name : String
+        -stageNumber : int
+        +startGame() : void
+        +finishGame(won : boolean) : void
+        +isWon() : boolean
+    }
+
+    class Vasebreaker {
+        -vases : Vase[]
+        +breakVase(vase : Vase) : void
+        +collectSeedPacket(x : int, y : int) : void
+    }
+
+    class Vase {
+        -x : int
+        -y : int
+        -type : VaseType
+        -content : String
+        +breakOpen() : void
+    }
+
+    enum VaseType {
+        NORMAL
+        PLANT_VASE
+        GIANT_VASE
+    }
+
+    class WallnutBowling {
+        -redLineCol : int
+        +launchNut(row : int, nutType : String) : void
+        +resolveCollision(nut : BowlingNut, zombie : Zombie) : void
+    }
+
+    class BowlingNut {
+        -row : int
+        -col : double
+        -direction : double
+        -type : BowlingNutType
+        +move() : void
+        +onHitZombie(z : Zombie) : void
+        +onHitWall() : void
+    }
+
+    enum BowlingNutType {
+        NORMAL
+        EXPLODE_O_NUT
+        GIANT
+    }
+
+    class IZombie {
+        -sunAmount : int
+        -brains : Brain[]
+        -sunProducers : SunProducerZombie[]
+        +placeZombie(type : String, row : int) : void
+        +checkWinCondition() : boolean
+        +checkLoseCondition() : boolean
+    }
+
+    class Brain {
+        -row : int
+        -eaten : boolean
+        +isEaten() : boolean
+    }
+
+    class SunProducerZombie {
+        -row : int
+        -health : int
+        -sunRate : double
+        -elapsedSeconds : int
+        +produceSun() : int
+        +updateRate() : void
+        +takeDamage(amount : int) : void
+    }
+
+    class Beghouled {
+        -grid : Plant[][]
+        -matchCount : int
+        -targetMatches : int
+        -sunAmount : int
+        -craters : boolean[][]
+        +swapPlants(x1 : int, y1 : int, x2 : int, y2 : int) : boolean
+        +checkMatches() : int
+        +applyGravity() : void
+        +fillEmpty() : void
+        +resetGrid() : void
+        +upgradePlant(type : String) : void
+        +checkWinCondition() : boolean
+    }
+
+    class PlantUpgrade {
+        -fromType : String
+        -toType : String
+        -sunCost : int
+        +canUpgrade(plant : Plant) : boolean
+        +apply(plant : Plant) : Plant
+    }
+
+    class Zombotany {
+        -availablePlantZombies : PlantZombieType[]
+        +spawnPlantZombie(type : PlantZombieType, row : int) : void
+    }
+
+    enum PlantZombieType {
+        PEASHOOTER_ZOMBIE
+        WALLNUT_ZOMBIE
+        JALAPENO_ZOMBIE
+        SQUASH_ZOMBIE
     }
 
     class ArcadeMachine {
@@ -981,7 +1409,7 @@ package "Core Gameplay (Entities & Engine)" {
     class MintPlant {
       +durationSeconds : float
       --
-      +applyFamilyPlantFoodEffect(board:Board) : void
+      +applyFamilyPlantFoodEffect(board:GameBoard) : void
       +disappearAfterDuration() : void
     }
 
@@ -1045,6 +1473,7 @@ package "Core Gameplay (Entities & Engine)" {
     class Cactus
     class FumeShroom
 
+    ' Relationships Core & Engine
     Plant --|> GameObject
     Zombie --|> GameObject
 
@@ -1090,7 +1519,7 @@ package "Core Gameplay (Entities & Engine)" {
     Projectile --|> GameObject
 
     GameSession o-- TickClock
-    GameSession o-- Board
+    GameSession o-- GameBoard
     GameSession o-- SunManager
     GameSession o-- WaveController
     GameSession o-- PlantFoodInventory
@@ -1098,14 +1527,19 @@ package "Core Gameplay (Entities & Engine)" {
     GameSession --> LootDropService
     GameCommandController --> GameSession
 
-    Board *-- Tile
-    Board *-- LawnMower
+    GameBoard *-- "1..*" Tile
+    GameBoard *-- "1..*" LawnMower
+    GameBoard --> Chapter
+    GameBoard --> TimeManager
+    GameBoard *-- Position
+    GameBoard *-- "0..*" Sun
+
     Tile o-- Plant
     Tile o-- Zombie
     Tile o-- TileObstacle
 
     SunManager o-- Sun
-    SunManager --> Board
+    SunManager --> GameBoard
     SunManager --> Plant
 
     PlantFoodInventory --> Plant
@@ -1118,7 +1552,7 @@ package "Core Gameplay (Entities & Engine)" {
     ZombieSpawner ..> Zombie
 
     LawnMower o-- Zombie : destroyedZombies
-    LawnMower --> Board
+    LawnMower --> GameBoard
 
     ShooterPlant ..> Projectile : creates
     LobberPlant ..> Projectile : creates
@@ -1132,7 +1566,7 @@ package "Core Gameplay (Entities & Engine)" {
     Projectile --> Plant
     Projectile --> TileObstacle
     ProjectileResolver --> Projectile
-    ProjectileResolver --> Board
+    ProjectileResolver --> GameBoard
     ProjectileResolver --> ArmorPiece
 
     Zombie o-- ArmorPiece
@@ -1141,7 +1575,69 @@ package "Core Gameplay (Entities & Engine)" {
     LootDropService --> Zombie
     LootDropService --> GameSession
     GamePrinter --> GameSession
-    GamePrinter --> Board
+    GamePrinter --> GameBoard
+
+    Chapter <|-- AncientEgypt
+    Chapter <|-- FrostbiteCaves
+    Chapter <|-- BigWaveBeach
+    Chapter <|-- DarkAges
+    Chapter *-- "1..4" Stage
+
+    Stage <|-- NormalStage
+    Stage <|-- SpecialStage
+    Stage <|-- BossStage
+    Stage *-- "1..*" Wave
+
+    SpecialStage <|-- ConveyorBeltStage
+    SpecialStage <|-- LockedPlantsStage
+    SpecialStage <|-- SaveOurSeedsStage
+    SpecialStage <|-- TimedWarStage
+    SpecialStage <|-- NightOpsStage
+    SpecialStage <|-- DeadLineStage
+    SpecialStage <|-- LoveYourPlantsStage
+    SpecialStage <|-- PlantWhatYouGetStage
+
+    TimeManager --> Tick
+    TimeManager --> Wave
+    TimeManager --> Sun
+    TimeManager --> Plant
+    TimeManager --> Zombie
+
+    Tile <|-- NormalTile
+    Tile <|-- GraveTile
+    Tile <|-- IceTile
+    Tile <|-- WaterTile
+    Tile <|-- LowTideTile
+    Tile <|-- NecromancyTile
+    Tile *-- Position
+
+    AncientEgypt --> Tornado
+    AncientEgypt --> GraveTile
+    FrostbiteCaves --> ColdWind
+    FrostbiteCaves --> IceTile
+    ColdWind --> Plant
+    IceBlock --> Plant
+    DarkAges --> GraveTile
+    DarkAges --> NecromancyTile
+
+    MiniGame <|-- Vasebreaker
+    MiniGame <|-- WallnutBowling
+    MiniGame <|-- IZombie
+    MiniGame <|-- Beghouled
+    MiniGame <|-- Zombotany
+
+    Vasebreaker *-- "1..*" Vase
+    Vase --> VaseType
+    WallnutBowling *-- "0..*" BowlingNut
+    BowlingNut --> BowlingNutType
+    BowlingNut --> Zombie
+    IZombie *-- "1..5" Brain
+    IZombie *-- "1..5" SunProducerZombie
+    IZombie --> Zombie
+    Beghouled *-- "1..*" PlantUpgrade
+    Beghouled --> Plant
+    Zombotany --> PlantZombieType
+    Zombotany --> Zombie
 
     BasicZombie --|> Zombie
     ConeheadZombie --|> Zombie
@@ -1397,7 +1893,57 @@ package "Core Gameplay (Entities & Engine)" {
     end note
 }
 
+' =========================================================
+' INTEGRATION LINKS (System <--> Core)
+' =========================================================
+User *-- PlayerWallet
+User *-- Collection
+User *-- Greenhouse
+User *-- QuestLog
+User *-- "many" News
+Greenhouse *-- "20" Pot
+Pot --> PotStatus : "has status"
+Pot ..> HarvestResult : "returns"
+Pot --> PlantType
+Collection --> PlantType
+Collection --> ZombieType
+HarvestResult --> PlantType
+ShopItem --> PlantType
+DailyOffer --> PlantType
+Quest --> QuestCategory
+QuestLog *-- Quest
+Quest --> Reward
+Reward --> PlayerWallet
+Reward --> Inventory
+MenuManager --> User : "tracks active"
+MenuManager --> UserManager : "uses"
+MenuManager --> GameState : "uses"
+MenuManager --> LeaderboardEntry
+UserManager *-- User : "manages"
+
+Menu <|-- RegisterMenu
+Menu <|-- LoginMenu
+Menu <|-- MainMenu
+Menu <|-- GameMenu
+Menu <|-- SettingsMenu
+Menu <|-- NewsMenu
+Menu <|-- ProfileMenu
+Menu <|-- CollectionMenu
+Menu <|-- PlantSelectionMenu
+Menu <|-- GreenhouseMenu
+Menu <|-- ShopMenu
+Menu <|-- TravelLogMenu
+Menu <|-- LeaderboardMenu
+
+Menu --> MenuManager : "triggers state changes"
+
+PlayerWallet ..> Greenhouse
+PlayerWallet ..> Shop
+Inventory --> Plant
+TravelLog --> Quest
+
 MenuManager ..> GameSession : "Initializes Game"
 MenuManager ..> GameCommandController : "Sends Commands"
 GameState ..> GameSession : "Passes Difficulty"
+
 @enduml
