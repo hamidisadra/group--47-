@@ -4,6 +4,9 @@ import ir.ac.pvz.controller.managers.UserManager;
 import ir.ac.pvz.model.questions.Questions;
 import ir.ac.pvz.model.user.Gender;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class RegisterMenu extends Menu{
 
     private UserManager userManager;
@@ -30,25 +33,26 @@ public class RegisterMenu extends Menu{
         String registerRegex = "^register\\s+-u\\s+(\\S+)\\s+-p\\s+(\\S+)\\s+(\\S+)\\s+-n\\s+(\\S+)\\s+-e\\s+(\\S+)\\s+-g\\s+(\\S+)$";
         String pickQuestionRegex = "^pick\\s+question\\s+-q\\s+(\\d+)\\s+-a\\s+(\\S+)\\s+-c\\s+(\\S+)$";
 
-        if (command.matches(registerRegex)) {
-            String[] tokens = command.split("\\s+");
+        Matcher registerMatcher = Pattern.compile(registerRegex).matcher(command);
+        Matcher pickQuestionMatcher = Pattern.compile(pickQuestionRegex).matcher(command);
 
-            String username = tokens[2];
-            String password = tokens[4];
-            String passwordConfirm = tokens[5];
-            String nickName = tokens[7];
-            String email = tokens[9];
-            String gender = tokens[11];
+        if (registerMatcher.matches()) {
+
+            String username = registerMatcher.group(1);
+            String password = registerMatcher.group(2);
+            String passwordConfirm = registerMatcher.group(3);
+            String nickName = registerMatcher.group(4);
+            String email = registerMatcher.group(5);
+            String gender = registerMatcher.group(6);
 
             processRegisterCommand(username, password, passwordConfirm, nickName, email, gender);
         }
 
-        else if (command.matches(pickQuestionRegex)) {
-            String[] tokens = command.split("\\s+");
+        else if (pickQuestionMatcher.matches()) {
 
-            String questionIdString = tokens[3];
-            String answer = tokens[5];
-            String answerConfirm = tokens[7];
+            String questionIdString = pickQuestionMatcher.group(1);
+            String answer = pickQuestionMatcher.group(2);
+            String answerConfirm = pickQuestionMatcher.group(3);
 
             processPickQuestionCommand(questionIdString, answer, answerConfirm);
         }
