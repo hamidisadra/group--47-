@@ -3,6 +3,8 @@ package ir.ac.pvz.view;
 import ir.ac.pvz.controller.managers.UserManager;
 import ir.ac.pvz.model.questions.Questions;
 import ir.ac.pvz.model.user.User;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LoginMenu extends Menu {
     private UserManager userManager;
@@ -45,12 +47,23 @@ public class LoginMenu extends Menu {
         String loginRegex = "^login\\s+-u\\s+(\\S+)\\s+-p\\s+(\\S+)(?:\\s+-stay-logged-in)?$";
         String forgetPasswordRegex = "^forget\\s+password\\s+-u\\s+(\\S+)\\s+-e\\s+(\\S+)$";
 
-        if (command.matches(loginRegex)) {
-            loginProcess(command);
+        Matcher loginMatcher = Pattern.compile(loginRegex).matcher(command);
+        Matcher forgetPasswordMatcher = Pattern.compile(forgetPasswordRegex).matcher(command);
+
+        if (loginMatcher.matches()) {
+
+            String username = loginMatcher.group(1);
+            String password = loginMatcher.group(2);
+            boolean stayLoggedIn = loginMatcher.group(3) != null;
+
+            loginProcess(username, password, stayLoggedIn);
         }
 
-        else if (command.matches(forgetPasswordRegex)) {
-            forgetPasswordProcess(command);
+        else if (forgetPasswordMatcher.matches()) {
+            String username = forgetPasswordMatcher.group(1);
+            String email = forgetPasswordMatcher.group(2);
+
+            forgetPasswordProcess(username, email);
         }
 
         else if (command.matches("^menu\\s+show\\s+current$")) {
@@ -62,11 +75,7 @@ public class LoginMenu extends Menu {
         }
     }
 
-    private void loginProcess(String command) {
-        String[] tokens = command.split("\\s+");
-
-        String username = tokens[2];
-        String password = tokens[4];
+    private void loginProcess(String username, String password, boolean stayLoggedIn) {
 
         if (!userManager.validateUsername(username)) {
             System.out.println("Error: Invalid username format!");
@@ -92,15 +101,17 @@ public class LoginMenu extends Menu {
             return;
         }
 
+        System.out.println("Logged in successfully!");
+        if (stayLoggedIn) {
+            System.out.println("Stay-logged-in feature is activated.");
+            //It should be updated later
+        }
+
         menuManager.loginUser(user);
         userManager.saveAll();
     }
 
-    private void forgetPasswordProcess(String command) {
-        String[] tokens = command.split("\\s+");
-
-        String username = tokens[3];
-        String email = tokens[5];
+    private void forgetPasswordProcess(String username, String email) {
 
         if (!userManager.validateUsername(username)) {
             System.out.println("Error: Invalid username format!");
