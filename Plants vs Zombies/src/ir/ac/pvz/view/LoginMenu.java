@@ -1,5 +1,7 @@
 package ir.ac.pvz.view;
 
+import com.sun.tools.javac.Main;
+import ir.ac.pvz.controller.managers.MenuManager;
 import ir.ac.pvz.controller.managers.UserManager;
 import ir.ac.pvz.model.questions.Questions;
 import ir.ac.pvz.model.user.User;
@@ -109,6 +111,7 @@ public class LoginMenu extends Menu {
 
         menuManager.loginUser(user);
         userManager.saveAll();
+        menuManager.pushMenu(new MainMenu());
     }
 
     private void forgetPasswordProcess(String username, String email) {
