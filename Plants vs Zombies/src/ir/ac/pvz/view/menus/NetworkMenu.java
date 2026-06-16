@@ -1,4 +1,4 @@
-package ir.ac.pvz.view;
+package ir.ac.pvz.view.menus;
 
 public class NetworkMenu {
 }

@@ -1,6 +1,6 @@
 package ir.ac.pvz.controller.managers;
 
-import ir.ac.pvz.view.Menu;
+import ir.ac.pvz.view.menus.Menu;
 import ir.ac.pvz.model.user.User;
 
 import java.util.ArrayList;
@@ -43,12 +43,8 @@ public class MenuManager {
         this.activeUser = user;
     }
 
-    public void logOutUser() {
+    public void logoutUser() {
         this.activeUser = null;
-    }
-
-    public void cheat(int amount, String type) {
-
     }
 
     /*

@@ -1,4 +1,4 @@
-package ir.ac.pvz.view;
+package ir.ac.pvz.view.menus;
 
 import ir.ac.pvz.controller.managers.MenuManager;
 
