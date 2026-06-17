@@ -79,6 +79,16 @@ public class User {
 
     public List<News> getNewsList() { return newsList; }
 
+    public List<News> getUnreadNews() {
+        List<News> unreadNews = new ArrayList<>();
+
+        for (News news : this.newsList) {
+            if (!news.isRead()) unreadNews.add(news);
+        }
+
+        return unreadNews;
+    }
+
     public QuestLog getQuestLog() { return questLog; }
 
     //Setters
@@ -101,5 +111,9 @@ public class User {
         }
         this.difficultyLevel = difficultyLevel;
         return true;
+    }
+
+    public void addNews(String message, NewsType type) {
+        this.newsList.add(new News(message, type));
     }
 }

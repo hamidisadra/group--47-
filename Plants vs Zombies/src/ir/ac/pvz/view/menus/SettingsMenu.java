@@ -62,18 +62,18 @@ public class SettingsMenu extends Menu{
     private void enterMenu(String menuName) {
         switch (menuName) {
             case "game menu": {
-                System.out.println("Entering Collection Menu...");
+                System.out.println("Entering Game Menu...");
                 menuManager.pushMenu(new GameMenu());
                 break;
             }
 
             case "network menu", "news menu", "profile menu", "main menu": {
-                System.out.println("Error: You can't access this menu from Game Menu!");
+                System.out.println("Error: You can't access this menu from Settings Menu!");
                 break;
             }
 
             case "settings menu": {
-                System.out.println("You are already in setting menu.");
+                System.out.println("You are already in settings menu.");
                 break;
             }
 
