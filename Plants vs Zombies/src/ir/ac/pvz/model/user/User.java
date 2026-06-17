@@ -15,6 +15,7 @@ public class User {
 
     private int gameProgress;
     private int maxMuPoint;
+    private int difficultyLevel;
 
     private PlayerWallet wallet;
     private Collection collection;
@@ -37,6 +38,7 @@ public class User {
 
         this.gameProgress = 0;
         this.maxMuPoint = 0;
+        this.difficultyLevel = 3;
 
         this.wallet = new PlayerWallet();
         this.collection = new Collection();
@@ -67,6 +69,8 @@ public class User {
 
     public int getMaxMuPoint() { return maxMuPoint; }
 
+    public int getDifficultyLevel() {return difficultyLevel; }
+
     public PlayerWallet getWallet() { return wallet; }
 
     public Collection getCollection() { return collection; }
@@ -90,4 +94,12 @@ public class User {
     public void setGameProgress(int gameProgress) { this.gameProgress = gameProgress; }
 
     public void setMaxMuPoint(int maxMuPoint) { this.maxMuPoint = maxMuPoint; }
+
+    public boolean setDifficultyLevel(int difficultyLevel) {
+        if (difficultyLevel < 1 || difficultyLevel > 5) {
+            return false;
+        }
+        this.difficultyLevel = difficultyLevel;
+        return true;
+    }
 }
