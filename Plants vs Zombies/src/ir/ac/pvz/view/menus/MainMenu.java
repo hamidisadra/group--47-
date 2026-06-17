@@ -56,7 +56,7 @@ public class MainMenu extends Menu {
 
             case "settings menu": {
                 System.out.println("Entering Settings Menu...");
-                //menuManager.pushMenu(new SettingsMenu());
+                menuManager.pushMenu(new SettingsMenu());
                 break;
             }
 
@@ -68,13 +68,13 @@ public class MainMenu extends Menu {
 
             case "news menu": {
                 System.out.println("Entering News Menu...");
-                //menuManager.pushMenu(new newsMenu());
+                menuManager.pushMenu(new NewsMenu());
                 break;
             }
 
             case "profile menu": {
                 System.out.println("Entering Profile Menu...");
-                //menuManager.pushMenu(new profileMenu());
+                menuManager.pushMenu(new ProfileMenu());
                 break;
             }
 

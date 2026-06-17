@@ -1,0 +1,12 @@
+package ir.ac.pvz.model.user;
+
+public enum CollectionStatus {
+    SUCCESS,
+    PLANT_NOT_FOUND,
+    PLANT_ALREADY_UNLOCKED,
+    PLANT_NOT_UNLOCKED,
+    PLANT_ALREADY_SELECTED,
+    PLANT_NOT_SELECTED,
+    CAPACITY_IS_FULL,
+    PLANT_ALREADY_BOOSTED
+}
