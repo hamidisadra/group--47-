@@ -13,6 +13,7 @@ public class User {
     private int securityQuestionId;
     private String securityAnswer;
 
+    private int gamesCount;
     private int gameProgress;
     private int maxMuPoint;
     private int difficultyLevel;
@@ -65,6 +66,8 @@ public class User {
 
     public String getSecurityAnswer() { return securityAnswer; }
 
+    public int getGamesCount() { return gamesCount; }
+
     public int getGameProgress() { return gameProgress; }
 
     public int getMaxMuPoint() { return maxMuPoint; }
@@ -92,6 +95,9 @@ public class User {
     public QuestLog getQuestLog() { return questLog; }
 
     //Setters
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
@@ -112,6 +118,8 @@ public class User {
         this.difficultyLevel = difficultyLevel;
         return true;
     }
+
+    public void addGame() { this.gamesCount++; }
 
     public void addNews(String message, NewsType type) {
         this.newsList.add(new News(message, type));
