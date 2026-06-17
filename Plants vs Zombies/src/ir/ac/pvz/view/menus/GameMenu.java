@@ -94,6 +94,11 @@ public class GameMenu extends Menu{
                 break;
             }
 
+            case "game menu": {
+                System.out.println("You are already in game menu.");
+                break;
+            }
+
             default: {
                 System.out.println("Invalid menu name!");
                 break;
