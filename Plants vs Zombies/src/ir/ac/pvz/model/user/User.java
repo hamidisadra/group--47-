@@ -13,8 +13,10 @@ public class User {
     private int securityQuestionId;
     private String securityAnswer;
 
+    private int gamesCount;
     private int gameProgress;
     private int maxMuPoint;
+    private int difficultyLevel;
 
     private PlayerWallet wallet;
     private Collection collection;
@@ -37,6 +39,7 @@ public class User {
 
         this.gameProgress = 0;
         this.maxMuPoint = 0;
+        this.difficultyLevel = 3;
 
         this.wallet = new PlayerWallet();
         this.collection = new Collection();
@@ -63,9 +66,13 @@ public class User {
 
     public String getSecurityAnswer() { return securityAnswer; }
 
+    public int getGamesCount() { return gamesCount; }
+
     public int getGameProgress() { return gameProgress; }
 
     public int getMaxMuPoint() { return maxMuPoint; }
+
+    public int getDifficultyLevel() {return difficultyLevel; }
 
     public PlayerWallet getWallet() { return wallet; }
 
@@ -75,9 +82,22 @@ public class User {
 
     public List<News> getNewsList() { return newsList; }
 
+    public List<News> getUnreadNews() {
+        List<News> unreadNews = new ArrayList<>();
+
+        for (News news : this.newsList) {
+            if (!news.isRead()) unreadNews.add(news);
+        }
+
+        return unreadNews;
+    }
+
     public QuestLog getQuestLog() { return questLog; }
 
     //Setters
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
@@ -90,4 +110,18 @@ public class User {
     public void setGameProgress(int gameProgress) { this.gameProgress = gameProgress; }
 
     public void setMaxMuPoint(int maxMuPoint) { this.maxMuPoint = maxMuPoint; }
+
+    public boolean setDifficultyLevel(int difficultyLevel) {
+        if (difficultyLevel < 1 || difficultyLevel > 5) {
+            return false;
+        }
+        this.difficultyLevel = difficultyLevel;
+        return true;
+    }
+
+    public void addGame() { this.gamesCount++; }
+
+    public void addNews(String message, NewsType type) {
+        this.newsList.add(new News(message, type));
+    }
 }
