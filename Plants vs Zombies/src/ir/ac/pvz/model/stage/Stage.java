@@ -1,0 +1,69 @@
+package ir.ac.pvz.model.stage;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public abstract class Stage {
+    protected int number;
+    protected int difficulty;
+    protected int waveCount;
+    protected List<Wave> waves;
+    protected int currentWaveIndex;
+    protected boolean started;
+
+    public Stage(int number, int difficulty, int waveCount) {
+        this.number = number;
+        this.difficulty = difficulty;
+        this.waveCount = waveCount;
+        this.waves = new ArrayList<>();
+        this.currentWaveIndex = 0;
+        this.started = false;
+
+        for (int i = 1; i <= waveCount; i++) {
+            int cost = 100 + i * 50 * difficulty;
+            waves.add(new Wave(i, cost, i == waveCount));
+        }
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public int getDifficulty() {
+        return difficulty;
+    }
+
+    public int getWaveCount() {
+        return waveCount;
+    }
+
+    public List<Wave> getWaves() {
+        return waves;
+    }
+
+    public boolean isStarted() {
+        return started;
+    }
+
+    public Wave getCurrentWave() {
+        if (currentWaveIndex >= waves.size()) {
+            return null;
+        }
+        return waves.get(currentWaveIndex);
+    }
+
+    public void startZombieWaves() {
+        if (started) {
+            System.out.println("Zombie waves have already started.");
+            return;
+        }
+        started = true;
+        getCurrentWave().startWave();
+    }
+
+    public boolean finishStage() {
+        return currentWaveIndex >= waves.size();
+    }
+
+    public abstract void startStage();
+}
