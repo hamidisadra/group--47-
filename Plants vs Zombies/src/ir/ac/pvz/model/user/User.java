@@ -23,6 +23,7 @@ public class User {
     private GreenHouse greenHouse;
     private List<News> newsList;
     private QuestLog questLog;
+    private Inventory inventory;
 
     //Constructor
 
@@ -46,6 +47,7 @@ public class User {
         this.greenHouse = new GreenHouse();
         this.newsList = new ArrayList<>();
         this.questLog = new QuestLog();
+        this.inventory = new Inventory();
     }
 
     //Getters
@@ -93,6 +95,8 @@ public class User {
     }
 
     public QuestLog getQuestLog() { return questLog; }
+
+    public Inventory getInventory() { return inventory; }
 
     //Setters
     public void setUsername(String username) {

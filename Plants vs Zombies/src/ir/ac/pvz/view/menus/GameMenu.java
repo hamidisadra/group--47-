@@ -1,5 +1,6 @@
 package ir.ac.pvz.view.menus;
 
+import ir.ac.pvz.controller.managers.GameplayManager;
 import ir.ac.pvz.model.user.TransactionStatus;
 
 import java.util.regex.Matcher;
@@ -24,9 +25,14 @@ public class GameMenu extends Menu{
         Matcher cheatMatcher = Pattern.compile(cheatRegex).matcher(command);
 
         if (enterChapterMatcher.matches()) {
-            String chapterName = enterChapterMatcher.group(1).trim();
-            System.out.println("Entering chapter: " + chapterName);
-            //should be completed
+            String chapterName = enterChapterMatcher.group(1).trim().toLowerCase();
+            boolean entered = GameplayManager.getInstance().enterChapter(chapterName);
+
+            if (entered) {
+                menuManager.pushMenu(new ChapterMenu());
+            } else {
+                System.out.println("Invalid chapter name!");
+            }
         }
 
         else if (enterMenuMatcher.matches()) {
@@ -44,17 +50,17 @@ public class GameMenu extends Menu{
 
         else if (command.matches("^menu\\s+greenhouse$")) {
             System.out.println("Entering Greenhouse...");
-            //menuManager.pushMenu(new GreenhouseMenu());
+            menuManager.pushMenu(new GreenhouseMenu());
         }
 
         else if (command.matches("^menu\\s+travel-log$")) {
             System.out.println("Entering Travel Log...");
-            //menuManager.pushMenu(new TravelLogMenu());
+            menuManager.pushMenu(new TravelLogMenu());
         }
 
         else if (command.matches("^menu\\s+leaderboard$")) {
             System.out.println("Entering Leaderboard...");
-            //menuManager.pushMenu(new LeaderboardMenu());
+            menuManager.pushMenu(new LeaderboardMenu());
         }
 
         else if (command.matches("^menu\\s+coin-wallet$")) {
