@@ -1,13 +1,14 @@
-package com.pvz.game;
+package ir.ac.pvz.controller.game_core;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.GameStatus;
-import com.pvz.model.enums.LootType;
-import com.pvz.model.enums.PlantCategory;
-import com.pvz.model.plants.*;
-import com.pvz.model.support.*;
-import com.pvz.model.zombies.*;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.enums.GameStatus;
+import ir.ac.pvz.model.enums.LootType;
+import ir.ac.pvz.model.enums.PlantCategory;
+import ir.ac.pvz.model.others.*;
+import ir.ac.pvz.model.plants.*;
+import ir.ac.pvz.model.support.*;
+import ir.ac.pvz.model.zombies.*;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;

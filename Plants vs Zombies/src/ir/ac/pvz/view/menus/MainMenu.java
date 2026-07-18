@@ -1,8 +1,5 @@
 package ir.ac.pvz.view.menus;
 
-import ir.ac.pvz.view.menus.Menu;
-import ir.ac.pvz.view.menus.RegisterMenu;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

@@ -1,8 +1,8 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.game.GameSession;
-import com.pvz.model.core.GameObject;
-import com.pvz.model.enums.FallingSunType;
+import ir.ac.pvz.model.enums.FallingSunType;
+import ir.ac.pvz.model.core.GameObject;
+import ir.ac.pvz.model.others.GameSession;
 
 public class Sun extends GameObject {
 

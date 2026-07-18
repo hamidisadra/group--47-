@@ -1,9 +1,9 @@
-package com.pvz.model.zombies;
+package ir.ac.pvz.model.zombies;
 
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.ProjectileType;
-import com.pvz.model.support.Dynamite;
-import com.pvz.model.support.Projectile;
+import ir.ac.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.support.Dynamite;
+import ir.ac.pvz.model.support.Projectile;
+import ir.ac.pvz.model.core.Zombie;
 
 public class ProspectorZombie extends Zombie {
 

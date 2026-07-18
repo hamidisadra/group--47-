@@ -1,7 +1,7 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.model.enums.PlantCategory;
-import com.pvz.model.support.BalanceDefaults;
+import ir.ac.pvz.model.enums.PlantCategory;
+import ir.ac.pvz.model.support.BalanceDefaults;
 
 public class BombardMint extends MintPlant {
     public BombardMint(int id) {

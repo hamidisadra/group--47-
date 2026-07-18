@@ -1,8 +1,8 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
 
 import java.util.List;
 import java.util.Random;

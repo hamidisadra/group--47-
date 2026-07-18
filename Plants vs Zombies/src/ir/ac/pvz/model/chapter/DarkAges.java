@@ -1,44 +1,48 @@
 package ir.ac.pvz.model.chapter;
 
-import ir.ac.pvz.model.board.GameBoard;
-import ir.ac.pvz.model.board.GraveTile;
-import ir.ac.pvz.model.board.Position;
+import ir.ac.pvz.model.enums.TileType;
+import ir.ac.pvz.model.support.Board;
+import ir.ac.pvz.model.support.GridPosition;
+import ir.ac.pvz.model.support.Tile;
 
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 public class DarkAges extends Chapter {
     private Random random;
+    private Set<GridPosition> necromancyGraves;
 
     public DarkAges() {
         super("Dark Ages");
         this.random = new Random();
+        this.necromancyGraves = new HashSet<>();
     }
 
     @Override
-    public void applyChapterEffects(GameBoard board) {
+    public void applyChapterEffects(Board board) {
         spawnGravesPerWave(board);
     }
 
-    public void spawnGravesPerWave(GameBoard board) {
-        int x = 1 + random.nextInt(board.getCols());
-        int y = 1 + random.nextInt(board.getRows());
-        if (board.getTile(x, y).canPlant()) {
-            GraveTile grave = new GraveTile(new Position(x, y), 50);
-            grave.setNecromancy(random.nextInt(4) == 0);
-            board.setTile(x, y, grave);
+    public void spawnGravesPerWave(Board board) {
+        int x = random.nextInt(board.getColumns());
+        int y = random.nextInt(board.getRows());
+        GridPosition position = new GridPosition(x, y);
+        Tile tile = board.getTile(position);
+        if (tile != null && tile.canPlant) {
+            board.configureTile(position, TileType.TOMBSTONE);
+            if (random.nextInt(4) == 0) {
+                necromancyGraves.add(position);
+            }
         }
     }
 
-    public void activateNecromancy(GameBoard board) {
-        for (int y = 1; y <= board.getRows(); y++) {
-            for (int x = 1; x <= board.getCols(); x++) {
-                if (board.getTile(x, y) instanceof GraveTile) {
-                    GraveTile grave = (GraveTile) board.getTile(x, y);
-                    String zombieType = grave.spawnZombieUnderneath();
-                    if (zombieType != null) {
-                        System.out.println("A zombie rises from beneath a grave at (" + x + ", " + y + ").");
-                    }
-                }
+    public void activateNecromancy(Board board) {
+        for (GridPosition position : necromancyGraves) {
+            Tile tile = board.getTile(position);
+            if (tile != null && tile.type == TileType.TOMBSTONE) {
+                System.out.println("A zombie rises from beneath a grave at "
+                        + position.toUserString() + ".");
             }
         }
     }

@@ -1,9 +1,9 @@
 package ir.ac.pvz.model.chapter;
 
-import ir.ac.pvz.model.board.GameBoard;
-import ir.ac.pvz.model.board.IceTile;
-import ir.ac.pvz.model.board.Position;
+import ir.ac.pvz.model.enums.TileType;
 import ir.ac.pvz.model.event.ColdWind;
+import ir.ac.pvz.model.support.Board;
+import ir.ac.pvz.model.support.GridPosition;
 
 import java.util.Random;
 
@@ -16,7 +16,7 @@ public class FrostbiteCaves extends Chapter {
     }
 
     @Override
-    public void applyChapterEffects(GameBoard board) {
+    public void applyChapterEffects(Board board) {
         createIceTiles(board);
     }
 
@@ -29,11 +29,12 @@ public class FrostbiteCaves extends Chapter {
         System.out.println("Some zombies start this stage already frozen.");
     }
 
-    public void createIceTiles(GameBoard board) {
-        int slidingColumn = 1 + random.nextInt(board.getCols());
-        String direction = random.nextBoolean() ? "up" : "down";
-        for (int y = 1; y <= board.getRows(); y++) {
-            board.setTile(slidingColumn, y, new IceTile(new Position(slidingColumn, y), direction));
+    public void createIceTiles(Board board) {
+        int slidingColumn = random.nextInt(board.getColumns());
+        TileType direction = random.nextBoolean()
+                ? TileType.SLIPPERY_UP : TileType.SLIPPERY_DOWN;
+        for (int y = 0; y < board.getRows(); y++) {
+            board.configureTile(new GridPosition(slidingColumn, y), direction);
         }
     }
 }

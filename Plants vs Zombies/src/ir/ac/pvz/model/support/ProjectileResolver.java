@@ -1,28 +1,29 @@
-package com.pvz.model.support;
-import com.pvz.game.GameSession;
-import com.pvz.model.core.GameObject;
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.DamageMode;
-import com.pvz.model.enums.PlantCategory;
-import com.pvz.model.enums.PlantTag;
-import com.pvz.model.enums.ProjectileTrajectory;
-import com.pvz.model.enums.ProjectileType;
-import com.pvz.model.enums.ZombieEffectType;
-import com.pvz.model.plants.LobberPlant;
-import com.pvz.model.plants.MeleePlant;
-import com.pvz.model.plants.ShooterPlant;
-import com.pvz.model.plants.StrikeThroughPlant;
-import com.pvz.model.support.ZombieEffect;
+package ir.ac.pvz.model.support;
+
+
+import ir.ac.pvz.model.others.GameSession;
+import ir.ac.pvz.model.core.GameObject;
+import ir.ac.pvz.model.enums.DamageMode;
+import ir.ac.pvz.model.enums.PlantCategory;
+import ir.ac.pvz.model.enums.PlantTag;
+import ir.ac.pvz.model.enums.ProjectileTrajectory;
+import ir.ac.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.enums.ZombieEffectType;
+import ir.ac.pvz.model.plants.ShooterPlant;
+import ir.ac.pvz.model.plants.StrikeThroughPlant;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
 public class ProjectileResolver {
     private final Map<Plant, Integer> attackCycles = new IdentityHashMap<>();
-    private final Random random = new Random();
+    private final transient Random random = new Random();
     private final ProjectilePathResolver pathResolver = new ProjectilePathResolver();
     private final ProjectileCollisionResolver collisionResolver =
             new ProjectileCollisionResolver();

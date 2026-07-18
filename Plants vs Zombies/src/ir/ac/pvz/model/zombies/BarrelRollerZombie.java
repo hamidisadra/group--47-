@@ -1,9 +1,9 @@
-package com.pvz.model.zombies;
+package ir.ac.pvz.model.zombies;
 
-import com.pvz.model.core.Zombie;
-import com.pvz.model.support.Barrel;
-import com.pvz.model.support.ContinuousPosition;
-import com.pvz.model.support.ZombieBaseStats;
+import ir.ac.pvz.model.support.Barrel;
+import ir.ac.pvz.model.support.ContinuousPosition;
+import ir.ac.pvz.model.support.ZombieBaseStats;
+import ir.ac.pvz.model.core.Zombie;
 
 public class BarrelRollerZombie extends Zombie {
 

@@ -1,6 +1,6 @@
-package com.pvz.game;
+package ir.ac.pvz.model.others;
 
-import com.pvz.model.support.GridPosition;
+import ir.ac.pvz.model.support.GridPosition;
 
 public final class SpecialSpawnEvent {
 

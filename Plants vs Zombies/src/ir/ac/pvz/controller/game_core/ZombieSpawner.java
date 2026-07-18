@@ -1,12 +1,13 @@
-package com.pvz.game;
+package ir.ac.pvz.controller.game_core;
 
-import com.pvz.model.core.Zombie;
-import com.pvz.model.support.Board;
-import com.pvz.model.support.ContinuousPosition;
-import com.pvz.model.support.GridPosition;
-import com.pvz.model.support.ZombieBaseStats;
-import com.pvz.model.support.ZombieDataRepository;
-import com.pvz.model.zombies.*;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.others.StageConfig;
+import ir.ac.pvz.model.support.Board;
+import ir.ac.pvz.model.support.ContinuousPosition;
+import ir.ac.pvz.model.support.GridPosition;
+import ir.ac.pvz.model.support.ZombieBaseStats;
+import ir.ac.pvz.model.support.ZombieDataRepository;
+import ir.ac.pvz.model.zombies.*;
 
 import java.util.ArrayList;
 import java.util.Collections;

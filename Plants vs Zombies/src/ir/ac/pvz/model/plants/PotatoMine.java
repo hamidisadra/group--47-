@@ -1,8 +1,8 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.model.enums.PlantTag;
-import com.pvz.model.support.Board;
-import com.pvz.model.support.GridPosition;
+import ir.ac.pvz.model.enums.PlantTag;
+import ir.ac.pvz.model.support.Board;
+import ir.ac.pvz.model.support.GridPosition;
 
 public class PotatoMine extends ExplosivePlant {
 

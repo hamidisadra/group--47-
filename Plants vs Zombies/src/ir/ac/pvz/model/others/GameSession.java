@@ -1,14 +1,16 @@
-package com.pvz.game;
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.*;
-import com.pvz.model.interfaces.IAttacker;
-import com.pvz.model.interfaces.UpgradeCostProvider;
-import com.pvz.model.interfaces.UpgradeResourceWallet;
-import com.pvz.model.plants.*;
-import com.pvz.model.support.*;
-import com.pvz.model.zombies.*;
+package ir.ac.pvz.model.others;
+import ir.ac.pvz.controller.game_core.*;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.enums.*;
+import ir.ac.pvz.model.interfaces.UpgradeCostProvider;
+import ir.ac.pvz.model.interfaces.UpgradeResourceWallet;
+import ir.ac.pvz.model.plants.*;
+import ir.ac.pvz.model.support.*;
+import ir.ac.pvz.model.zombies.*;
 import java.util.*;
+
+
 public class GameSession {
     public GameStatus status;
     public int currentSunAmount;
@@ -34,6 +36,7 @@ public class GameSession {
     private int pots;
     private GameOutcomeListener outcomeListener;
     private boolean outcomeNotified;
+
     public GameSession(Board board, int startingSun) {
         this(board, startingSun, StageConfig.unconfigured(board.seasonType));
     }
@@ -255,7 +258,7 @@ public class GameSession {
         notifyOutcome();
     }
 
-    Plant findPlantTarget(Zombie zombie) {
+    public Plant findPlantTarget(Zombie zombie) {
         if (zombie instanceof ProspectorZombie
                 && ((ProspectorZombie) zombie).reversedByDynamite) {
             return findNearestPlantToRight(zombie);
@@ -386,9 +389,9 @@ public class GameSession {
     public int getCoins() { return coins; }
     public int getDiamonds() { return diamonds; }
     public int getPots() { return pots; }
-    void addCoins(int amount) { coins += amount; }
-    void addDiamonds(int amount) { diamonds += amount; }
-    void addPots(int amount) { pots += amount; }
+    public void addCoins(int amount) { coins += amount; }
+    public void addDiamonds(int amount) { diamonds += amount; }
+    public void addPots(int amount) { pots += amount; }
     private void synchronizePublicState() {
         currentSunAmount = sunManager.currentSunAmount;
         plantFoodCount = plantFoodInventory.count;

@@ -1,9 +1,17 @@
 package ir.ac.pvz.view.menus;
 
+import ir.ac.pvz.controller.game_core.CommandLineGame;
+import ir.ac.pvz.controller.managers.GameplayManager;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.enums.SeasonType;
+import ir.ac.pvz.model.others.GameSession;
+import ir.ac.pvz.model.others.StageConfig;
+import ir.ac.pvz.model.support.Board;
 import ir.ac.pvz.model.user.CollectionStatus;
 import ir.ac.pvz.model.user.TransactionStatus;
 import ir.ac.pvz.model.user.User;
 
+import java.io.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -98,8 +106,43 @@ public class PlantSelectionMenu extends Menu{
             return;
         }
 
+        Board board = GameplayManager.getInstance().getBoard();
+        if (board == null) {
+            System.out.println("ERRO: NO chapter is loaded!");
+            return;
+        }
+
         System.out.println("Starting the game...");
-        //should be completed
+
+        SeasonType seasonType =board.getSeasonType();
+        StageConfig stageConfig = StageConfig.of(seasonType, 3, 200);
+
+        stageConfig.setSelectedPlantTypes(user.getCollection().getSelectedPlants().toArray(new String[0]));
+
+        List<String> boosted = user.getCollection().getBoostedPlants();
+        if (!boosted.isEmpty()) {
+            stageConfig.setBoostedPlantTypes(boosted.toArray(new String[0]));
+        }
+
+        GameSession gameSession = new GameSession(board, 50, stageConfig);
+        CommandLineGame commandLineGame = new CommandLineGame(gameSession);
+
+        BufferedReader in = menuManager.getIn();
+        PrintWriter out = menuManager.getOut();
+
+        try {
+            if (in != null && out != null) {
+                commandLineGame.run(in, out);
+            }
+            else {
+                commandLineGame.run(new InputStreamReader(System.in), new OutputStreamWriter(System.out));
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred: " + e.getMessage());
+        }
+
+        user.addGame();
+        user.getCollection().clearSelection();
     }
 
     private void showAvailablePlants() {
@@ -125,7 +168,14 @@ public class PlantSelectionMenu extends Menu{
 
     private void showAllPlants() {
         System.out.println("========== All Plants ==========");
-        //should be completed
+
+        String[] allPlants = Plant.getSpreadsheetTypes();
+
+        if (allPlants != null) {
+            for (String name : allPlants) {
+                System.out.println("- " + name + " -");
+            }
+        }
     }
 
     private void boostPlant(String plantType) {

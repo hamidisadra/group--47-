@@ -1,8 +1,8 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.support.PlantDataRepository;
-import com.pvz.model.support.Upgrade;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.support.PlantDataRepository;
+import ir.ac.pvz.model.support.Upgrade;
 
 public final class PlantFactory {
 
@@ -104,7 +104,7 @@ public final class PlantFactory {
             case "sunshroom": return new SunShroom(id);
             case "primalsunflower": return new PrimalSunflower(id);
             case "goldbloom": return new GoldBloom(id);
-            case "peashooter": return new Peashooter(id);
+            case "peashooter": return new PeaShooter(id);
             case "repeater": return new Repeater(id);
             case "threepeater": return new Threepeater(id);
             case "snowpea": return new SnowPea(id);

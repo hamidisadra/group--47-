@@ -1,4 +1,4 @@
-package com.pvz.game;
+package ir.ac.pvz.controller.game_core;
 
 public class StageConfigurationException extends IllegalStateException {
 

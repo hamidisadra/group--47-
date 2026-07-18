@@ -1,9 +1,10 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.core.Zombie;
-import com.pvz.model.zombies.ArcadeZombie;
-import com.pvz.model.zombies.FishermanZombie;
-import com.pvz.model.zombies.KingZombie;
+
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.zombies.ArcadeZombie;
+import ir.ac.pvz.model.zombies.FishermanZombie;
+import ir.ac.pvz.model.zombies.KingZombie;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,7 +83,7 @@ public final class ZombieDataRepository {
     }
 
     private static ZombieDataRepository load() {
-        try (InputStream input = DataFileLocator.open("zombies.json")) {
+        try (InputStream input = ir.ac.pvz.model.support.DataFileLocator.open("zombies.json")) {
             String json = new String(input.readAllBytes(), StandardCharsets.UTF_8);
             Map<String, ZombieDefinition> definitions = new LinkedHashMap<>();
             for (String object : splitTopLevelObjects(json)) {

@@ -1,4 +1,4 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
 import java.io.IOException;
 import java.io.InputStream;

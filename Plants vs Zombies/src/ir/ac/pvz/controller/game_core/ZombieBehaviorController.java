@@ -1,9 +1,11 @@
-package com.pvz.game;
+package ir.ac.pvz.controller.game_core;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.support.*;
-import com.pvz.model.zombies.*;
+import ir.ac.pvz.model.others.GameSession;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.others.SunManager;
+import ir.ac.pvz.model.support.*;
+import ir.ac.pvz.model.zombies.*;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
@@ -202,10 +204,10 @@ public class ZombieBehaviorController {
             }
         }
         destination.obstacle = source.obstacle;
-        destination.type = com.pvz.model.enums.TileType.FROZEN_TILE;
+        destination.type = ir.ac.pvz.model.enums.TileType.FROZEN_TILE;
         destination.canPlant = false;
         source.obstacle = null;
-        source.type = com.pvz.model.enums.TileType.FROSTBITE_GROUND;
+        source.type = ir.ac.pvz.model.enums.TileType.FROSTBITE_GROUND;
         source.canPlant = true;
     }
 
@@ -261,7 +263,7 @@ public class ZombieBehaviorController {
         for (int index = 0; index < count; index++) {
             Tile tile = candidates.get(index);
             zombie.createTombstone(board, tile.position);
-            tile.type = com.pvz.model.enums.TileType.TOMBSTONE;
+            tile.type = ir.ac.pvz.model.enums.TileType.TOMBSTONE;
         }
         return count > 0;
     }
@@ -392,7 +394,7 @@ public class ZombieBehaviorController {
             tile.obstacle = new FrozenBlock(target,
                     session.getStageConfig().getZombieAbilityValue(
                             "hunterIceHealth"));
-            tile.type = com.pvz.model.enums.TileType.FROZEN_TILE;
+            tile.type = ir.ac.pvz.model.enums.TileType.FROZEN_TILE;
             tile.canPlant = false;
         }
         hunterTargets.remove(hunter);

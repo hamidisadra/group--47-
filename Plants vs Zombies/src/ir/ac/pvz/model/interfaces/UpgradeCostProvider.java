@@ -1,6 +1,6 @@
-package com.pvz.model.interfaces;
+package ir.ac.pvz.model.interfaces;
 
-import com.pvz.model.support.Upgrade;
+import ir.ac.pvz.model.support.Upgrade;
 
 public interface UpgradeCostProvider {
 

@@ -1,6 +1,6 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.model.enums.PlantTag;
+import ir.ac.pvz.model.enums.PlantTag;
 
 public class GraveBuster extends ExplosivePlant {
     public GraveBuster(int id) {

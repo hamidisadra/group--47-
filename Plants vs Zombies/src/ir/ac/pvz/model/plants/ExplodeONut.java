@@ -1,7 +1,7 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.PlantTag;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.enums.PlantTag;
 
 public class ExplodeONut extends WallPlant {
 

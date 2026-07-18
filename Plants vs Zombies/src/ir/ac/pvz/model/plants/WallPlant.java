@@ -1,15 +1,15 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.game.GameSession;
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.PlantCategory;
-import com.pvz.model.enums.PlantTag;
-import com.pvz.model.interfaces.IWall;
-import com.pvz.model.support.Board;
-import com.pvz.model.support.ContinuousPosition;
-import com.pvz.model.support.ProjectileResolver;
-import com.pvz.model.zombies.Gargantuar;
+import ir.ac.pvz.model.others.GameSession;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.enums.PlantCategory;
+import ir.ac.pvz.model.enums.PlantTag;
+import ir.ac.pvz.model.interfaces.IWall;
+import ir.ac.pvz.model.support.Board;
+import ir.ac.pvz.model.support.ContinuousPosition;
+import ir.ac.pvz.model.support.ProjectileResolver;
+import ir.ac.pvz.model.zombies.Gargantuar;
 
 import java.util.ArrayList;
 

@@ -2,6 +2,7 @@ package ir.ac.pvz.model.stage;
 
 import java.util.ArrayList;
 import java.util.List;
+import ir.ac.pvz.model.others.Wave;
 
 public abstract class Stage {
     protected int number;
@@ -21,7 +22,7 @@ public abstract class Stage {
 
         for (int i = 1; i <= waveCount; i++) {
             int cost = 100 + i * 50 * difficulty;
-            waves.add(new Wave(i, cost, i == waveCount));
+            waves.add(new Wave(i, cost, 0, i == waveCount, new ArrayList<>()));
         }
     }
 
@@ -58,7 +59,18 @@ public abstract class Stage {
             return;
         }
         started = true;
-        getCurrentWave().startWave();
+        announceWave(getCurrentWave());
+    }
+
+    private void announceWave(Wave wave) {
+        if (wave == null) {
+            return;
+        }
+        if (wave.isFinalWave) {
+            System.out.println("The final wave has come.");
+        } else {
+            System.out.println("Wave " + wave.waveNumber + " started.");
+        }
     }
 
     public boolean finishStage() {

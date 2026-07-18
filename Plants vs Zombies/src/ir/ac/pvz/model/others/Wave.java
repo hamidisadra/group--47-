@@ -1,6 +1,6 @@
-package com.pvz.game;
+package ir.ac.pvz.model.others;
 
-import com.pvz.model.core.Zombie;
+import ir.ac.pvz.model.core.Zombie;
 
 import java.util.ArrayList;
 import java.util.List;

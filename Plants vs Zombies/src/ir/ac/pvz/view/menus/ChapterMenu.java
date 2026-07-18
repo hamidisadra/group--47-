@@ -13,7 +13,7 @@ public class ChapterMenu extends Menu {
         command = command.trim();
 
         if (command.matches("^show\\s+map$")) {
-            GameplayManager.getInstance().getBoard().showMap();
+            System.out.println(GameplayManager.getInstance().getBoard().printMap());
         }
 
         else if (command.matches("^start\\s+zombie\\s+waves$")) {

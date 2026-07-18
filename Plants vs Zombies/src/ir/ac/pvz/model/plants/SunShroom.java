@@ -1,7 +1,7 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.model.enums.PlantTag;
-import com.pvz.model.interfaces.IGrowable;
+import ir.ac.pvz.model.enums.PlantTag;
+import ir.ac.pvz.model.interfaces.IGrowable;
 
 public class SunShroom extends SunProducerPlant implements IGrowable {
 

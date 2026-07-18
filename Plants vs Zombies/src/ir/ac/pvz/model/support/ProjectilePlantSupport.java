@@ -1,8 +1,8 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
 
 public final class ProjectilePlantSupport {
 
@@ -48,7 +48,7 @@ public final class ProjectilePlantSupport {
         if (tile != null && tile.obstacle instanceof FrozenBlock) {
             tile.obstacle.destroy();
             tile.obstacle = null;
-            tile.type = com.pvz.model.enums.TileType.FROSTBITE_GROUND;
+            tile.type = ir.ac.pvz.model.enums.TileType.FROSTBITE_GROUND;
             tile.canPlant = true;
         }
     }
