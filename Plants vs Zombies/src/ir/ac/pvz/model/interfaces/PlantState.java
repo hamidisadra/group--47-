@@ -1,4 +1,4 @@
-package com.pvz.model.interfaces;
+package ir.ac.pvz.model.interfaces;
 
 public interface PlantState {
     void handleAttack();

@@ -1,6 +1,7 @@
-package com.pvz.game;
+package ir.ac.pvz.controller.game_core;
 
-import com.pvz.model.enums.GameStatus;
+import ir.ac.pvz.model.others.GameSession;
+import ir.ac.pvz.model.enums.GameStatus;
 
 import java.io.BufferedReader;
 import java.io.IOException;

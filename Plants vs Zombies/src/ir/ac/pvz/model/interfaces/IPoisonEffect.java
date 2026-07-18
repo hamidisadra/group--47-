@@ -1,6 +1,6 @@
-package com.pvz.model.interfaces;
+package ir.ac.pvz.model.interfaces;
 
-import com.pvz.model.core.Zombie;
+import ir.ac.pvz.model.core.Zombie;
 
 public interface IPoisonEffect {
     void poison(Zombie target);

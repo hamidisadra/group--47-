@@ -1,6 +1,6 @@
-package com.pvz.model.interfaces;
+package ir.ac.pvz.model.interfaces;
 
-import com.pvz.model.core.GameObject;
+import ir.ac.pvz.model.core.GameObject;
 
 public interface IAttacker {
     void attack(GameObject target);

@@ -1,6 +1,6 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.model.enums.TargetingMode;
+import ir.ac.pvz.model.enums.TargetingMode;
 
 public class CatTail extends HomingPlant {
 

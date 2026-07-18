@@ -1,6 +1,7 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.core.GameObject;
+
+import ir.ac.pvz.model.core.GameObject;
 
 public abstract class TileObstacle extends GameObject {
 

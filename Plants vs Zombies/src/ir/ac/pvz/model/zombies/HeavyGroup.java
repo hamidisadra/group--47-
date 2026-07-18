@@ -1,6 +1,7 @@
-package com.pvz.model.zombies;
+package ir.ac.pvz.model.zombies;
 
-import com.pvz.model.core.Zombie;
+
+import ir.ac.pvz.model.core.Zombie;
 
 public class HeavyGroup extends Zombie {
 

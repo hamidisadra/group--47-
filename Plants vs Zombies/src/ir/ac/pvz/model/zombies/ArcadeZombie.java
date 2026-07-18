@@ -1,9 +1,9 @@
-package com.pvz.model.zombies;
+package ir.ac.pvz.model.zombies;
 
-import com.pvz.model.core.GameObject;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.support.ArcadeMachine;
-import com.pvz.model.support.ContinuousPosition;
+import ir.ac.pvz.model.support.ArcadeMachine;
+import ir.ac.pvz.model.support.ContinuousPosition;
+import ir.ac.pvz.model.core.GameObject;
+import ir.ac.pvz.model.core.Zombie;
 
 public class ArcadeZombie extends Zombie {
 

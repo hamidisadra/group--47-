@@ -1,6 +1,6 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Plant;
 
 
 public class Imitater extends ModifierPlant {

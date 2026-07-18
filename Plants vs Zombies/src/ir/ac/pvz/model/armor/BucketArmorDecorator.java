@@ -1,6 +1,6 @@
-package com.pvz.model.armor;
+package ir.ac.pvz.model.armor;
 
-import com.pvz.model.support.ArmorDataRepository;
+import ir.ac.pvz.model.support.ArmorDataRepository;
 
 public class BucketArmorDecorator extends ArmorDecorator {
 

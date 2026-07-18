@@ -1,9 +1,9 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.model.core.GameObject;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.PlantTag;
-import com.pvz.model.enums.TargetingMode;
+import ir.ac.pvz.model.core.GameObject;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.enums.PlantTag;
+import ir.ac.pvz.model.enums.TargetingMode;
 
 public class Caulipower extends HomingPlant {
 

@@ -1,4 +1,4 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
 public final class BalanceDefaults {
 

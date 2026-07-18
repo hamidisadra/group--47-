@@ -1,6 +1,6 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Plant;
 
 public class PlantUpgradePath {
 

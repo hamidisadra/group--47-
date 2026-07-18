@@ -1,6 +1,6 @@
-package com.pvz.model.core;
+package ir.ac.pvz.model.core;
 
-import com.pvz.model.interfaces.IFreezable;
+import ir.ac.pvz.model.interfaces.IFreezable;
 
 public abstract class GameObject implements IFreezable {
 

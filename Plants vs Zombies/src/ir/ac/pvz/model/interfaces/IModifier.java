@@ -1,6 +1,6 @@
-package com.pvz.model.interfaces;
+package ir.ac.pvz.model.interfaces;
 
-import com.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Plant;
 
 public interface IModifier {
     void modify(Plant target);

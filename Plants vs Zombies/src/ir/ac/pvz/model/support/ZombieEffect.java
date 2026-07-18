@@ -1,7 +1,7 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.core.GameObject;
-import com.pvz.model.enums.ZombieEffectType;
+import ir.ac.pvz.model.enums.ZombieEffectType;
+import ir.ac.pvz.model.core.GameObject;
 
 public class ZombieEffect {
 

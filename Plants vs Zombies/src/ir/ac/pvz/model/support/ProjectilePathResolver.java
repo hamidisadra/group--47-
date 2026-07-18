@@ -1,13 +1,13 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.ProjectileTrajectory;
-import com.pvz.model.enums.ProjectileType;
-import com.pvz.model.zombies.ArcadeZombie;
-import com.pvz.model.zombies.BarrelRollerZombie;
-import com.pvz.model.zombies.ImpZombie;
-import com.pvz.model.zombies.JesterZombie;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.enums.ProjectileTrajectory;
+import ir.ac.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.zombies.ArcadeZombie;
+import ir.ac.pvz.model.zombies.BarrelRollerZombie;
+import ir.ac.pvz.model.zombies.ImpZombie;
+import ir.ac.pvz.model.zombies.JesterZombie;
 
 import java.util.List;
 
@@ -194,7 +194,7 @@ public class ProjectilePathResolver {
         }
         tile.obstacle = new FrozenBlock(plant,
                 BalanceDefaults.HUNTER_ICE_HEALTH);
-        tile.type = com.pvz.model.enums.TileType.FROZEN_TILE;
+        tile.type = ir.ac.pvz.model.enums.TileType.FROZEN_TILE;
         tile.canPlant = false;
     }
 }

@@ -1,6 +1,6 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.interfaces.UpgradeCostProvider;
+import ir.ac.pvz.model.interfaces.UpgradeCostProvider;
 
 import java.io.IOException;
 import java.io.Reader;

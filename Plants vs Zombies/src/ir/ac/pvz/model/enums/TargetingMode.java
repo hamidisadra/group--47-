@@ -1,4 +1,4 @@
-package com.pvz.model.enums;
+package ir.ac.pvz.model.enums;
 
 public enum TargetingMode {
     SAME_LANE,

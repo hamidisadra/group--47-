@@ -1,10 +1,10 @@
-package com.pvz.model.zombies;
+package ir.ac.pvz.model.zombies;
 
-import com.pvz.model.core.Zombie;
-import com.pvz.model.support.Board;
-import com.pvz.model.support.GridPosition;
-import com.pvz.model.support.Tile;
-import com.pvz.model.support.Tombstone;
+import ir.ac.pvz.model.support.Board;
+import ir.ac.pvz.model.support.GridPosition;
+import ir.ac.pvz.model.support.Tile;
+import ir.ac.pvz.model.support.Tombstone;
+import ir.ac.pvz.model.core.Zombie;
 
 public class TombRaiserZombie extends Zombie {
 

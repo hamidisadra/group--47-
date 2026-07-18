@@ -1,6 +1,7 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.zombies.ImpZombie;
+
+import ir.ac.pvz.model.zombies.ImpZombie;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,7 +1,7 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.model.enums.PlantTag;
-import com.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.enums.PlantTag;
+import ir.ac.pvz.model.enums.ProjectileType;
 
 public class MegaGatlingPea extends ShooterPlant {
     public MegaGatlingPea(int id) {

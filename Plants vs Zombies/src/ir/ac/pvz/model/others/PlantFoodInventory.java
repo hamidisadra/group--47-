@@ -1,19 +1,15 @@
-package com.pvz.game;
+package ir.ac.pvz.model.others;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.PlantCategory;
-import com.pvz.model.enums.ProjectileType;
-import com.pvz.model.plants.ShooterPlant;
-import com.pvz.model.plants.MintPlant;
-import com.pvz.model.plants.SunProducerPlant;
-import com.pvz.model.zombies.Gargantuar;
-import com.pvz.model.support.ContinuousPosition;
-import com.pvz.model.support.BalanceDefaults;
-import com.pvz.model.support.Board;
-import com.pvz.model.support.GridPosition;
-import com.pvz.model.support.ProjectileResolver;
-import com.pvz.model.support.Tile;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.enums.PlantCategory;
+import ir.ac.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.plants.*;
+import ir.ac.pvz.model.support.BalanceDefaults;
+import ir.ac.pvz.model.support.Board;
+import ir.ac.pvz.model.support.GridPosition;
+import ir.ac.pvz.model.support.ProjectileResolver;
+import ir.ac.pvz.model.support.Tile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -316,13 +312,13 @@ public class PlantFoodInventory {
         }
         else if (type.equals("endurian")) {
             addHealth(plant, BalanceDefaults.ENDURIAN_PLANT_FOOD_ARMOR);
-            if (plant instanceof com.pvz.model.plants.WallPlant) {
-                ((com.pvz.model.plants.WallPlant) plant).reflectDamage += 20;
+            if (plant instanceof WallPlant) {
+                ((WallPlant) plant).reflectDamage += 20;
             }
         }
         else if (type.equals("explodeonut")
-                && plant instanceof com.pvz.model.plants.ExplodeONut) {
-            ((com.pvz.model.plants.ExplodeONut) plant).equipMetalArmor(
+                && plant instanceof ExplodeONut) {
+            ((ExplodeONut) plant).equipMetalArmor(
                     BalanceDefaults.EXPLODE_O_NUT_PLANT_FOOD_ARMOR);
         }
         else if (type.equals("pumpkin")) {

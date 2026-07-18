@@ -1,7 +1,7 @@
-package com.pvz.model.zombies;
+package ir.ac.pvz.model.zombies;
 
-import com.pvz.model.core.Zombie;
-import com.pvz.model.support.ArmorPiece;
+import ir.ac.pvz.model.support.ArmorPiece;
+import ir.ac.pvz.model.core.Zombie;
 
 public class NewspaperZombie extends Zombie {
 

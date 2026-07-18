@@ -1,8 +1,8 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.enums.PlantCategory;
-import com.pvz.model.support.Board;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.enums.PlantCategory;
+import ir.ac.pvz.model.support.Board;
 
 public class MintPlant extends Plant {
 

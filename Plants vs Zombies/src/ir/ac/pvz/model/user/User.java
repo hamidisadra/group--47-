@@ -25,6 +25,8 @@ public class User {
     private QuestLog questLog;
     private Inventory inventory;
 
+    private boolean stayLoggedIn;
+
     //Constructor
 
     public User(String username, String passwordHash, String nickName, String email,
@@ -48,6 +50,8 @@ public class User {
         this.newsList = new ArrayList<>();
         this.questLog = new QuestLog();
         this.inventory = new Inventory();
+
+        this.stayLoggedIn = false;
     }
 
     //Getters
@@ -98,6 +102,10 @@ public class User {
 
     public Inventory getInventory() { return inventory; }
 
+    public boolean isStayLoggedIn() {
+        return stayLoggedIn;
+    }
+
     //Setters
     public void setUsername(String username) {
         this.username = username;
@@ -127,5 +135,9 @@ public class User {
 
     public void addNews(String message, NewsType type) {
         this.newsList.add(new News(message, type));
+    }
+
+    public void setStayLoggedIn(boolean stayLoggedIn) {
+        this.stayLoggedIn = stayLoggedIn;
     }
 }

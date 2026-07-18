@@ -29,7 +29,7 @@ public class GameMenu extends Menu{
             boolean entered = GameplayManager.getInstance().enterChapter(chapterName);
 
             if (entered) {
-                menuManager.pushMenu(new ChapterMenu());
+                menuManager.pushMenu(new PlantSelectionMenu());
             } else {
                 System.out.println("Invalid chapter name!");
             }
@@ -91,7 +91,7 @@ public class GameMenu extends Menu{
         switch (menuName) {
             case "collection menu": {
                 System.out.println("Entering Collection Menu...");
-                //menuManager.pushMenu(new CollectionMenu());
+                menuManager.pushMenu(new CollectionMenu());
                 break;
             }
 

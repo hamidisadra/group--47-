@@ -1,7 +1,8 @@
-package com.pvz.game;
+package ir.ac.pvz.controller.game_core;
 
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.LootType;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.enums.LootType;
+import ir.ac.pvz.model.others.GameSession;
 
 import java.util.Random;
 

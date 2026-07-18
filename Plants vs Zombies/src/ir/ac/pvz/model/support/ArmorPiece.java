@@ -1,6 +1,6 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.armor.ArmorDecorator;
+import ir.ac.pvz.model.armor.ArmorDecorator;
 
 public class ArmorPiece extends ArmorDecorator {
 

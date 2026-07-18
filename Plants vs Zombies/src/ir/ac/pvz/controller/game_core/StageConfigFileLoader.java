@@ -1,8 +1,11 @@
-package com.pvz.game;
+package ir.ac.pvz.controller.game_core;
 
-import com.pvz.model.enums.SeasonType;
-import com.pvz.model.enums.TileType;
-import com.pvz.model.support.GridPosition;
+import ir.ac.pvz.model.enums.SeasonType;
+import ir.ac.pvz.model.enums.TileType;
+import ir.ac.pvz.model.others.GameBootstrapConfig;
+import ir.ac.pvz.model.others.StageConfig;
+import ir.ac.pvz.model.others.TileConfiguration;
+import ir.ac.pvz.model.support.GridPosition;
 
 import java.io.IOException;
 import java.io.Reader;

@@ -1,10 +1,10 @@
-package com.pvz.model.zombies;
+package ir.ac.pvz.model.zombies;
 
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.ProjectileTrajectory;
-import com.pvz.model.enums.ZombieEffectType;
-import com.pvz.model.support.Projectile;
-import com.pvz.model.support.ZombieEffect;
+import ir.ac.pvz.model.enums.ProjectileTrajectory;
+import ir.ac.pvz.model.enums.ZombieEffectType;
+import ir.ac.pvz.model.support.Projectile;
+import ir.ac.pvz.model.support.ZombieEffect;
+import ir.ac.pvz.model.core.Zombie;
 
 public class SnorkelZombie extends Zombie {
 

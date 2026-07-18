@@ -1,7 +1,7 @@
 package ir.ac.pvz.model.chapter;
 
-import ir.ac.pvz.model.board.GameBoard;
 import ir.ac.pvz.model.stage.Stage;
+import ir.ac.pvz.model.support.Board;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,5 +38,5 @@ public abstract class Chapter {
         System.out.println("Entering chapter: " + name);
     }
 
-    public abstract void applyChapterEffects(GameBoard board);
+    public abstract void applyChapterEffects(Board board);
 }

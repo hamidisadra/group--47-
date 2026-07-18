@@ -1,11 +1,12 @@
-package com.pvz.model.zombies;
+package ir.ac.pvz.model.zombies;
 
-import com.pvz.model.core.GameObject;
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.PlantTag;
-import com.pvz.model.plants.TallNut;
-import com.pvz.model.plants.WallPlant;
+
+import ir.ac.pvz.model.enums.PlantTag;
+import ir.ac.pvz.model.plants.TallNut;
+import ir.ac.pvz.model.plants.WallPlant;
+import ir.ac.pvz.model.core.GameObject;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
 
 public class DodoRiderZombie extends Zombie {
 

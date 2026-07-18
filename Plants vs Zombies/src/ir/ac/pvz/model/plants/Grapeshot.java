@@ -1,4 +1,4 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
 public class Grapeshot extends ExplosivePlant {
     public Grapeshot(int id) {

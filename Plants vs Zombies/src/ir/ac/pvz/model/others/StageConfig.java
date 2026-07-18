@@ -1,12 +1,14 @@
-package com.pvz.game;
+package ir.ac.pvz.model.others;
 
-import com.pvz.model.enums.SeasonType;
-import com.pvz.model.support.Board;
-import com.pvz.model.support.GridPosition;
-import com.pvz.model.support.BalanceDefaults;
-import com.pvz.model.support.ZombieBaseStats;
-import com.pvz.model.support.PlantDataRepository;
-import com.pvz.model.support.ZombieDataRepository;
+import ir.ac.pvz.controller.game_core.StageConfigurationException;
+import ir.ac.pvz.controller.game_core.ZombieSpawner;
+import ir.ac.pvz.model.enums.SeasonType;
+import ir.ac.pvz.model.support.Board;
+import ir.ac.pvz.model.support.GridPosition;
+import ir.ac.pvz.model.support.BalanceDefaults;
+import ir.ac.pvz.model.support.ZombieBaseStats;
+import ir.ac.pvz.model.support.PlantDataRepository;
+import ir.ac.pvz.model.support.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -302,7 +304,7 @@ public class StageConfig {
                 errors.add("Invalid special spawn position or tick.");
                 continue;
             }
-            com.pvz.model.support.Tile tile = board.getTile(event.position);
+            Tile tile = board.getTile(event.position);
             if (tile == null || !tile.isLowTideSpawn) {
                 errors.add("Special spawn must target LOW_TIDE or NECROMANCY.");
             }
@@ -347,7 +349,7 @@ public class StageConfig {
 
     private void selectAllPlants() {
         selectedPlantTypes.clear();
-        for (com.pvz.model.support.PlantDefinition definition
+        for (PlantDefinition definition
                 : PlantDataRepository.getInstance().getAll()) {
             selectedPlantTypes.add(definition.name);
         }

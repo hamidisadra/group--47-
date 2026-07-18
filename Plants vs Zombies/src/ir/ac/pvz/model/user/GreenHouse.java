@@ -7,7 +7,7 @@ public class GreenHouse {
     private int rows;
     private int cols;
     private Pot[][] pots;
-    private Random random;
+    private transient Random random;
 
     public GreenHouse() {
         this.rows = 4;
@@ -43,6 +43,9 @@ public class GreenHouse {
     }
 
     public void plantRandom(Pot pot, List<String> unlockedPlants) {
+        if (random == null) {
+            random = new Random();
+        }
         boolean marigold = random.nextBoolean() || unlockedPlants.isEmpty();
         if (marigold) {
             pot.plantSeed("marigold", true);

@@ -1,4 +1,4 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
 public class TallNut extends WallPlant {
 

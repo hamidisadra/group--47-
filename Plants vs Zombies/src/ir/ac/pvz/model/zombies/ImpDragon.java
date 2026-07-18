@@ -1,8 +1,8 @@
-package com.pvz.model.zombies;
+package ir.ac.pvz.model.zombies;
 
-import com.pvz.model.enums.ProjectileType;
-import com.pvz.model.support.Projectile;
-import com.pvz.model.support.ZombieDataRepository;
+import ir.ac.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.support.Projectile;
+import ir.ac.pvz.model.support.ZombieDataRepository;
 
 public class ImpDragon extends ImpZombie {
 

@@ -1,9 +1,9 @@
-package com.pvz.game;
+package ir.ac.pvz.model.others;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.PlantCategory;
-import com.pvz.model.enums.PlantTag;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.enums.PlantCategory;
+import ir.ac.pvz.model.enums.PlantTag;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;

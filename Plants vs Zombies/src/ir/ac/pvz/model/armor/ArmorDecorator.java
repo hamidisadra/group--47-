@@ -1,4 +1,4 @@
-package com.pvz.model.armor;
+package ir.ac.pvz.model.armor;
 
 public abstract class ArmorDecorator {
 

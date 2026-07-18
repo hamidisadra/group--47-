@@ -1,6 +1,7 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.zombies.ProspectorZombie;
+
+import ir.ac.pvz.model.zombies.ProspectorZombie;
 
 public class Dynamite {
 

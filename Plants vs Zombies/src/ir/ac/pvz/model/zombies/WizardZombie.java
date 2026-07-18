@@ -1,9 +1,9 @@
-package com.pvz.model.zombies;
+package ir.ac.pvz.model.zombies;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.support.Board;
-import com.pvz.model.support.CatCurse;
+import ir.ac.pvz.model.support.Board;
+import ir.ac.pvz.model.support.CatCurse;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
 
 import java.util.ArrayList;
 import java.util.List;

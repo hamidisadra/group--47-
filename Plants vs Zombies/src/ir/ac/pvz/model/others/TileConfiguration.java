@@ -1,8 +1,8 @@
-package com.pvz.game;
+package ir.ac.pvz.model.others;
 
-import com.pvz.model.enums.SeasonType;
-import com.pvz.model.enums.TileType;
-import com.pvz.model.support.GridPosition;
+import ir.ac.pvz.model.enums.SeasonType;
+import ir.ac.pvz.model.enums.TileType;
+import ir.ac.pvz.model.support.GridPosition;
 
 public class TileConfiguration {
 

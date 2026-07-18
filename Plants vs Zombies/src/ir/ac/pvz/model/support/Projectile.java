@@ -1,11 +1,11 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.core.GameObject;
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.DamageMode;
-import com.pvz.model.enums.ProjectileTrajectory;
-import com.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.core.GameObject;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.enums.DamageMode;
+import ir.ac.pvz.model.enums.ProjectileTrajectory;
+import ir.ac.pvz.model.enums.ProjectileType;
 
 public class Projectile extends GameObject {
 

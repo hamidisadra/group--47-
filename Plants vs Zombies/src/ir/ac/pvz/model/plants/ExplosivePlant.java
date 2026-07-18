@@ -1,19 +1,19 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.game.GameSession;
-import com.pvz.model.core.Plant;
-import com.pvz.model.core.Zombie;
-import com.pvz.model.enums.PlantCategory;
-import com.pvz.model.enums.PlantTag;
-import com.pvz.model.enums.ProjectileTrajectory;
-import com.pvz.model.enums.TileType;
-import com.pvz.model.support.BalanceDefaults;
-import com.pvz.model.support.Board;
-import com.pvz.model.support.FrozenBlock;
-import com.pvz.model.support.GridPosition;
-import com.pvz.model.support.ProjectileResolver;
-import com.pvz.model.support.Tile;
-import com.pvz.model.support.Tombstone;
+
+import ir.ac.pvz.model.others.GameSession;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.enums.PlantCategory;
+import ir.ac.pvz.model.enums.PlantTag;
+import ir.ac.pvz.model.enums.ProjectileTrajectory;
+import ir.ac.pvz.model.support.BalanceDefaults;
+import ir.ac.pvz.model.support.Board;
+import ir.ac.pvz.model.support.FrozenBlock;
+import ir.ac.pvz.model.support.GridPosition;
+import ir.ac.pvz.model.support.ProjectileResolver;
+import ir.ac.pvz.model.support.Tile;
+import ir.ac.pvz.model.support.Tombstone;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,11 +1,11 @@
-package com.pvz.model.plants;
+package ir.ac.pvz.model.plants;
 
-import com.pvz.model.core.GameObject;
-import com.pvz.model.core.Plant;
-import com.pvz.model.enums.PlantCategory;
-import com.pvz.model.enums.PlantTag;
-import com.pvz.model.interfaces.IAttacker;
-import com.pvz.model.interfaces.IChargeable;
+import ir.ac.pvz.model.core.GameObject;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.enums.PlantCategory;
+import ir.ac.pvz.model.enums.PlantTag;
+import ir.ac.pvz.model.interfaces.IAttacker;
+import ir.ac.pvz.model.interfaces.IChargeable;
 
 public class MeleePlant extends Plant implements IAttacker, IChargeable {
 

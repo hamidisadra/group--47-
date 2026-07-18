@@ -1,10 +1,10 @@
-package com.pvz.game;
+package ir.ac.pvz.controller.game_core;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.enums.UpgradeResult;
-import com.pvz.model.interfaces.UpgradeCostProvider;
-import com.pvz.model.interfaces.UpgradeResourceWallet;
-import com.pvz.model.support.Upgrade;
+import ir.ac.pvz.model.enums.UpgradeResult;
+import ir.ac.pvz.model.interfaces.UpgradeCostProvider;
+import ir.ac.pvz.model.interfaces.UpgradeResourceWallet;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.support.Upgrade;
 
 public class PlantUpgradeService {
 

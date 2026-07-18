@@ -1,12 +1,12 @@
-package com.pvz.game;
+package ir.ac.pvz.model.others;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.enums.FallingSunType;
-import com.pvz.model.enums.SeasonType;
-import com.pvz.model.interfaces.ISunProducer;
-import com.pvz.model.support.Board;
-import com.pvz.model.support.GridPosition;
-import com.pvz.model.support.Sun;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.enums.FallingSunType;
+import ir.ac.pvz.model.enums.SeasonType;
+import ir.ac.pvz.model.interfaces.ISunProducer;
+import ir.ac.pvz.model.support.Board;
+import ir.ac.pvz.model.support.GridPosition;
+import ir.ac.pvz.model.support.Sun;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -202,7 +202,7 @@ public class SunManager {
         return seasonType != SeasonType.DARK_AGES;
     }
 
-    boolean hasPendingPlantSun(Plant plant) {
+    public boolean hasPendingPlantSun(Plant plant) {
         return plantSuns.containsKey(plant);
     }
 
@@ -214,7 +214,7 @@ public class SunManager {
         return true;
     }
 
-    void update(int currentTick, float elapsedSeconds) {
+    public void update(int currentTick, float elapsedSeconds) {
         for (Sun sun : new ArrayList<>(suns)) {
             sun.update(1);
         }

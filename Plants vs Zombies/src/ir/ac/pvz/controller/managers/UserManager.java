@@ -121,14 +121,37 @@ public class UserManager {
         saveAll();
     }
 
+    public User findLoggedInUser() {
+        for (User user : users.values()) {
+            if (user.isStayLoggedIn()) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    public void clearLoggedIn() {
+        for (User user : users.values()) {
+            user.setStayLoggedIn(false);
+        }
+        saveAll();
+    }
+
+    private Gson buildGson() {
+        return new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class,
+                        (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context)
+                                -> new JsonPrimitive(src.toString()))
+                .registerTypeAdapter(LocalDateTime.class,
+                        (JsonDeserializer<LocalDateTime>) (json, typeOfT, context)
+                                -> LocalDateTime.parse(json.getAsString()))
+                .setPrettyPrinting()
+                .create();
+    }
+
     public void saveAll() {
         try (Writer writer = new FileWriter(DATA_FILE)) {
-            Gson gson = new GsonBuilder()
-                    .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
-                    .registerTypeAdapter(LocalDateTime.class, (JsonDeserializer<LocalDateTime>) (json, typeOfT, context) -> LocalDateTime.parse(json.getAsString()))
-                    .setPrettyPrinting()
-                    .create();
-
+            Gson gson = buildGson();
             gson.toJson(users, writer);
         } catch (IOException e) {
             System.err.println("Could not save user data: " + e.getMessage());
@@ -142,7 +165,7 @@ public class UserManager {
         }
 
         try (Reader reader = new FileReader(DATA_FILE)) {
-            Gson gson = new Gson();
+            Gson gson = buildGson();
             Type type = new TypeToken<HashMap<String, User>>() {}.getType();
             HashMap<String, User> loadedUsers = gson.fromJson(reader, type);
 

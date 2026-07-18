@@ -1,19 +1,20 @@
-package com.pvz.model.core;
+package ir.ac.pvz.model.core;
 
-import com.pvz.game.LootDropService;
-import com.pvz.model.armor.ArmorDecorator;
-import com.pvz.model.enums.DamageMode;
-import com.pvz.model.enums.LootType;
-import com.pvz.model.enums.ProjectileTrajectory;
-import com.pvz.model.enums.ProjectileType;
-import com.pvz.model.enums.ZombieEffectType;
-import com.pvz.model.interfaces.IMovable;
-import com.pvz.model.interfaces.IWall;
-import com.pvz.model.support.ArmorPiece;
-import com.pvz.model.support.ContinuousPosition;
-import com.pvz.model.support.Projectile;
-import com.pvz.model.support.ZombieAbility;
-import com.pvz.model.support.ZombieEffect;
+import ir.ac.pvz.controller.game_core.LootDropService;
+import ir.ac.pvz.model.armor.ArmorDecorator;
+import ir.ac.pvz.model.enums.DamageMode;
+import ir.ac.pvz.model.enums.LootType;
+import ir.ac.pvz.model.enums.ProjectileTrajectory;
+import ir.ac.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.enums.ZombieEffectType;
+import ir.ac.pvz.model.interfaces.IMovable;
+import ir.ac.pvz.model.interfaces.IWall;
+import ir.ac.pvz.model.support.ArmorPiece;
+import ir.ac.pvz.model.support.ContinuousPosition;
+import ir.ac.pvz.model.support.Projectile;
+import ir.ac.pvz.model.support.ZombieAbility;
+import ir.ac.pvz.model.support.ZombieEffect;
+import ir.ac.pvz.model.core.Plant;
 
 import java.util.ArrayList;
 import java.util.Iterator;

@@ -1,7 +1,7 @@
-package com.pvz.model.support;
+package ir.ac.pvz.model.support;
 
-import com.pvz.model.core.Plant;
-import com.pvz.model.zombies.WizardZombie;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.zombies.WizardZombie;
 
 import java.util.ArrayList;
 import java.util.List;
