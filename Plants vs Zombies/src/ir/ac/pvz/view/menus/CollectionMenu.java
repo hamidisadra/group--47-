@@ -1,5 +1,6 @@
 package ir.ac.pvz.view.menus;
 
+import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.user.CollectionStatus;
 import ir.ac.pvz.model.user.TransactionStatus;
 import ir.ac.pvz.model.user.User;
@@ -90,7 +91,8 @@ public class CollectionMenu extends Menu{
 
     private void showAllZombies() {
         System.out.println("========== All Zombies ==========");
-        //should be completed
+
+        //for (String zombieName : ZombieFa)
     }
 
     private void showSeenZombies() {
@@ -116,7 +118,14 @@ public class CollectionMenu extends Menu{
 
     private void showAllPlants() {
         System.out.println("========== All Plants ==========");
-        //should be completed
+
+        String[] allPlants = Plant.getSpreadsheetTypes();
+
+        if (allPlants != null) {
+            for (String name : allPlants) {
+                System.out.println("- " + name + " -");
+            }
+        }
     }
 
     private void showUnlockedPlants() {
@@ -186,8 +195,19 @@ public class CollectionMenu extends Menu{
     }
 
     private void showPlantDetails(String plantName) {
-        System.out.println(plantName + " details: ");
-        //should be completed
+        try {
+            Plant plant = Plant.createSpreadsheetPlant(0, plantName);
+
+            System.out.println(plantName + "Details : ");
+            System.out.println("Sun Cost:    " + plant.getCost());
+            System.out.println("Base Health: " + plant.getBaseHp());
+            System.out.println("Damage:      " + plant.attackPower);
+            System.out.println("Cooldown:    " + plant.rechargeTime + "s");
+            System.out.println("Category:    " + plant.getCategory());
+
+        } catch (Exception e) {
+            System.out.println("Error: Plant not found.");
+        }
     }
 
     private void enterMenu(String menuName) {

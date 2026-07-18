@@ -1,23 +1,27 @@
 package ir.ac.pvz.controller.managers;
 
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import ir.ac.pvz.model.user.Gender;
 import ir.ac.pvz.model.user.User;
 
+import java.io.*;
+import java.lang.reflect.Type;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
 public class UserManager {
     private static UserManager instance;
-
     private HashMap<String, User> users;
+    private static final String DATA_FILE = "users_data.json";
 
     //Constructor
-
     private UserManager() {
         users = new HashMap<>();
-        loadAll();
+        loadAll(); // Load data on startup
     }
 
     public static UserManager getInstance() {
@@ -35,6 +39,7 @@ public class UserManager {
 
         User newUser = new User(username, hashedPassword, nickname, email, gender, securityQuestionId, securityAnswer);
         users.put(username, newUser);
+
         saveAll();
         return true;
     }
@@ -57,7 +62,8 @@ public class UserManager {
         }
 
         boolean hasLower = false, hasUpper = false, hasDigit = false, hasSpecial = false, hasInvalid = false;
-        String specialChars = "[]{}()<>+=*&^%$#!?";
+        // Added the missing special characters defined in the doc (\, /, |)
+        String specialChars = "[]{}()<>+=*&^%$#!?\\/|";
 
         for (char c : password.toCharArray()) {
             if (Character.isLowerCase(c)) hasLower = true;
@@ -78,7 +84,6 @@ public class UserManager {
 
     public boolean validateNickname(String nickName) {
         int nickNameLength = nickName.length();
-
         return nickNameLength >= 3 && nickNameLength <= 30;
     }
 
@@ -107,6 +112,68 @@ public class UserManager {
         }
     }
 
-    public void saveAll() {}
-    public void loadAll() {}
+    public void updateUsernameKeyValue(String previousUsername, String currentUsername, User user) {
+        users.remove(previousUsername);
+
+        user.setUsername(currentUsername);
+        users.put(currentUsername, user);
+
+        saveAll();
+    }
+
+    public User findLoggedInUser() {
+        for (User user : users.values()) {
+            if (user.isStayLoggedIn()) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    public void clearLoggedIn() {
+        for (User user : users.values()) {
+            user.setStayLoggedIn(false);
+        }
+        saveAll();
+    }
+
+    private Gson buildGson() {
+        return new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class,
+                        (JsonSerializer<LocalDateTime>) (src, typeOfSrc, context)
+                                -> new JsonPrimitive(src.toString()))
+                .registerTypeAdapter(LocalDateTime.class,
+                        (JsonDeserializer<LocalDateTime>) (json, typeOfT, context)
+                                -> LocalDateTime.parse(json.getAsString()))
+                .setPrettyPrinting()
+                .create();
+    }
+
+    public void saveAll() {
+        try (Writer writer = new FileWriter(DATA_FILE)) {
+            Gson gson = buildGson();
+            gson.toJson(users, writer);
+        } catch (IOException e) {
+            System.err.println("Could not save user data: " + e.getMessage());
+        }
+    }
+
+    public void loadAll() {
+        File file = new File(DATA_FILE);
+        if (!file.exists()) {
+            return;
+        }
+
+        try (Reader reader = new FileReader(DATA_FILE)) {
+            Gson gson = buildGson();
+            Type type = new TypeToken<HashMap<String, User>>() {}.getType();
+            HashMap<String, User> loadedUsers = gson.fromJson(reader, type);
+
+            if (loadedUsers != null) {
+                users = loadedUsers;
+            }
+        } catch (IOException e) {
+            System.err.println("Could not load user data: " + e.getMessage());
+        }
+    }
 }

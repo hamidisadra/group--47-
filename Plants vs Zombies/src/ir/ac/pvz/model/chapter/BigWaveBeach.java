@@ -1,8 +1,10 @@
 package ir.ac.pvz.model.chapter;
 
-import ir.ac.pvz.model.board.GameBoard;
-import ir.ac.pvz.model.board.Tile;
-import ir.ac.pvz.model.board.WaterTile;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.enums.TileType;
+import ir.ac.pvz.model.support.Board;
+import ir.ac.pvz.model.support.GridPosition;
+import ir.ac.pvz.model.support.Tile;
 
 public class BigWaveBeach extends Chapter {
     private int currentWaterLevel;
@@ -19,31 +21,38 @@ public class BigWaveBeach extends Chapter {
     }
 
     @Override
-    public void applyChapterEffects(GameBoard board) {
+    public void applyChapterEffects(Board board) {
         updateWaterLevel(board);
     }
 
-    public void updateWaterLevel(GameBoard board) {
+    public void updateWaterLevel(Board board) {
         if (currentWaterLevel >= maxWaterCol) {
             return;
         }
         currentWaterLevel++;
-        for (int y = 1; y <= board.getRows(); y++) {
-            int x = board.getCols() - currentWaterLevel + 1;
-            if (!(board.getTile(x, y) instanceof WaterTile)) {
-                board.setTile(x, y, new WaterTile(board.getTile(x, y).getPosition()));
+        for (int y = 0; y < board.getRows(); y++) {
+            int x = board.getColumns() - currentWaterLevel;
+            GridPosition position = new GridPosition(x, y);
+            Tile tile = board.getTile(position);
+            if (tile != null && tile.type != TileType.WATER) {
+                board.configureTile(position, TileType.WATER);
             }
         }
         floodPlants(board);
     }
 
-    public void floodPlants(GameBoard board) {
-        for (int y = 1; y <= board.getRows(); y++) {
-            for (int x = board.getCols() - currentWaterLevel + 1; x <= board.getCols(); x++) {
-                Tile tile = board.getTile(x, y);
-                if (tile instanceof WaterTile && !((WaterTile) tile).hasLilyPad() && tile.getPlant() != null) {
-                    System.out.println("Plant " + tile.getPlant() + " at (" + x + ", " + y + ") is destroyed.");
-                    tile.removePlant();
+    public void floodPlants(Board board) {
+        for (int y = 0; y < board.getRows(); y++) {
+            for (int x = board.getColumns() - currentWaterLevel; x < board.getColumns(); x++) {
+                Tile tile = board.getTile(new GridPosition(x, y));
+                if (tile == null || tile.type != TileType.WATER) {
+                    continue;
+                }
+                Plant plant = tile.getPlant();
+                if (plant != null && !tile.hasLilyPad() && !plant.canPlantOn(tile)) {
+                    System.out.println("Plant " + plant.type + " at "
+                            + tile.getPosition().toUserString() + " is destroyed.");
+                    tile.getPlants().remove(plant);
                 }
             }
         }

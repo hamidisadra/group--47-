@@ -23,6 +23,9 @@ public class User {
     private GreenHouse greenHouse;
     private List<News> newsList;
     private QuestLog questLog;
+    private Inventory inventory;
+
+    private boolean stayLoggedIn;
 
     //Constructor
 
@@ -46,6 +49,9 @@ public class User {
         this.greenHouse = new GreenHouse();
         this.newsList = new ArrayList<>();
         this.questLog = new QuestLog();
+        this.inventory = new Inventory();
+
+        this.stayLoggedIn = false;
     }
 
     //Getters
@@ -94,6 +100,12 @@ public class User {
 
     public QuestLog getQuestLog() { return questLog; }
 
+    public Inventory getInventory() { return inventory; }
+
+    public boolean isStayLoggedIn() {
+        return stayLoggedIn;
+    }
+
     //Setters
     public void setUsername(String username) {
         this.username = username;
@@ -123,5 +135,9 @@ public class User {
 
     public void addNews(String message, NewsType type) {
         this.newsList.add(new News(message, type));
+    }
+
+    public void setStayLoggedIn(boolean stayLoggedIn) {
+        this.stayLoggedIn = stayLoggedIn;
     }
 }

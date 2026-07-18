@@ -47,7 +47,7 @@ public class LoginMenu extends Menu {
             return;
         }
 
-        String loginRegex = "^login\\s+-u\\s+(\\S+)\\s+-p\\s+(\\S+)(?:\\s+-stay-logged-in)?$";
+        String loginRegex = "^login\\s+-u\\s+(\\S+)\\s+-p\\s+(\\S+)(\\s+-stay-logged-in)?$";
         String forgetPasswordRegex = "^forget\\s+password\\s+-u\\s+(\\S+)\\s+-e\\s+(\\S+)$";
 
         Matcher loginMatcher = Pattern.compile(loginRegex).matcher(command);
@@ -105,9 +105,12 @@ public class LoginMenu extends Menu {
         }
 
         System.out.println("Logged in successfully!");
+
+        userManager.clearLoggedIn();
+
         if (stayLoggedIn) {
+            user.setStayLoggedIn(true);
             System.out.println("Stay-logged-in feature is activated.");
-            //It should be updated later
         }
 
         menuManager.loginUser(user);
@@ -146,7 +149,7 @@ public class LoginMenu extends Menu {
     }
 
     private void answerQuestion(String command) {
-        String answer = command.substring(command.indexOf("-a") + 1).trim();
+        String answer = command.replaceFirst("^answer\\s+-a\\s+", "").trim();
 
         if (!answer.equals(pendingUser.getSecurityAnswer())) {
             System.out.println("Error: Answer is not correct!");
@@ -163,6 +166,7 @@ public class LoginMenu extends Menu {
 
     private void setPassword(String password) {
         String passwordStatus = userManager.validatePassword(password);
+
         if (!passwordStatus.equals("Valid")) {
             System.out.println(passwordStatus);
             System.out.println("Enter your new password : ");

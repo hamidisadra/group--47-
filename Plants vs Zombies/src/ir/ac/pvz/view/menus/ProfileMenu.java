@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 public class ProfileMenu extends Menu{
 
-    private UserManager userManager;
+    private final UserManager userManager;
 
     public ProfileMenu() {
         super("Profile Menu");
@@ -122,7 +122,12 @@ public class ProfileMenu extends Menu{
             return;
         }
 
-        user.setUsername(username);
+        if (userManager.isUsernameTaken(username)) {
+            System.out.println("ERROR: Username is already taken!");
+            return;
+        }
+
+        userManager.updateUsernameKeyValue(user.getUsername(), username, user);
         System.out.println("Username changed successfully.");
     }
 
@@ -168,6 +173,8 @@ public class ProfileMenu extends Menu{
 
         user.setEmail(email);
         System.out.println("Email changed successfully.");
+
+        userManager.saveAll();
     }
 
     private void changePassword(String newPassword, String oldPassword) {
@@ -208,6 +215,8 @@ public class ProfileMenu extends Menu{
 
         user.setPasswordHash(newPasswordHash);
         System.out.println("Password changed successfully.");
+
+        userManager.saveAll();
     }
 
     private void showInfo() {
