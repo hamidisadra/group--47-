@@ -36,7 +36,9 @@ public final class ZombieSpawner {
         this.stageConfig = stageConfig == null
                 ? StageConfig.unconfigured(board == null ? null : board.seasonType)
                 : stageConfig;
-        this.random = new Random();
+        this.random = this.stageConfig.getRandomSeed() == null
+                ? new Random()
+                : new Random(this.stageConfig.getRandomSeed());
         this.allowedZombieTypes = filterAllowedZombieTypes(
                 this.stageConfig.allowedZombieTypes);
     }

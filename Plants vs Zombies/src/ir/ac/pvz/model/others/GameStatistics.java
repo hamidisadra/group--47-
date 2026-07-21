@@ -30,6 +30,7 @@ public class GameStatistics {
     private final Map<PlantCategory, Integer> killsByPlantCategory;
     private final Map<PlantTag, Integer> killsByPlantTag;
     private final Map<String, Integer> zombieKillsByCell;
+    private final Map<Integer, Integer> killsByProjectile;
     private final Map<String, Integer> killsByZombieType;
     private final List<Integer> zombieKillTicks;
 
@@ -51,6 +52,7 @@ public class GameStatistics {
         killsByPlantCategory = new LinkedHashMap<>();
         killsByPlantTag = new LinkedHashMap<>();
         zombieKillsByCell = new LinkedHashMap<>();
+        killsByProjectile = new LinkedHashMap<>();
         killsByZombieType = new LinkedHashMap<>();
         zombieKillTicks = new ArrayList<>();
     }
@@ -101,6 +103,15 @@ public class GameStatistics {
             zombieKillsByCell.merge(cellKey(
                     (int) Math.floor(zombie.currentPosition.x),
                     zombie.lane), 1, Integer::sum);
+        }
+        if (zombie != null && zombie.lastDamageProjectileId > 0) {
+
+            if (killsByProjectile.containsKey(zombie.lastDamageProjectileId)) {
+                killsByProjectile.put(zombie.lastDamageProjectileId, killsByProjectile.get(zombie.lastDamageProjectileId) + 1);
+            }
+            else {
+                killsByProjectile.put(zombie.lastDamageProjectileId, 1);
+            }
         }
         if (zombie == null || zombie.lastDamageSource == null) {
             return;
@@ -174,6 +185,10 @@ public class GameStatistics {
 
     public Map<String, Integer> getZombieKillsByCell() {
         return Collections.unmodifiableMap(zombieKillsByCell);
+    }
+
+    public Map<Integer, Integer> getKillsByProjectile() {
+        return Collections.unmodifiableMap(killsByProjectile);
     }
 
     private String cellKey(int x, int y) {
