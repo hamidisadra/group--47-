@@ -1,5 +1,8 @@
 package ir.ac.pvz.view.menus;
 
+import ir.ac.pvz.view.menus.Menu;
+import ir.ac.pvz.view.menus.RegisterMenu;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +26,7 @@ public class MainMenu extends Menu {
             enterMenu(menuName);
         }
 
-        if (command.matches("^menu\\s+logout$")) {
+        else if (command.matches("^menu\\s+logout$")) {
             System.out.println("Logging out...");
             menuManager.logoutUser();
 
@@ -51,6 +54,11 @@ public class MainMenu extends Menu {
                 break;
             }
 
+            case "score game menu": {
+                System.out.println("Entering Score Game Menu...");
+                menuManager.pushMenu(new ScoreGameMenu());
+                break;
+            }
             case "settings menu": {
                 System.out.println("Entering Settings Menu...");
                 menuManager.pushMenu(new SettingsMenu());

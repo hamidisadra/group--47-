@@ -9,6 +9,10 @@ import ir.ac.pvz.model.enums.ProjectileType;
 
 public class Projectile extends GameObject {
 
+    private static int nextProjectileId = 1;
+
+    public final int projectileId;
+
     public ProjectileType type;
     public ProjectileTrajectory trajectory;
     public ContinuousPosition currentPosition;
@@ -30,6 +34,9 @@ public class Projectile extends GameObject {
                       int pierceCount, float splashRadius, boolean ignoresObstacles,
                       DamageMode damageMode) {
         super(currentPosition.x, currentPosition.y, 1);
+
+        this.projectileId = nextProjectileId++;
+
         this.type = type;
         this.trajectory = trajectory;
         this.currentPosition = currentPosition;

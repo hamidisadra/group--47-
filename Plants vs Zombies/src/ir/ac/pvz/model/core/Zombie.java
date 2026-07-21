@@ -38,6 +38,7 @@ public abstract class Zombie extends GameObject implements IMovable {
     public int initialWaveCost;
     public List<ArmorPiece> armorPieces;
     public Plant lastDamageSource;
+    public int lastDamageProjectileId;
     public int selectionWeight;
     public boolean canSpawnPlantFood;
 
@@ -115,6 +116,9 @@ public abstract class Zombie extends GameObject implements IMovable {
         if (projectile == null || !isAlive) {
             return;
         }
+
+        lastDamageProjectileId = projectile.projectileId;
+
         if (projectile.type == ProjectileType.FIRE) {
             melt();
             clearChill();

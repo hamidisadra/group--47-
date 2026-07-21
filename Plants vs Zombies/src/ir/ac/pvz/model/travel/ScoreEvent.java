@@ -33,6 +33,8 @@ public class ScoreEvent {
                 return value * 25;
             case CHAIN_KILL:
                 return value * 10;
+            case FLAWLESS_DEFENSE:
+                return value * 30;
             default:
                 return 0;
         }

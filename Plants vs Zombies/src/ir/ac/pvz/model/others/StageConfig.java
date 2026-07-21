@@ -20,6 +20,7 @@ import java.util.Map;
 public class StageConfig {
 
     public SeasonType seasonType;
+    private Long randomSeed;
     public int totalWaves;
     public int baseWaveCost;
     public float waveGrowthRate;
@@ -174,6 +175,15 @@ public class StageConfig {
             zombieBaseStats.put(normalize(zombieType), stats);
         }
         return this;
+    }
+
+    public StageConfig setRandomSeed(Long randomSeed) {
+        this.randomSeed = randomSeed;
+        return this;
+    }
+
+    public Long getRandomSeed() {
+        return randomSeed;
     }
 
     public ZombieBaseStats getZombieBaseStats(String zombieType) {
