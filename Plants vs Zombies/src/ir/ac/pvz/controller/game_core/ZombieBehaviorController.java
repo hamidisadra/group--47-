@@ -144,6 +144,8 @@ public class ZombieBehaviorController {
     private void registerIntervalProviders() {
         intervalProviders.put(PeashooterZombie.class, (zombie, session) ->
                 ((PeashooterZombie) zombie).shootCooldownSeconds);
+        intervalProviders.put(WizardZombie.class, (zombie, session) ->
+                ((WizardZombie) zombie).spellCooldownSeconds);
         intervalProviders.put(TurquoiseZombie.class,
                 (zombie, session) -> 1f);
         intervalProviders.put(RaZombie.class, (zombie, session) -> 1f);
@@ -161,6 +163,14 @@ public class ZombieBehaviorController {
     private void registerTimedBehaviors() {
         timedBehaviors.put(PeashooterZombie.class, (zombie, session) ->
                 shootPea((PeashooterZombie) zombie, session));
+        timedBehaviors.put(WizardZombie.class, (zombie, session) -> {
+            WizardZombie wizard = (WizardZombie) zombie;
+            if (wizard.transformRandomPlantToCat(session.getBoard())) {
+                wizard.scheduleNextSpell();
+                return true;
+            }
+            return false;
+        });
         timedBehaviors.put(TurquoiseZombie.class, (zombie, session) ->
                 updateTurquoise((TurquoiseZombie) zombie, session));
         timedBehaviors.put(RaZombie.class, (zombie, session) ->
@@ -438,7 +448,7 @@ public class ZombieBehaviorController {
         Tile tile = session.getBoard().getTile(target.location);
         if (tile != null && !(tile.obstacle instanceof FrozenBlock)) {
             tile.obstacle = new FrozenBlock(target, session.getStageConfig().getZombieAbilityValue(
-                            "hunterIceHealth"));
+                    "hunterIceHealth"));
             tile.type = ir.ac.pvz.model.enums.TileType.FROZEN_TILE;
             tile.canPlant = false;
         }
