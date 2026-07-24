@@ -32,18 +32,7 @@ public class LoginMenu extends Menu {
             return;
         }
 
-        if (forgetPasswordProcessing) {
-            if (command.matches("^answer\\s+-a\\s+(.+)$")) {
-                answerQuestion(command);
-            }
-            else {
-                System.out.println("Error: Answer the security questions!");
-            }
-            return;
-        }
-
-        if (settingPassword) {
-            setPassword(command);
+        if (handlePendingProcess(command)) {
             return;
         }
 
@@ -76,6 +65,25 @@ public class LoginMenu extends Menu {
         else {
             System.out.println("Invalid command.");
         }
+    }
+
+    private boolean handlePendingProcess(String command) {
+        if (forgetPasswordProcessing) {
+            if (command.matches("^answer\\s+-a\\s+(.+)$")) {
+                answerQuestion(command);
+            }
+            else {
+                System.out.println("Error: Answer the security questions!");
+            }
+            return true;
+        }
+
+        if (settingPassword) {
+            setPassword(command);
+            return true;
+        }
+
+        return false;
     }
 
     private void loginProcess(String username, String password, boolean stayLoggedIn) {

@@ -83,6 +83,15 @@ public class MainMenu extends Menu {
                 break;
             }
 
+            default: {
+                rejectMenu(menuName);
+                break;
+            }
+        }
+    }
+
+    private void rejectMenu(String menuName) {
+        switch (menuName) {
             case "shop menu", "collection menu": {
                 System.out.println("Error: You can't access this menu from Main Menu!");
                 break;

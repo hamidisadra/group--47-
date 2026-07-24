@@ -48,7 +48,14 @@ public class GameMenu extends Menu{
             cheat(amount, type);
         }
 
-        else if (command.matches("^menu\\s+greenhouse$")) {
+        else if (!handleSimpleCommands(command)) {
+            System.out.println("Invalid command.");
+        }
+
+    }
+
+    private boolean handleSimpleCommands(String command) {
+        if (command.matches("^menu\\s+greenhouse$")) {
             System.out.println("Entering Greenhouse...");
             menuManager.pushMenu(new GreenhouseMenu());
         }
@@ -82,9 +89,10 @@ public class GameMenu extends Menu{
         }
 
         else {
-            System.out.println("Invalid command.");
+            return false;
         }
 
+        return true;
     }
 
     private void enterMenu(String menuName) {
