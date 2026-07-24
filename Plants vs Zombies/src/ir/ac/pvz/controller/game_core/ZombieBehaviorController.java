@@ -384,9 +384,7 @@ public class ZombieBehaviorController {
         }
         return lanes;
     }
-    /**
-     * Fires a pea forward and lets it damage the plant it reaches.
-     */
+
     private boolean shootPea(PeashooterZombie zombie, GameSession session) {
         Plant target = session.findNearestPlantAhead(zombie);
         if (target == null || target.location.x > zombie.currentPosition.x) {
@@ -399,10 +397,7 @@ public class ZombieBehaviorController {
         pea.hit(target);
         return true;
     }
-
-    /**
-     * Counts the fuse down and burns the row once it reaches zero.
-     */
+    
     public void updateJalapeno(JalapenoZombie zombie, GameSession session) {
         if (session == null || zombie.exploded || zombie.isDead()) {
             return;
