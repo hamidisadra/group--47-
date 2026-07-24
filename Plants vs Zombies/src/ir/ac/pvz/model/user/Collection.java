@@ -1,9 +1,12 @@
 package ir.ac.pvz.model.user;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Collection {
+    private Map<String, Integer> plantLevels = new HashMap<>();
     private List<String> unlockedPlants;
     private List<String> seenZombies;
 
@@ -93,4 +96,18 @@ public class Collection {
     }
 
 
+
+    public int getPlantLevel(String plantName) {
+        if (plantLevels == null) {
+            plantLevels = new HashMap<>();
+        }
+        return plantLevels.getOrDefault(plantName, 1);
+    }
+
+    public void setPlantLevel(String plantName, int level) {
+        if (plantLevels == null) {
+            plantLevels = new HashMap<>();
+        }
+        plantLevels.put(plantName, level);
+    }
 }
