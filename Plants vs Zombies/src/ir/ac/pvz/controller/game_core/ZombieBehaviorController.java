@@ -120,6 +120,10 @@ public class ZombieBehaviorController {
             zombie.forceDie();
             return true;
         });
+        contactBehaviors.put(WizardZombie.class, (zombie, plant, session) -> {
+            ((WizardZombie) zombie).onReachPlant(plant);
+            return true;
+        });
         contactBehaviors.put(ArcadeZombie.class, (zombie, plant, session) -> {
             ((ArcadeZombie) zombie).collideWith(plant);
             return true;
