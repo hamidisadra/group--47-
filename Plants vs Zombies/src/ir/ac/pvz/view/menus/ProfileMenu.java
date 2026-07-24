@@ -57,7 +57,13 @@ public class ProfileMenu extends Menu{
             changePassword(newPassword, oldPassword);
         }
 
-        else if (command.matches("^menu\\s+profile\\s+show-info$")) {
+        else if (!handleSimpleCommands(command, enterMenuMatcher)) {
+            System.out.println("Invalid command.");
+        }
+    }
+
+    private boolean handleSimpleCommands(String command, Matcher enterMenuMatcher) {
+        if (command.matches("^menu\\s+profile\\s+show-info$")) {
             showInfo();
         }
 
@@ -75,8 +81,10 @@ public class ProfileMenu extends Menu{
         }
 
         else {
-            System.out.println("Invalid command.");
+            return false;
         }
+
+        return true;
     }
 
     private void enterMenu(String menuName) {

@@ -54,7 +54,13 @@ public class PlantSelectionMenu extends Menu{
             boostPlant(plantType);
         }
 
-        else if (command.matches("^show\\s+all\\s+plants$")) {
+        else if (!handleSimpleCommands(command, enterMenuMatcher)) {
+            System.out.println("Invalid command.");
+        }
+    }
+
+    private boolean handleSimpleCommands(String command, Matcher enterMenuMatcher) {
+        if (command.matches("^show\\s+all\\s+plants$")) {
             showAllPlants();
         }
 
@@ -80,13 +86,15 @@ public class PlantSelectionMenu extends Menu{
         }
 
         else {
-            System.out.println("Invalid command.");
+            return false;
         }
+
+        return true;
     }
 
     private void exitMenu() {
         User user = menuManager.getActiveUser();
-        
+
         if (user != null) {
             user.getCollection().clearSelection();
         }

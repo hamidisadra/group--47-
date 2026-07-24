@@ -62,7 +62,13 @@ public class CollectionMenu extends Menu{
             purchasePlant(plantName);
         }
 
-        else if (command.matches("^menu\\s+collection\\s+show-plants$")) {
+        else if (!handleSimpleCommands(command, enterMenuMatcher)) {
+            System.out.println("Invalid command.");
+        }
+    }
+
+    private boolean handleSimpleCommands(String command, Matcher enterMenuMatcher) {
+        if (command.matches("^menu\\s+collection\\s+show-plants$")) {
             showUnlockedPlants();
         }
 
@@ -92,8 +98,10 @@ public class CollectionMenu extends Menu{
         }
 
         else {
-            System.out.println("Invalid command.");
+            return false;
         }
+
+        return true;
     }
 
     private void showAllZombies() {
@@ -204,7 +212,9 @@ public class CollectionMenu extends Menu{
         Upgrade.configureFor(plant, plantName);
         plant.level = user.getCollection().getPlantLevel(plantName);
 
-        UpgradeResult result = new PlantUpgradeService().upgrade(plant, new PlayerUpgradeWallet(user.getWallet(), user.getInventory()), new LevelBasedUpgradeCost());
+        UpgradeResult result = new PlantUpgradeService().upgrade(plant,
+                new PlayerUpgradeWallet(user.getWallet(), user.getInventory()),
+                new LevelBasedUpgradeCost());
 
         reportUpgrade(user, plantName, plant, result);
     }
@@ -215,8 +225,11 @@ public class CollectionMenu extends Menu{
         switch (result) {
             case SUCCESS: {
                 user.getCollection().setPlantLevel(plantName, plant.level);
-                System.out.println("Plant " + plantName + " upgraded to level " + plant.level + ".");
-                System.out.println("Damage: " + plant.attackPower + " | Health: " + plant.getBaseHp() + " | Sun cost: " + plant.getCost());
+                System.out.println("Plant " + plantName
+                        + " upgraded to level " + plant.level + ".");
+                System.out.println("Damage: " + plant.attackPower
+                        + " | Health: " + plant.getBaseHp()
+                        + " | Sun cost: " + plant.getCost());
                 break;
             }
 
@@ -227,23 +240,29 @@ public class CollectionMenu extends Menu{
             }
 
             case NOT_ENOUGH_COINS: {
-                System.out.println("Error: Not enough coins! You need " + LevelBasedUpgradeCost.coinCostForLevel(nextLevel) + " coins.");
+                System.out.println("Error: Not enough coins! You need "
+                        + LevelBasedUpgradeCost.coinCostForLevel(nextLevel)
+                        + " coins.");
                 break;
             }
 
             case NOT_ENOUGH_SEED_PACKETS: {
-                System.out.println("Error: Not enough seed packets! You need " + LevelBasedUpgradeCost.seedPacketCostForLevel(nextLevel) + " packets of " + plantName + ".");
+                System.out.println("Error: Not enough seed packets! You need "
+                        + LevelBasedUpgradeCost.seedPacketCostForLevel(nextLevel)
+                        + " packets of " + plantName + ".");
                 break;
             }
 
-            default:
+            default: {
                 System.out.println("Error: This plant cannot be upgraded.");
                 break;
+            }
         }
     }
 
     private void showZombieDetails(String zombieName) {
-        ZombieDefinition definition = ZombieDataRepository.getInstance().getByZombieType(zombieName);
+        ZombieDefinition definition =
+                ZombieDataRepository.getInstance().getByZombieType(zombieName);
         if (definition == null) {
             System.out.println("Error: Zombie not found.");
             return;
@@ -252,14 +271,14 @@ public class CollectionMenu extends Menu{
         System.out.println(zombieName + " details: ");
         System.out.println("Health:       " + definition.health);
         System.out.println("Speed:        " + definition.speed);
-        System.out.println("Eat damage:   " + definition.eatDamagePerSecond + " per second");
+        System.out.println("Eat damage:   " + definition.eatDamagePerSecond
+                + " per second");
         System.out.println("Wave cost:    " + definition.waveCost);
-        System.out.println("Plant food:   " + (definition.canSpawnPlantFood ? "can drop" : "never drops"));
-
+        System.out.println("Plant food:   "
+                + (definition.canSpawnPlantFood ? "can drop" : "never drops"));
         if (!definition.armorAliases.isEmpty()) {
             System.out.println("Armor:        " + definition.armorAliases);
         }
-
         if (!definition.abilities.isEmpty()) {
             System.out.println("Abilities:    " + definition.abilities);
         }
