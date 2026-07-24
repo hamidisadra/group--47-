@@ -56,7 +56,7 @@ public class TravelLogMenu extends Menu {
                 menuManager.pushMenu(new BeghouledMenu());
                 break;
             case "zombotany":
-                menuManager.pushMenu(new ZombotanyMenu());
+                menuManager.pushMenu(new ZombotanyMenu(1));
                 break;
             default: {
                 User user = menuManager.getActiveUser();

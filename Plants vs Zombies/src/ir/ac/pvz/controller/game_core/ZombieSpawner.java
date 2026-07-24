@@ -137,6 +137,8 @@ public final class ZombieSpawner {
             case "snorkelzombie": case "octopuszombie":
             case "jesterzombie": case "wizardzombie":
             case "kingzombie": case "impdragon":
+            case "peashooterzombie": case "wallnutzombie":
+            case "jalapenozombie": case "squashzombie":
                 return true;
             default:
                 return false;
@@ -178,6 +180,16 @@ public final class ZombieSpawner {
             case "tombraiserzombie": zombie = new TombRaiserZombie(); break;
             case "dodoriderzombie": zombie = new DodoRiderZombie(); break;
             case "hunterzombie": zombie = new HunterZombie(); break;
+
+            case "peashooterzombie":
+                zombie = new ir.ac.pvz.model.zombies.PeashooterZombie(); break;
+            case "wallnutzombie":
+                zombie = new ir.ac.pvz.model.zombies.WallnutZombie(); break;
+            case "jalapenozombie":
+                zombie = new ir.ac.pvz.model.zombies.JalapenoZombie(); break;
+            case "squashzombie":
+                zombie = new ir.ac.pvz.model.zombies.SquashZombie(); break;
+
             case "troglobite": zombie = new Troglobite(); break;
             case "fishermanzombie": zombie = new FishermanZombie(); break;
             case "snorkelzombie": zombie = new SnorkelZombie(); break;
