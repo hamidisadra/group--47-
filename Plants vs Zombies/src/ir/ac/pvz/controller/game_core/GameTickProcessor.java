@@ -1,11 +1,12 @@
 package ir.ac.pvz.controller.game_core;
 
+import ir.ac.pvz.model.others.*;
+
 import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.GameStatus;
 import ir.ac.pvz.model.enums.LootType;
 import ir.ac.pvz.model.enums.PlantCategory;
-import ir.ac.pvz.model.others.*;
 import ir.ac.pvz.model.plants.*;
 import ir.ac.pvz.model.support.*;
 import ir.ac.pvz.model.zombies.*;
@@ -17,7 +18,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class GameTickProcessor {
-
     private final GameSession session;
     private final Board board;
     private final SunManager sunManager;
@@ -33,7 +33,6 @@ public class GameTickProcessor {
     private final List<BouncingGrape> bouncingGrapes;
     private final Set<Zombie> processedDeaths;
     private final Set<SpecialSpawnEvent> processedSpecialSpawns;
-
     public GameTickProcessor(GameSession session, Map<String, Float> cooldowns,
                              ProjectileResolver projectileResolver,
                              ZombieBehaviorController behaviorController,
@@ -56,7 +55,6 @@ public class GameTickProcessor {
         this.processedSpecialSpawns = java.util.Collections.newSetFromMap(
                 new IdentityHashMap<>());
     }
-
     public void updateOneTick() {
         updateCooldowns();
         updateSpecialSpawns();
@@ -68,26 +66,26 @@ public class GameTickProcessor {
         removeDestroyedObjects();
         updateWaveState();
     }
-
     public void registerPlant(Plant plant) {
-        float initialElapsed = plant.getNormalizedType().equals("chomper")
-                ? plant.actionInterval : 0f;
+        float initialElapsed = 0f;
+        if (plant.getNormalizedType().equals("chomper")) {
+            initialElapsed = plant.actionInterval;
+        }
         plantActionElapsed.put(plant, initialElapsed);
     }
-
     public void forgetPlant(Plant plant) {
         plantActionElapsed.remove(plant);
     }
-
     public void launchGrapeshot(Plant source) {
-        int bounces = BalanceDefaults.GRAPESHOT_BASE_BOUNCES
-                + (source.level >= 3 ? 1 : 0);
+        int bounces = BalanceDefaults.GRAPESHOT_BASE_BOUNCES;
+        if (source.level >= 3) {
+            bounces++;
+        }
         for (int count = 0; count < BalanceDefaults.GRAPESHOT_GRAPE_COUNT; count++) {
             bouncingGrapes.add(new BouncingGrape(source,
                     BalanceDefaults.GRAPESHOT_SECONDARY_DAMAGE, bounces));
         }
     }
-
     public void removeDestroyedObjects() {
         for (int row = 0; row < board.rows; row++) {
             for (int column = 0; column < board.columns; column++) {
@@ -96,7 +94,6 @@ public class GameTickProcessor {
             }
         }
     }
-
     private void updateSpecialSpawns() {
         for (SpecialSpawnEvent event
                 : session.getStageConfig().specialSpawnEvents) {
@@ -107,13 +104,11 @@ public class GameTickProcessor {
             }
         }
     }
-
     private void updateBouncingGrapes() {
         float elapsed = clock.getTickDurationSeconds();
         bouncingGrapes.removeIf(grape -> !grape.update(
                 elapsed, board, projectileResolver));
     }
-
     private void updatePlants() {
         for (Plant plant : board.getAllPlants()) {
             boolean pendingSun = plant instanceof SunProducerPlant
@@ -129,10 +124,15 @@ public class GameTickProcessor {
             if (plant instanceof SunProducerPlant && !pendingSun) {
                 sunManager.producePlantSun(plant);
             }
+            if (plant instanceof ExplosivePlant
+                    && ((ExplosivePlant) plant).isGraveEatingFinished()) {
+                ExplosivePlant.resolveInstantPlant(plant, session,
+                        projectileResolver);
+                continue;
+            }
             processPlantAttack(plant);
         }
     }
-
     private void processPlantAttack(Plant plant) {
         if (!plant.canAct() || plant.actionInterval <= 0f
                 || plant.category == PlantCategory.SUN_PRODUCER
@@ -151,7 +151,6 @@ public class GameTickProcessor {
         }
         plantActionElapsed.put(plant, elapsed);
     }
-
     private void updateZombies() {
         for (Zombie zombie : getAllZombies()) {
             if (zombie.isDead()) {
@@ -160,6 +159,10 @@ public class GameTickProcessor {
             zombie.update(1);
             if (zombie.isFrozen() || zombie.isStunned()) {
                 continue;
+            }
+            if (zombie instanceof ir.ac.pvz.model.zombies.JalapenoZombie) {
+                zombieBehaviorController.updateJalapeno(
+                        (ir.ac.pvz.model.zombies.JalapenoZombie) zombie, session);
             }
             zombieBehaviorController.update(zombie, session);
             if (zombie.isHypnotized) {
@@ -171,7 +174,6 @@ public class GameTickProcessor {
             handleLawnMower(zombie);
         }
     }
-
     private void updateHostileZombie(Zombie zombie) {
         if (resolveHostileCollision(zombie)) {
             return;
@@ -188,7 +190,6 @@ public class GameTickProcessor {
             WallPlant.resolveZombiePlantContact(zombie, target, session);
         }
     }
-
     private void updateHypnotizedZombie(Zombie zombie) {
         if (attackPushedObject(zombie)) {
             return;
@@ -203,8 +204,6 @@ public class GameTickProcessor {
         }
         moveZombie(zombie);
     }
-
-
     private boolean resolveHostileCollision(Zombie zombie) {
         if (zombie instanceof FootballZombie) {
             Zombie target = findHypnotizedAt(
@@ -217,7 +216,6 @@ public class GameTickProcessor {
         }
         return false;
     }
-
     private boolean resolveArcadeMachineCollision(ArcadeZombie arcade) {
         ArcadeMachine machine = arcade.arcadeMachine;
         if (machine == null || machine.health <= 0 || machine.position == null) {
@@ -231,14 +229,16 @@ public class GameTickProcessor {
         }
         Tile tile = board.getTile(new GridPosition(
                 (int) Math.floor(machine.position.x), machine.position.y));
-        Plant plant = tile == null ? null : tile.getPlant();
+        Plant plant = null;
+        if (tile != null) {
+            plant = tile.getPlant();
+        }
         if (plant != null && plant.isAlive) {
             machine.instantKill(plant);
             return true;
         }
         return false;
     }
-
     private Zombie findHypnotizedAt(float x, int lane, Zombie excluded) {
         int tileX = (int) Math.floor(x);
         for (Zombie candidate : board.getZombiesInLane(lane)) {
@@ -250,7 +250,6 @@ public class GameTickProcessor {
         }
         return null;
     }
-
     private boolean attackPushedObject(Zombie attacker) {
         if (!attacker.canAttackThisTick()) {
             return false;
@@ -278,13 +277,11 @@ public class GameTickProcessor {
         }
         return false;
     }
-
     private boolean isObjectReachable(Zombie attacker, ContinuousPosition position) {
         return position != null && position.y == attacker.lane
                 && position.x >= attacker.currentPosition.x
                 && position.x - attacker.currentPosition.x < 1f;
     }
-
     private void damageBarrel(Barrel barrel, int damage) {
         if (barrel == null || barrel.health <= 0) {
             return;
@@ -298,7 +295,6 @@ public class GameTickProcessor {
         }
         board.removeLooseBarrel(barrel);
     }
-
     private Zombie findNearestEnemyAhead(Zombie attacker) {
         Zombie nearest = null;
         for (Zombie candidate : board.getZombiesInLane(attacker.lane)) {
@@ -314,22 +310,18 @@ public class GameTickProcessor {
         }
         return nearest;
     }
-
     private boolean sameTileX(Zombie first, Zombie second) {
         return (int) Math.floor(first.currentPosition.x)
                 == (int) Math.floor(second.currentPosition.x);
     }
-
     private boolean hasReachedPlant(Zombie zombie, Plant plant) {
         return plant != null
                 && (int) Math.floor(zombie.currentPosition.x) == plant.location.x;
     }
-
     private void moveZombie(Zombie zombie) {
         zombie.move(clock.getTickDurationSeconds());
         relocateZombie(zombie);
     }
-
     private void handleLawnMower(Zombie zombie) {
         if (zombie.isDead() || zombie.currentPosition.x >= 0f) {
             return;
@@ -346,7 +338,6 @@ public class GameTickProcessor {
             board.placeZombie(zombie, new ContinuousPosition(0f, zombie.lane));
         }
     }
-
     private void relocateZombie(Zombie zombie) {
         board.removeZombieEverywhere(zombie);
         int x = (int) Math.floor(zombie.currentPosition.x);
@@ -360,7 +351,6 @@ public class GameTickProcessor {
                 projectileResolver);
         applySlipperyTile(zombie, tile, x);
     }
-
     private void applySlipperyTile(Zombie zombie, Tile tile, int x) {
         if (tile.slipDeltaRow == 0) {
             return;
@@ -373,7 +363,6 @@ public class GameTickProcessor {
         board.removeZombieEverywhere(zombie);
         board.getTile(new GridPosition(x, zombie.lane)).addZombie(zombie);
     }
-
     private void removeDestroyedObjects(Tile tile) {
         for (Plant plant : new ArrayList<>(tile.getPlants())) {
             resolveExplodeONutArmor(plant);
@@ -394,7 +383,6 @@ public class GameTickProcessor {
             }
         }
     }
-
     private void resolveExplodeONutArmor(Plant plant) {
         if (!(plant instanceof ExplodeONut)) {
             return;
@@ -405,18 +393,13 @@ public class GameTickProcessor {
                     explodeONut.attackPower, 1, board);
         }
     }
-
     private void resolveModifierPlantDeath(Plant plant) {
         if (plant.getNormalizedType().equals("torchwood")
                 && plant.level >= 3 && plant.wasDestroyedByDamage()) {
-            int damage = plant.level >= 4
-                    ? BalanceDefaults.TORCHWOOD_LEVEL_FOUR_DEATH_DAMAGE
-                    : BalanceDefaults.TORCHWOOD_LEVEL_THREE_DEATH_DAMAGE;
-            explodeTorchwoodLane(plant, damage);
+            explodeTorchwoodLane(plant,
+                    BalanceDefaults.TORCHWOOD_LEVEL_THREE_DEATH_DAMAGE);
         }
     }
-
-
     private void explodeTorchwoodLane(Plant plant, int damage) {
         for (Zombie zombie : board.getZombiesInLane(plant.location.y)) {
             zombie.lastDamageSource = plant;
@@ -424,7 +407,6 @@ public class GameTickProcessor {
             zombie.melt();
         }
     }
-
     private void processZombieDeath(Zombie zombie) {
         if (!processedDeaths.add(zombie)) {
             return;
@@ -434,9 +416,10 @@ public class GameTickProcessor {
         statistics.recordZombieKilled(zombie, clock.currentTick);
         zombieBehaviorController.remove(zombie);
         LootType loot = lootDropService.rollLoot(zombie);
-        lootDropService.applyLoot(loot, session);
+        session.registerLootDrop(loot, new GridPosition(
+                Math.max(0, (int) Math.floor(zombie.currentPosition.x)),
+                zombie.lane));
     }
-
     private void releaseZombieResources(Zombie zombie) {
         if (zombie instanceof RaZombie) {
             sunManager.addSuns(((RaZombie) zombie).releaseStolenSuns());
@@ -454,30 +437,13 @@ public class GameTickProcessor {
             }
         }
     }
-
     private void updateFrozenBlocks() {
-        for (int row = 0; row < board.rows; row++) {
-            for (int column = 0; column < board.columns; column++) {
-                Tile tile = board.getTile(new GridPosition(column, row));
-                if (tile.obstacle instanceof FrozenBlock
-                        && tile.hasAdjacentFirePlant(board)) {
-                    FrozenBlock block = (FrozenBlock) tile.obstacle;
-                    int damage = Math.round(block.adjacentFireMeltRatePerSecond
-                            * clock.getTickDurationSeconds());
-                    block.takeDamage(Math.max(1, damage));
-                    if (!block.isAlive) {
-                        board.clearDestroyedObstacle(tile);
-                    }
-                }
-            }
-        }
+        FrozenBlockTickSupport.update(board, clock);
     }
-
     private void updateCooldowns() {
         float elapsed = clock.getTickDurationSeconds();
         cooldowns.replaceAll((key, value) -> Math.max(0f, value - elapsed));
     }
-
     private void updateWaveState() {
         List<Wave> waves = waveController.getWaves();
         if (!waves.isEmpty()) {
@@ -491,7 +457,6 @@ public class GameTickProcessor {
             session.win();
         }
     }
-
     private List<Zombie> getAllZombies() {
         List<Zombie> zombies = new ArrayList<>();
         for (int row = 0; row < board.rows; row++) {

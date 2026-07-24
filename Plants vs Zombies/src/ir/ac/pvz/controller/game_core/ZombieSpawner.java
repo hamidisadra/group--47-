@@ -1,46 +1,84 @@
 package ir.ac.pvz.controller.game_core;
 
+import ir.ac.pvz.model.others.*;
+
 import ir.ac.pvz.model.core.Zombie;
-import ir.ac.pvz.model.others.StageConfig;
 import ir.ac.pvz.model.support.Board;
 import ir.ac.pvz.model.support.ContinuousPosition;
 import ir.ac.pvz.model.support.GridPosition;
 import ir.ac.pvz.model.support.ZombieBaseStats;
 import ir.ac.pvz.model.support.ZombieDataRepository;
+import ir.ac.pvz.model.support.ZombieDefinition;
+import ir.ac.pvz.model.support.ZombieDefinitionRepository;
+import ir.ac.pvz.model.support.ArmorDataRepository;
+import ir.ac.pvz.model.support.ArmorDefinitionRepository;
 import ir.ac.pvz.model.zombies.*;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 public final class ZombieSpawner {
-
     private final Board board;
-    private final Random random;
+    private final RandomGenerator random;
     private final StageConfig stageConfig;
     private List<String> allowedZombieTypes;
-
+    private final ZombieTypeRegistry typeRegistry;
+    private final ZombieDefinitionRepository zombieRepository;
     public ZombieSpawner(Board board) {
-        this(board, StageConfig.unconfigured(
-                board == null ? null : board.seasonType));
+        this(board, StageConfig.unconfigured(seasonOf(board)));
     }
 
     public ZombieSpawner(Board board, List<String> allowedZombieTypes) {
-        this(board, new StageConfig(board == null ? null : board.seasonType,
+        this(board, new StageConfig(seasonOf(board),
                 0, 0, 0.25f, 2f, allowedZombieTypes));
     }
-
     public ZombieSpawner(Board board, StageConfig stageConfig) {
+        this(board, stageConfig, defaultRandom(stageConfig));
+    }
+
+    /**
+     * The scored game fixes the seed so every player faces the same zombies
+     * on the same day. Without a seed the spawner stays fully random.
+     */
+    private static RandomGenerator defaultRandom(StageConfig stageConfig) {
+        if (stageConfig != null && stageConfig.getRandomSeed() != null) {
+            return new Random(stageConfig.getRandomSeed());
+        }
+        return new Random();
+    }
+
+    public ZombieSpawner(Board board, StageConfig stageConfig,
+                         RandomGenerator random) {
+        this(board, stageConfig, random, ZombieDataRepository.getInstance(),
+                ArmorDataRepository.getInstance());
+    }
+    public ZombieSpawner(
+            Board board, StageConfig stageConfig, RandomGenerator random,
+            ZombieDefinitionRepository zombieRepository,
+            ArmorDefinitionRepository armorRepository) {
         this.board = board;
-        this.stageConfig = stageConfig == null
-                ? StageConfig.unconfigured(board == null ? null : board.seasonType)
-                : stageConfig;
-        this.random = new Random();
+        if (stageConfig == null) {
+            this.stageConfig = StageConfig.unconfigured(seasonOf(board));
+        }
+        else {
+            this.stageConfig = stageConfig;
+        }
+        if (random == null) {
+            throw new IllegalArgumentException("Random generator cannot be null.");
+        }
+        if (zombieRepository == null || armorRepository == null) {
+            throw new IllegalArgumentException(
+                    "Zombie repositories cannot be null.");
+        }
+        this.random = random;
+        this.zombieRepository = zombieRepository;
+        this.typeRegistry = new ZombieTypeRegistry(
+                this.stageConfig, zombieRepository, armorRepository);
         this.allowedZombieTypes = filterAllowedZombieTypes(
                 this.stageConfig.allowedZombieTypes);
     }
-
     public List<Zombie> spawnRandomZombiesUntilCost(int waveCost) {
         requireExactCost(waveCost);
         if (waveCost <= 0) {
@@ -65,7 +103,6 @@ public final class ZombieSpawner {
         }
         return zombies;
     }
-
     public Zombie spawnZombie(String type, ContinuousPosition position) {
         Zombie zombie = createZombie(type);
         if (zombie != null && position != null) {
@@ -73,19 +110,16 @@ public final class ZombieSpawner {
         }
         return zombie;
     }
-
     public int chooseRandomLane(Board targetBoard) {
         if (targetBoard == null || targetBoard.rows <= 0) {
             return 0;
         }
         return random.nextInt(targetBoard.rows);
     }
-
     public int normalizeWaveCost(int requestedCost) {
         requireExactCost(requestedCost);
         return requestedCost;
     }
-
     public boolean canBuildExactCost(int requestedCost) {
         if (requestedCost <= 0 || allowedZombieTypes.isEmpty()) {
             return false;
@@ -93,18 +127,15 @@ public final class ZombieSpawner {
         boolean[] reachable = calculateReachableCosts(requestedCost);
         return reachable[requestedCost];
     }
-
     public void requireExactCost(int requestedCost) {
         if (!canBuildExactCost(requestedCost)) {
             throw new IllegalStateException("No exact zombie combination for wave cost "
                     + requestedCost + ".");
         }
     }
-
     public void setAllowedZombieTypes(List<String> types) {
         this.allowedZombieTypes = filterAllowedZombieTypes(types);
     }
-
     private List<String> filterAllowedZombieTypes(List<String> types) {
         List<String> filtered = new ArrayList<>();
         if (types == null) {
@@ -117,81 +148,28 @@ public final class ZombieSpawner {
         }
         return filtered;
     }
-
     public boolean isSupportedType(String type) {
-        String normalized = normalize(type);
-        switch (normalized) {
-            case "basiczombie": case "coneheadzombie":
-            case "bucketheadzombie": case "knightzombie":
-            case "blockheadzombie": case "gargantuar":
-            case "impzombie": case "footballzombie":
-            case "arcadezombie": case "parasolzombie":
-            case "turquoisezombie": case "prospectorzombie":
-            case "pianistzombie": case "newspaperzombie":
-            case "barrelrollerzombie": case "razombie":
-            case "explorerzombie": case "tombraiserzombie":
-            case "dodoriderzombie": case "hunterzombie":
-            case "troglobite": case "fishermanzombie":
-            case "snorkelzombie": case "octopuszombie":
-            case "jesterzombie": case "wizardzombie":
-            case "kingzombie": case "impdragon":
-                return true;
-            default:
-                return false;
-        }
+        return typeRegistry.contains(type);
     }
-
     public boolean hasRequiredBaseData(String type) {
         if (!isSupportedType(type)) {
             return false;
         }
         return true;
     }
-
     public List<String> getAllowedZombieTypes() {
         return Collections.unmodifiableList(allowedZombieTypes);
     }
-
     public Zombie createZombie(String type) {
-        String normalized = normalize(type);
-        Zombie zombie;
-        switch (normalized) {
-            case "basiczombie": zombie = new BasicZombie(); break;
-            case "coneheadzombie": zombie = new ConeheadZombie(); break;
-            case "bucketheadzombie": zombie = new BucketheadZombie(); break;
-            case "knightzombie": zombie = new KnightZombie(); break;
-            case "blockheadzombie": zombie = new BlockheadZombie(); break;
-            case "gargantuar": zombie = new Gargantuar(); break;
-            case "impzombie": zombie = new ImpZombie(); break;
-            case "footballzombie": zombie = new FootballZombie(); break;
-            case "arcadezombie": zombie = new ArcadeZombie(); break;
-            case "parasolzombie": zombie = new ParasolZombie(); break;
-            case "turquoisezombie": zombie = new TurquoiseZombie(); break;
-            case "prospectorzombie": zombie = new ProspectorZombie(); break;
-            case "pianistzombie": zombie = new PianistZombie(); break;
-            case "newspaperzombie": zombie = new NewspaperZombie(); break;
-            case "barrelrollerzombie": zombie = createBarrelRollerZombie(); break;
-            case "razombie": zombie = new RaZombie(); break;
-            case "explorerzombie": zombie = new ExplorerZombie(); break;
-            case "tombraiserzombie": zombie = new TombRaiserZombie(); break;
-            case "dodoriderzombie": zombie = new DodoRiderZombie(); break;
-            case "hunterzombie": zombie = new HunterZombie(); break;
-            case "troglobite": zombie = new Troglobite(); break;
-            case "fishermanzombie": zombie = new FishermanZombie(); break;
-            case "snorkelzombie": zombie = new SnorkelZombie(); break;
-            case "octopuszombie": zombie = new OctopusZombie(); break;
-            case "jesterzombie": zombie = new JesterZombie(); break;
-            case "wizardzombie": zombie = new WizardZombie(); break;
-            case "kingzombie": zombie = new KingZombie(); break;
-            case "impdragon": zombie = new ImpDragon(); break;
-            default: return null;
+        Zombie zombie = typeRegistry.create(type);
+        if (zombie == null) {
+            return null;
         }
-        if (zombie != null && !normalized.equals("barrelrollerzombie")) {
-            ZombieDataRepository.getInstance().applyTo(zombie, type);
+        if (zombie != null) {
+            zombie.setIdentity(canonicalType(type), canonicalType(type));
         }
         return zombie;
     }
-
     private boolean[] calculateReachableCosts(int limit) {
         boolean[] reachable = new boolean[Math.max(0, limit) + 1];
         reachable[0] = true;
@@ -208,7 +186,6 @@ public final class ZombieSpawner {
         }
         return reachable;
     }
-
     private List<String> getFillableCandidates(int remaining, boolean[] reachable) {
         List<String> candidates = new ArrayList<>();
         for (String type : allowedZombieTypes) {
@@ -221,7 +198,6 @@ public final class ZombieSpawner {
         }
         return candidates;
     }
-
     private String chooseWeightedType(List<String> candidates) {
         int totalWeight = candidates.stream().mapToInt(this::selectionWeight).sum();
         int roll = random.nextInt(totalWeight);
@@ -233,7 +209,6 @@ public final class ZombieSpawner {
         }
         return candidates.get(candidates.size() - 1);
     }
-
     private int getMaximumAllowedCost() {
         int maximum = 0;
         for (String type : allowedZombieTypes) {
@@ -244,18 +219,23 @@ public final class ZombieSpawner {
         }
         return maximum;
     }
-
     private int selectionWeight(String type) {
-        int weight = ZombieDataRepository.getInstance().getWeight(type);
-        return weight > 0 ? weight : 1;
+        ZombieDefinition definition = zombieRepository.getByZombieType(type);
+        int weight = 0;
+        if (definition != null) {
+            weight = definition.weight;
+        }
+        if (weight > 0) {
+            return weight;
+        }
+        return 1;
     }
-
-    private Zombie createBarrelRollerZombie() {
-        ZombieBaseStats stats = stageConfig.getZombieBaseStats(
-                "BarrelRollerZombie");
-        return new BarrelRollerZombie(stats);
+    private static ir.ac.pvz.model.enums.SeasonType seasonOf(Board board) {
+        if (board == null) {
+            return null;
+        }
+        return board.seasonType;
     }
-
     private void placeZombie(Zombie zombie, ContinuousPosition position) {
         zombie.currentPosition = position;
         zombie.positionX = position.x;
@@ -267,8 +247,6 @@ public final class ZombieSpawner {
             board.getTile(tilePosition).addZombie(zombie);
         }
     }
-
-
     private void synchronizeAccessoryPosition(Zombie zombie,
                                               ContinuousPosition position) {
         if (zombie instanceof ArcadeZombie) {
@@ -280,12 +258,17 @@ public final class ZombieSpawner {
                     new ContinuousPosition(position.x - 0.2f, position.y);
         }
     }
-
     private String normalize(String value) {
         if (value == null) {
             return "";
         }
         return value.replace("-", "").replace("_", "")
                 .replace(" ", "").toLowerCase();
+    }
+    private String canonicalType(String value) {
+        if (value == null || value.isBlank()) {
+            return "Zombie";
+        }
+        return value.trim();
     }
 }

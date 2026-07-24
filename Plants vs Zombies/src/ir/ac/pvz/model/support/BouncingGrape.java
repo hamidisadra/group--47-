@@ -1,21 +1,18 @@
 package ir.ac.pvz.model.support;
 
-import ir.ac.pvz.model.enums.ProjectileType;
 import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.core.Zombie;
-
+import ir.ac.pvz.model.enums.ProjectileType;
 import java.util.List;
 import java.util.Random;
 
 public class BouncingGrape {
-
     private final Plant source;
     private final int damage;
     private final Random random;
     private float remainingSeconds;
     private float untilNextBounce;
     private int bouncesRemaining;
-
     public BouncingGrape(Plant source, int damage, int bounces) {
         this.source = source;
         this.damage = damage;
@@ -24,7 +21,6 @@ public class BouncingGrape {
         this.bouncesRemaining = Math.max(0, bounces);
         this.random = new Random();
     }
-
     public boolean update(float elapsedSeconds, Board board,
                           ProjectileResolver resolver) {
         remainingSeconds -= elapsedSeconds;
@@ -44,11 +40,9 @@ public class BouncingGrape {
         untilNextBounce = 0.5f;
         return remainingSeconds > 0f && bouncesRemaining > 0;
     }
-
     public float getRemainingSeconds() {
         return remainingSeconds;
     }
-
     public int getBouncesRemaining() {
         return bouncesRemaining;
     }

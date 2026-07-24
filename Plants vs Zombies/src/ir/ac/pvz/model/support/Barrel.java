@@ -1,6 +1,5 @@
 package ir.ac.pvz.model.support;
 
-
 import ir.ac.pvz.model.zombies.ImpZombie;
 
 import java.util.ArrayList;
@@ -23,8 +22,10 @@ public class Barrel {
     public List<ImpZombie> breakAndSpawnImps() {
         health = 0;
         List<ImpZombie> imps = new ArrayList<>();
-        imps.add(new ImpZombie());
-        imps.add(new ImpZombie());
+        ImpZombie first = createConfiguredImp();
+        ImpZombie second = createConfiguredImp();
+        imps.add(first);
+        imps.add(second);
         for (ImpZombie imp : imps) {
             imp.currentPosition = new ContinuousPosition(position.x, position.y);
             imp.positionX = position.x;
@@ -32,5 +33,13 @@ public class Barrel {
             imp.lane = position.y;
         }
         return imps;
+    }
+
+    private ImpZombie createConfiguredImp() {
+        ImpZombie imp = new ImpZombie();
+        // Page 37: spawned Imps use the same Repository data as wave Imps.
+        ZombieDataRepository.getInstance().applyTo(imp, "ImpZombie");
+        imp.setIdentity("ImpZombie", "ImpZombie");
+        return imp;
     }
 }

@@ -5,11 +5,9 @@ import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.ProjectileTrajectory;
 
 public class Chomper extends MeleePlant {
-
     public Chomper(int id) {
         super(id, "Chomper", 150, 300, 5f, 40f, 0, false);
     }
-
     @Override
     public void attack(GameObject target) {
         if (!isReady() || target == null || !target.isAlive) {
@@ -17,7 +15,8 @@ public class Chomper extends MeleePlant {
         }
         if (target instanceof Zombie) {
             ((Zombie) target).receiveInstantKill(ProjectileTrajectory.STRAIGHT);
-        } else {
+        }
+        else {
             target.die();
         }
         ready = false;

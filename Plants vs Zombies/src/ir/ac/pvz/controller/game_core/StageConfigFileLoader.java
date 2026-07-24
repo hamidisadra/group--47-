@@ -1,12 +1,10 @@
 package ir.ac.pvz.controller.game_core;
 
+import ir.ac.pvz.model.others.*;
+
 import ir.ac.pvz.model.enums.SeasonType;
 import ir.ac.pvz.model.enums.TileType;
-import ir.ac.pvz.model.others.GameBootstrapConfig;
-import ir.ac.pvz.model.others.StageConfig;
-import ir.ac.pvz.model.others.TileConfiguration;
 import ir.ac.pvz.model.support.GridPosition;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -19,7 +17,6 @@ public final class StageConfigFileLoader {
 
     private StageConfigFileLoader() {
     }
-
     public static GameBootstrapConfig load(Path path) throws IOException {
         Properties properties = new Properties();
         try (Reader reader = Files.newBufferedReader(path)) {
@@ -48,7 +45,6 @@ public final class StageConfigFileLoader {
         applyFrozenContents(tiles, properties, rows, columns);
         return new GameBootstrapConfig(rows, columns, startingSun, stage, tiles);
     }
-
     private static void applyOptionalLists(StageConfig stage,
                                            Properties properties) {
         List<String> boosted = commaSeparated(properties.getProperty(
@@ -61,8 +57,6 @@ public final class StageConfigFileLoader {
             stage.setImitaterTargetType(imitater.trim());
         }
     }
-
-
     private static void applyWaveCosts(StageConfig stage,
                                        Properties properties) {
         List<String> values = commaSeparated(properties.getProperty(
@@ -77,7 +71,6 @@ public final class StageConfigFileLoader {
         }
         stage.setExplicitWaveCosts(costs);
     }
-
     private static void applyZombieSettings(StageConfig stage,
                                             Properties properties) {
         for (String name : properties.stringPropertyNames()) {
@@ -105,7 +98,6 @@ public final class StageConfigFileLoader {
             }
         }
     }
-
     private static void applySpecialSpawnEvents(StageConfig stage,
                                                 Properties properties,
                                                 int rows, int columns) {
@@ -130,7 +122,6 @@ public final class StageConfigFileLoader {
                     new GridPosition(x, y));
         }
     }
-
     private static void applyZombieStats(StageConfig stage, String property,
                                          String value) {
         List<String> parts = commaSeparated(value);
@@ -146,7 +137,6 @@ public final class StageConfigFileLoader {
                 parseNonNegative(parts.get(3), property + ".waveCost"),
                 parsePositive(parts.get(4), property + ".accessoryHealth"));
     }
-
     private static List<TileConfiguration> parseTiles(Properties properties,
                                                       int rows, int columns) {
         List<TileConfiguration> tiles = new ArrayList<>();
@@ -168,7 +158,8 @@ public final class StageConfigFileLoader {
             TileType type;
             try {
                 type = TileType.valueOf(required(properties, name));
-            } catch (IllegalArgumentException exception) {
+            }
+            catch (IllegalArgumentException exception) {
                 throw new StageConfigurationException(
                         "Unknown tile type in " + name + ".");
             }
@@ -176,7 +167,6 @@ public final class StageConfigFileLoader {
         }
         return tiles;
     }
-
     private static void applyFrozenContents(List<TileConfiguration> tiles,
                                             Properties properties,
                                             int rows, int columns) {
@@ -186,7 +176,10 @@ public final class StageConfigFileLoader {
             if (!plant && !zombie) {
                 continue;
             }
-            String prefix = plant ? "frozenPlant." : "frozenZombie.";
+            String prefix = "frozenZombie.";
+            if (plant) {
+                prefix = "frozenPlant.";
+            }
             GridPosition position = parsePosition(name, prefix, rows, columns);
             TileConfiguration configuration = findTile(tiles, position);
             if (configuration == null
@@ -207,7 +200,6 @@ public final class StageConfigFileLoader {
             }
         }
     }
-
     private static GridPosition parsePosition(String name, String prefix,
                                               int rows, int columns) {
         String[] coordinates = name.substring(prefix.length()).split("\\.");
@@ -223,7 +215,6 @@ public final class StageConfigFileLoader {
         }
         return new GridPosition(x, y);
     }
-
     private static TileConfiguration findTile(
             List<TileConfiguration> tiles, GridPosition position) {
         for (TileConfiguration tile : tiles) {
@@ -233,7 +224,6 @@ public final class StageConfigFileLoader {
         }
         return null;
     }
-
     private static SeasonType parseSeason(String value) {
         try {
             return SeasonType.valueOf(value);
@@ -241,7 +231,6 @@ public final class StageConfigFileLoader {
             throw new StageConfigurationException("Unknown season: " + value);
         }
     }
-
     private static String required(Properties properties, String key) {
         String value = properties.getProperty(key);
         if (value == null || value.trim().isEmpty()) {
@@ -249,7 +238,6 @@ public final class StageConfigFileLoader {
         }
         return value.trim();
     }
-
     private static List<String> requiredList(Properties properties,
                                              String key) {
         List<String> values = commaSeparated(required(properties, key));
@@ -258,14 +246,14 @@ public final class StageConfigFileLoader {
         }
         return values;
     }
-
     private static int optionalPositive(Properties properties, String key,
                                         int defaultValue) {
         String value = properties.getProperty(key);
-        return value == null ? defaultValue : parsePositive(value, key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return parsePositive(value, key);
     }
-
-
     private static float optionalNonNegativeFloat(Properties properties,
                                                   String key,
                                                   float defaultValue) {
@@ -279,22 +267,21 @@ public final class StageConfigFileLoader {
         }
         return parsed;
     }
-
     private static float optionalPositiveFloat(Properties properties,
                                                String key,
                                                float defaultValue) {
         String value = properties.getProperty(key);
-        return value == null ? defaultValue : parsePositiveFloat(value, key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return parsePositiveFloat(value, key);
     }
-
     private static int requiredPositive(Properties properties, String key) {
         return parsePositive(required(properties, key), key);
     }
-
     private static int requiredNonNegative(Properties properties, String key) {
         return parseNonNegative(required(properties, key), key);
     }
-
     private static int parsePositive(String value, String key) {
         int parsed = parseInt(value, key);
         if (parsed <= 0) {
@@ -302,7 +289,6 @@ public final class StageConfigFileLoader {
         }
         return parsed;
     }
-
     private static int parseNonNegative(String value, String key) {
         int parsed = parseInt(value, key);
         if (parsed < 0) {
@@ -310,7 +296,6 @@ public final class StageConfigFileLoader {
         }
         return parsed;
     }
-
     private static int parseInt(String value, String key) {
         try {
             return Integer.parseInt(value.trim());
@@ -318,7 +303,6 @@ public final class StageConfigFileLoader {
             throw new StageConfigurationException(key + " must be an integer.");
         }
     }
-
     private static float parsePositiveFloat(String value, String key) {
         float parsed = parseFloat(value, key);
         if (parsed <= 0f) {
@@ -326,7 +310,6 @@ public final class StageConfigFileLoader {
         }
         return parsed;
     }
-
     private static float parseFloat(String value, String key) {
         try {
             return Float.parseFloat(value.trim());
@@ -334,7 +317,6 @@ public final class StageConfigFileLoader {
             throw new StageConfigurationException(key + " must be numeric.");
         }
     }
-
     private static List<String> commaSeparated(String value) {
         List<String> result = new ArrayList<>();
         if (value == null) {

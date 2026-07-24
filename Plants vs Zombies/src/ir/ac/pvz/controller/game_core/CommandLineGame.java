@@ -1,8 +1,8 @@
 package ir.ac.pvz.controller.game_core;
 
-import ir.ac.pvz.model.others.GameSession;
-import ir.ac.pvz.model.enums.GameStatus;
+import ir.ac.pvz.model.others.*;
 
+import ir.ac.pvz.model.enums.GameStatus;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -10,15 +10,12 @@ import java.io.Reader;
 import java.io.Writer;
 
 public class CommandLineGame {
-
     private final GameSession session;
     private final GameCommandController controller;
-
     public CommandLineGame(GameSession session) {
         this.session = session;
         this.controller = new GameCommandController(session);
     }
-
     public void run(Reader input, Writer output) throws IOException {
         BufferedReader reader = new BufferedReader(input);
         PrintWriter writer = new PrintWriter(output, true);

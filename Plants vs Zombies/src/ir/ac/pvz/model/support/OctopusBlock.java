@@ -1,18 +1,13 @@
 package ir.ac.pvz.model.support;
 
-
 import ir.ac.pvz.model.core.Plant;
 
 public class OctopusBlock {
-
     public int health;
-
     private Plant blockedPlant;
-
     public OctopusBlock(int health) {
         this.health = Math.max(0, health);
     }
-
     public void blockPlant(Plant plant) {
         if (plant == null || plant.isOctopusBlocked) {
             return;
@@ -24,7 +19,6 @@ public class OctopusBlock {
             plant.freeze(Integer.MAX_VALUE);
         }
     }
-
     public void takeDamage(int amount) {
         if (amount <= 0 || health <= 0) {
             return;
@@ -34,7 +28,6 @@ public class OctopusBlock {
             destroy();
         }
     }
-
     public void destroy() {
         health = 0;
         if (blockedPlant != null) {
@@ -49,7 +42,6 @@ public class OctopusBlock {
         }
         blockedPlant = null;
     }
-
     public Plant getBlockedPlant() {
         return blockedPlant;
     }

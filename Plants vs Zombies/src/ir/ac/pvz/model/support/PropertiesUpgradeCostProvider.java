@@ -1,7 +1,6 @@
 package ir.ac.pvz.model.support;
 
 import ir.ac.pvz.model.interfaces.UpgradeCostProvider;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -11,13 +10,10 @@ import java.util.Map;
 import java.util.Properties;
 
 public class PropertiesUpgradeCostProvider implements UpgradeCostProvider {
-
     private final Map<String, int[]> costs;
-
     private PropertiesUpgradeCostProvider(Map<String, int[]> costs) {
         this.costs = costs;
     }
-
     public static PropertiesUpgradeCostProvider load(Path path)
             throws IOException {
         Properties properties = new Properties();
@@ -41,7 +37,6 @@ public class PropertiesUpgradeCostProvider implements UpgradeCostProvider {
         }
         return new PropertiesUpgradeCostProvider(costs);
     }
-
     @Override
     public void configureCost(String plantType, Upgrade upgrade) {
         if (upgrade == null) {
@@ -52,11 +47,9 @@ public class PropertiesUpgradeCostProvider implements UpgradeCostProvider {
             upgrade.setCost(cost[0], cost[1]);
         }
     }
-
     public boolean hasCost(String plantType, int level) {
         return costs.containsKey(key(plantType, level));
     }
-
     private static int parseNonNegative(String value, String key) {
         try {
             int parsed = Integer.parseInt(value.trim());
@@ -64,15 +57,14 @@ public class PropertiesUpgradeCostProvider implements UpgradeCostProvider {
                 throw new IllegalArgumentException(key + " cannot be negative.");
             }
             return parsed;
-        } catch (NumberFormatException exception) {
+        }
+        catch (NumberFormatException exception) {
             throw new IllegalArgumentException(key + " must be an integer.");
         }
     }
-
     private static String key(String plantType, int level) {
         return normalize(plantType) + "." + level;
     }
-
     private static String normalizeKey(String value) {
         int separator = value.lastIndexOf('.');
         if (separator < 1 || separator == value.length() - 1) {
@@ -83,14 +75,17 @@ public class PropertiesUpgradeCostProvider implements UpgradeCostProvider {
         int level;
         try {
             level = Integer.parseInt(value.substring(separator + 1));
-        } catch (NumberFormatException exception) {
+        }
+        catch (NumberFormatException exception) {
             throw new IllegalArgumentException("Upgrade level must be an integer.");
         }
         return key(plantType, level);
     }
-
     private static String normalize(String value) {
-        return value == null ? "" : value.replace("-", "")
-                .replace("_", "").replace(" ", "").toLowerCase();
+        if (value == null) {
+            return "";
+        }
+        return value.replace("-", "").replace("_", "")
+                .replace(" ", "").toLowerCase();
     }
 }

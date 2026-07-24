@@ -1,16 +1,16 @@
 package ir.ac.pvz.model.others;
+
 import ir.ac.pvz.controller.game_core.*;
 import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.*;
+import ir.ac.pvz.model.interfaces.IAttacker;
 import ir.ac.pvz.model.interfaces.UpgradeCostProvider;
 import ir.ac.pvz.model.interfaces.UpgradeResourceWallet;
 import ir.ac.pvz.model.plants.*;
 import ir.ac.pvz.model.support.*;
 import ir.ac.pvz.model.zombies.*;
 import java.util.*;
-
-
 public class GameSession {
     public GameStatus status;
     public int currentSunAmount;
@@ -34,17 +34,20 @@ public class GameSession {
     private int coins;
     private int diamonds;
     private int pots;
+    private final List<LootDrop> pendingLoot;
     private GameOutcomeListener outcomeListener;
     private boolean outcomeNotified;
-
     public GameSession(Board board, int startingSun) {
         this(board, startingSun, StageConfig.unconfigured(board.seasonType));
     }
     @SuppressWarnings("this-escape")
     public GameSession(Board board, int startingSun, StageConfig stageConfig) {
         this.board = board;
-        this.stageConfig = stageConfig == null
-                ? StageConfig.unconfigured(board.seasonType) : stageConfig;
+        if (stageConfig == null) {
+            this.stageConfig = StageConfig.unconfigured(board.seasonType);
+        } else {
+            this.stageConfig = stageConfig;
+        }
         this.status = GameStatus.PLANT_SELECTION_READY;
         this.currentSunAmount = startingSun;
         this.plantFoodCount = 0;
@@ -70,6 +73,7 @@ public class GameSession {
         this.coins = 0;
         this.diamonds = 0;
         this.pots = 0;
+        this.pendingLoot = new ArrayList<>();
         this.outcomeListener = null;
         this.outcomeNotified = false;
     }
@@ -257,7 +261,6 @@ public class GameSession {
         status = GameStatus.LOST;
         notifyOutcome();
     }
-
     public Plant findPlantTarget(Zombie zombie) {
         if (zombie instanceof ProspectorZombie
                 && ((ProspectorZombie) zombie).reversedByDynamite) {
@@ -265,7 +268,6 @@ public class GameSession {
         }
         return findNearestPlantAhead(zombie);
     }
-
     private Plant findNearestPlantToRight(Zombie zombie) {
         int minimumX = Math.max(0, (int) Math.floor(zombie.currentPosition.x));
         for (int x = minimumX; x < board.columns; x++) {
@@ -283,7 +285,6 @@ public class GameSession {
         }
         return null;
     }
-
     public Plant findNearestPlantAhead(Zombie zombie) {
         if (zombie == null) {
             return null;
@@ -324,20 +325,48 @@ public class GameSession {
         return zombieSpawner.spawnZombie(type, new ContinuousPosition(
                 position.x, position.y));
     }
-
     public UpgradeResult upgradePlant(Plant plant,
                                       UpgradeResourceWallet wallet,
                                       UpgradeCostProvider costProvider) {
         return new PlantUpgradeService().upgrade(plant, wallet, costProvider);
     }
-
     public UpgradeResult upgradePlant(Plant plant,
                                       UpgradeResourceWallet wallet) {
         return new PlantUpgradeService().upgrade(plant, wallet);
     }
-
     public Zombie cheatSpawnZombie(String type, int x, int y) {
         return zombieSpawner.spawnZombie(type, new ContinuousPosition(x, y));
+    }
+    public boolean collectLoot(GridPosition position) {
+        if (position == null) {
+            return false;
+        }
+        Iterator<LootDrop> iterator = pendingLoot.iterator();
+        while (iterator.hasNext()) {
+            LootDrop drop = iterator.next();
+            if (drop.position.equals(position)) {
+                lootDropService.applyLoot(drop.type, this);
+                iterator.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+    public void registerLootDrop(LootType type, GridPosition position) {
+        if (type != null && type != LootType.NONE && position != null) {
+            pendingLoot.add(new LootDrop(type,
+                    new GridPosition(position.x, position.y)));
+        }
+    }
+    public List<LootDrop> getPendingLoot() {
+        return new ArrayList<>(pendingLoot);
+    }
+    public Zombie spawnConfiguredZombie(String type,
+                                        ContinuousPosition position) {
+        if (type == null || position == null) {
+            return null;
+        }
+        return zombieSpawner.spawnZombie(type, position);
     }
     public List<Plant> getPlantCatalog() {
         List<Plant> plants = new ArrayList<>();
@@ -372,7 +401,6 @@ public class GameSession {
     public void setOutcomeListener(GameOutcomeListener listener) {
         this.outcomeListener = listener;
     }
-
     private void notifyOutcome() {
         if (outcomeNotified || outcomeListener == null) {
             return;
@@ -385,7 +413,6 @@ public class GameSession {
             outcomeListener.onGameLost(this);
         }
     }
-
     public int getCoins() { return coins; }
     public int getDiamonds() { return diamonds; }
     public int getPots() { return pots; }
@@ -406,8 +433,14 @@ public class GameSession {
             return null;
         }
         int targetLevel = stageConfig.getPlantLevel(type);
-        while (plant.level < targetLevel) {
+        for (int nextLevel = plant.level + 1;
+             nextLevel <= targetLevel; nextLevel++) {
+            int previousLevel = plant.level;
             plant.upgrade();
+            if (plant.level == previousLevel) {
+                throw new IllegalStateException("Missing level " + nextLevel
+                        + " upgrade for " + plant.type + ".");
+            }
         }
         return plant;
     }

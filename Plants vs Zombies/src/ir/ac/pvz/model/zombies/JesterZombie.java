@@ -1,20 +1,18 @@
 package ir.ac.pvz.model.zombies;
 
+import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.ProjectileTrajectory;
 import ir.ac.pvz.model.support.Projectile;
 import ir.ac.pvz.model.support.ZombieDataRepository;
-import ir.ac.pvz.model.core.Zombie;
 
 public class JesterZombie extends Zombie {
 
     public boolean isSpinning;
-
     private float normalSpeed;
     private final float spinSpeedMultiplier;
     private boolean incomingProjectileThisTick;
-
     public JesterZombie() {
-        super(0.185f, 420, 100, 450);
+        super("JesterZombie");
         this.isSpinning = false;
         this.normalSpeed = speed;
         this.spinSpeedMultiplier = (float) ZombieDataRepository.getInstance()
@@ -22,7 +20,6 @@ public class JesterZombie extends Zombie {
                         "MoveSpeedMultiplierWhileJuggling", 1d);
         this.incomingProjectileThisTick = false;
     }
-
     @Override
     public void applyBaseData(float movementSpeed, int baseHealth,
                               int eatDamagePerSecond, int cost,
@@ -33,15 +30,16 @@ public class JesterZombie extends Zombie {
         super.applyBaseData(slowSpeed, baseHealth, eatDamagePerSecond,
                 cost, weight, plantFoodEligible);
         normalSpeed = slowSpeed;
-        speed = isSpinning ? normalSpeed * spinSpeedMultiplier : normalSpeed;
+        speed = normalSpeed;
+        if (isSpinning) {
+            speed = normalSpeed * spinSpeedMultiplier;
+        }
     }
-
     public void spinUntilNoIncomingProjectile() {
         isSpinning = true;
         incomingProjectileThisTick = true;
         speed = normalSpeed * spinSpeedMultiplier;
     }
-
     public void stopSpinning() {
         isSpinning = false;
         speed = normalSpeed;
@@ -56,7 +54,6 @@ public class JesterZombie extends Zombie {
         }
         return null;
     }
-
     @Override
     public void receiveProjectile(Projectile projectile) {
         if (projectile != null
@@ -66,7 +63,6 @@ public class JesterZombie extends Zombie {
         }
         super.receiveProjectile(projectile);
     }
-
     @Override
     public void update(int tickCount) {
         super.update(tickCount);

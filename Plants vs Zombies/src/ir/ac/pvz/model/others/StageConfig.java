@@ -1,14 +1,15 @@
 package ir.ac.pvz.model.others;
 
-import ir.ac.pvz.controller.game_core.StageConfigurationException;
-import ir.ac.pvz.controller.game_core.ZombieSpawner;
+import ir.ac.pvz.controller.game_core.*;
+
+import ir.ac.pvz.model.others.SpecialSpawnEvent;
 import ir.ac.pvz.model.enums.SeasonType;
 import ir.ac.pvz.model.support.Board;
 import ir.ac.pvz.model.support.GridPosition;
 import ir.ac.pvz.model.support.BalanceDefaults;
 import ir.ac.pvz.model.support.ZombieBaseStats;
 import ir.ac.pvz.model.support.PlantDataRepository;
-import ir.ac.pvz.model.support.*;
+import ir.ac.pvz.model.support.ZombieDataRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 public class StageConfig {
-
     public SeasonType seasonType;
     public int totalWaves;
     public int baseWaveCost;
@@ -35,7 +35,6 @@ public class StageConfig {
     public List<SpecialSpawnEvent> specialSpawnEvents;
     public String imitaterTargetType;
     public boolean sandboxMode;
-
     public StageConfig(SeasonType seasonType, int totalWaves, int baseWaveCost,
                        float waveGrowthRate, float finalWaveMultiplier,
                        List<String> allowedZombieTypes) {
@@ -44,8 +43,11 @@ public class StageConfig {
         this.baseWaveCost = Math.max(0, baseWaveCost);
         this.waveGrowthRate = waveGrowthRate;
         this.finalWaveMultiplier = finalWaveMultiplier;
-        this.allowedZombieTypes = allowedZombieTypes == null
-                ? new ArrayList<>() : new ArrayList<>(allowedZombieTypes);
+        if (allowedZombieTypes == null) {
+            this.allowedZombieTypes = new ArrayList<>();
+        } else {
+            this.allowedZombieTypes = new ArrayList<>(allowedZombieTypes);
+        }
         this.zombieAbilityCooldowns = defaultAbilityCooldowns();
         this.zombieAbilityValues = defaultAbilityValues();
         this.zombieBaseStats = defaultZombieBaseStats();
@@ -57,30 +59,31 @@ public class StageConfig {
         this.imitaterTargetType = null;
         this.sandboxMode = false;
     }
-
     public static StageConfig unconfigured(SeasonType seasonType) {
         return new StageConfig(seasonType, 0, 0, 0.25f, 2f,
                 new ArrayList<>());
     }
-
     public static StageConfig openEnded(SeasonType seasonType) {
         StageConfig config = unconfigured(seasonType);
         config.sandboxMode = true;
+        config.selectAllPlants();
         return config;
     }
-
     public static StageConfig defaultPlayable(SeasonType seasonType) {
         return unconfigured(seasonType);
     }
-
     public static StageConfig of(SeasonType seasonType, int totalWaves,
                                  int baseWaveCost, String... zombieTypes) {
-        List<String> pool = zombieTypes == null || zombieTypes.length == 0
-                ? defaultZombiePool(seasonType) : Arrays.asList(zombieTypes);
+        List<String> pool;
+        if (zombieTypes == null || zombieTypes.length == 0) {
+            pool = defaultZombiePool(seasonType);
+        }
+        else {
+            pool = Arrays.asList(zombieTypes);
+        }
         return new StageConfig(seasonType, totalWaves,
                 baseWaveCost, 0.25f, 2f, pool);
     }
-
     public static List<String> defaultZombiePool(SeasonType seasonType) {
         List<String> types = new ArrayList<>(commonZombiePool());
         if (seasonType == SeasonType.ANCIENT_EGYPT) {
@@ -101,7 +104,6 @@ public class StageConfig {
         }
         return types;
     }
-
     public StageConfig addSpecialSpawnEvent(int tick, String zombieType,
                                             GridPosition position) {
         if (tick >= 0 && zombieType != null && position != null) {
@@ -110,12 +112,10 @@ public class StageConfig {
         }
         return this;
     }
-
     public StageConfig setImitaterTargetType(String plantType) {
         this.imitaterTargetType = plantType;
         return this;
     }
-
     public StageConfig setSelectedPlantTypes(String... plantTypes) {
         selectedPlantTypes.clear();
         if (plantTypes != null) {
@@ -123,7 +123,6 @@ public class StageConfig {
         }
         return this;
     }
-
     public StageConfig setBoostedPlantTypes(String... plantTypes) {
         boostedPlantTypes.clear();
         if (plantTypes != null) {
@@ -131,18 +130,15 @@ public class StageConfig {
         }
         return this;
     }
-
     public StageConfig setPlantLevel(String plantType, int level) {
         if (plantType != null && level >= 1 && level <= 4) {
             plantLevels.put(normalize(plantType), level);
         }
         return this;
     }
-
     public int getPlantLevel(String plantType) {
         return plantLevels.getOrDefault(normalize(plantType), 1);
     }
-
     public StageConfig setExplicitWaveCosts(int... waveCosts) {
         explicitWaveCosts.clear();
         if (waveCosts != null) {
@@ -152,19 +148,16 @@ public class StageConfig {
         }
         return this;
     }
-
     public boolean isPlantBoosted(String plantType) {
         String normalized = normalize(plantType);
         return boostedPlantTypes.stream().anyMatch(type ->
                 normalize(type).equals(normalized));
     }
-
     public boolean isPlantSelected(String plantType) {
         String normalized = normalize(plantType);
         return selectedPlantTypes.stream().anyMatch(type ->
                 normalize(type).equals(normalized));
     }
-
     public StageConfig setZombieBaseStats(String zombieType, float speed,
                                           int health, int eatDps,
                                           int waveCost, int accessoryHealth) {
@@ -175,22 +168,29 @@ public class StageConfig {
         }
         return this;
     }
+    private Long randomSeed;
+
+    public StageConfig setRandomSeed(Long randomSeed) {
+        this.randomSeed = randomSeed;
+        return this;
+    }
+
+    public Long getRandomSeed() {
+        return randomSeed;
+    }
 
     public ZombieBaseStats getZombieBaseStats(String zombieType) {
         return zombieBaseStats.get(normalize(zombieType));
     }
-
     public StageConfig setZombieAbilityValue(String key, int value) {
         if (key != null && value >= 0) {
             zombieAbilityValues.put(normalize(key), value);
         }
         return this;
     }
-
     public int getZombieAbilityValue(String key) {
         return zombieAbilityValues.getOrDefault(normalize(key), 0);
     }
-
     public StageConfig setZombieAbilityCooldown(String zombieType,
                                                 float seconds) {
         if (zombieType != null && seconds > 0f) {
@@ -198,11 +198,9 @@ public class StageConfig {
         }
         return this;
     }
-
     public float getZombieAbilityCooldown(String zombieType) {
         return zombieAbilityCooldowns.getOrDefault(normalize(zombieType), 0f);
     }
-
     public List<Integer> calculateWaveCosts() {
         if (!explicitWaveCosts.isEmpty()) {
             return new ArrayList<>(explicitWaveCosts);
@@ -211,17 +209,26 @@ public class StageConfig {
         if (totalWaves <= 0) {
             return costs;
         }
-        for (int number = 1; number < totalWaves; number++) {
-            int cost = Math.round((float) (baseWaveCost
-                    * Math.pow(1f + waveGrowthRate, number - 1)));
-            costs.add(cost);
+        int firstCost = Math.max(1000, baseWaveCost);
+        costs.add(firstCost);
+        if (totalWaves == 1) {
+            return costs;
         }
-        int previousCost = costs.isEmpty() ? baseWaveCost
-                : costs.get(costs.size() - 1);
-        costs.add(Math.round(previousCost * finalWaveMultiplier));
+        for (int number = 2; number < totalWaves; number++) {
+            int previous = costs.get(costs.size() - 1);
+            int percentageCost = Math.round(previous
+                    * (1f + Math.max(0.25f, waveGrowthRate)));
+            costs.add(Math.max(percentageCost, previous + 500));
+        }
+        int previousCost = baseWaveCost;
+        if (!costs.isEmpty()) {
+            previousCost = costs.get(costs.size() - 1);
+        }
+        // Page 25: data-driven stage values retain the mandatory flag minimum.
+        costs.add(Math.round(previousCost * Math.max(2f,
+                finalWaveMultiplier)));
         return costs;
     }
-
     public void validateForStart(Board board, ZombieSpawner spawner) {
         List<String> errors = new ArrayList<>();
         validateGeneralData(board, errors);
@@ -236,7 +243,6 @@ public class StageConfig {
                     System.lineSeparator(), errors));
         }
     }
-
     private void validateGeneralData(Board board, List<String> errors) {
         if (board == null) {
             errors.add("Board is required.");
@@ -254,22 +260,47 @@ public class StageConfig {
         if (waveGrowthRate < 0f) {
             errors.add("Wave growth rate cannot be negative.");
         }
-        if (finalWaveMultiplier <= 0f) {
-            errors.add("Final wave multiplier must be positive.");
+        if (finalWaveMultiplier < 2f) {
+            errors.add("Final wave multiplier must be at least 2.");
         }
-        if (baseWaveCost <= 0 && explicitWaveCosts.isEmpty()) {
-            errors.add("Base wave cost must be positive.");
+        if (baseWaveCost < 1000 && explicitWaveCosts.isEmpty()) {
+            errors.add("The first wave cost must be at least 1000.");
         }
         if (!explicitWaveCosts.isEmpty()
                 && explicitWaveCosts.size() != totalWaves) {
             errors.add("Explicit wave costs must contain one value per wave.");
         }
+        validateExplicitWaveProgression(errors);
         if (allowedZombieTypes.isEmpty()) {
             errors.add("At least one allowed zombie type is required.");
         }
     }
-
-
+    private void validateExplicitWaveProgression(List<String> errors) {
+        if (explicitWaveCosts.isEmpty()) {
+            return;
+        }
+        if (explicitWaveCosts.get(0) < 1000) {
+            errors.add("The first explicit wave cost must be at least 1000.");
+        }
+        for (int index = 1; index < explicitWaveCosts.size(); index++) {
+            int previous = explicitWaveCosts.get(index - 1);
+            int current = explicitWaveCosts.get(index);
+            if (current < previous + 500) {
+                errors.add("Each explicit wave must cost at least 500 more "
+                        + "than the previous wave.");
+                break;
+            }
+        }
+        if (explicitWaveCosts.size() >= 2) {
+            int previous = explicitWaveCosts.get(explicitWaveCosts.size() - 2);
+            int last = explicitWaveCosts.get(explicitWaveCosts.size() - 1);
+            if (last != Math.round(previous * Math.max(2f,
+                    finalWaveMultiplier))) {
+                errors.add("The final explicit wave cost must equal the final "
+                        + "wave multiplier applied to the previous wave.");
+            }
+        }
+    }
     private void validatePlantData(List<String> errors) {
         PlantDataRepository plants = PlantDataRepository.getInstance();
         for (String plantType : selectedPlantTypes) {
@@ -292,7 +323,6 @@ public class StageConfig {
             errors.add("Unknown Imitater target: " + imitaterTargetType);
         }
     }
-
     private void validateSpecialSpawnEvents(Board board,
                                             ZombieSpawner spawner,
                                             List<String> errors) {
@@ -304,7 +334,7 @@ public class StageConfig {
                 errors.add("Invalid special spawn position or tick.");
                 continue;
             }
-            Tile tile = board.getTile(event.position);
+            ir.ac.pvz.model.support.Tile tile = board.getTile(event.position);
             if (tile == null || !tile.isLowTideSpawn) {
                 errors.add("Special spawn must target LOW_TIDE or NECROMANCY.");
             }
@@ -314,7 +344,6 @@ public class StageConfig {
             }
         }
     }
-
     private void validateZombieData(ZombieSpawner spawner,
                                     List<String> errors) {
         if (spawner == null) {
@@ -329,7 +358,6 @@ public class StageConfig {
             }
         }
     }
-
     private void validateWaveData(ZombieSpawner spawner,
                                   List<String> errors) {
         if (sandboxMode || totalWaves <= 0 || spawner == null) {
@@ -346,21 +374,18 @@ public class StageConfig {
             }
         }
     }
-
     private void selectAllPlants() {
         selectedPlantTypes.clear();
-        for (PlantDefinition definition
+        for (ir.ac.pvz.model.support.PlantDefinition definition
                 : PlantDataRepository.getInstance().getAll()) {
             selectedPlantTypes.add(definition.name);
         }
     }
-
     private boolean containsZombie(String zombieType) {
         String normalized = normalize(zombieType);
         return allowedZombieTypes.stream().anyMatch(type ->
                 normalize(type).equals(normalized));
     }
-
     private Map<String, Float> defaultAbilityCooldowns() {
         ZombieDataRepository data = ZombieDataRepository.getInstance();
         Map<String, Float> cooldowns = new LinkedHashMap<>();
@@ -374,14 +399,12 @@ public class StageConfig {
                 BalanceDefaults.PIANIST_MUSIC_LOOP_SECONDS);
         return cooldowns;
     }
-
     private Map<String, Integer> defaultAbilityValues() {
         Map<String, Integer> values = new LinkedHashMap<>();
         values.put("huntericehealth", BalanceDefaults.HUNTER_ICE_HEALTH);
         values.put("octopusblockhealth", BalanceDefaults.OCTOPUS_BLOCK_HEALTH);
         return values;
     }
-
     private Map<String, ZombieBaseStats> defaultZombieBaseStats() {
         Map<String, ZombieBaseStats> stats = new LinkedHashMap<>();
         stats.put("barrelrollerzombie", new ZombieBaseStats(
@@ -392,10 +415,12 @@ public class StageConfig {
                 BalanceDefaults.BARREL_HEALTH));
         return stats;
     }
-
     private String normalize(String value) {
-        return value == null ? "" : value.replace("-", "")
-                .replace("_", "").replace(" ", "").toLowerCase();
+        if (value == null) {
+            return "";
+        }
+        return value.replace("-", "").replace("_", "")
+                .replace(" ", "").toLowerCase();
     }
 
     private static List<String> commonZombiePool() {

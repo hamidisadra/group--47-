@@ -1,21 +1,20 @@
 package ir.ac.pvz.model.zombies;
 
+import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.ProjectileType;
 import ir.ac.pvz.model.support.Dynamite;
 import ir.ac.pvz.model.support.Projectile;
-import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.support.ZombieDataRepository;
 
 public class ProspectorZombie extends Zombie {
-
     public Dynamite dynamite;
     public boolean reversedByDynamite;
-
     public ProspectorZombie() {
-        super(0.16f, 190, 100, 200);
-        this.dynamite = new Dynamite();
+        super("ProspectorZombie");
+        this.dynamite = new Dynamite((float) ZombieDataRepository.getInstance()
+                .getNumber("ProspectorZombie", "LaunchCountdown", 10d));
         this.reversedByDynamite = false;
     }
-
     @Override
     public void update(int tickCount) {
         super.update(tickCount);
@@ -27,7 +26,6 @@ public class ProspectorZombie extends Zombie {
             }
         }
     }
-
     @Override
     public void move(float deltaX) {
         if (!reversedByDynamite) {
@@ -40,7 +38,6 @@ public class ProspectorZombie extends Zombie {
         currentPosition.x += deltaX * speed;
         positionX = currentPosition.x;
     }
-
     @Override
     public void receiveProjectile(Projectile projectile) {
         if (projectile != null && projectile.type == ProjectileType.ICE) {

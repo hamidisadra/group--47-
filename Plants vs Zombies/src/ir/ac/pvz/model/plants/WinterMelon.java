@@ -5,17 +5,19 @@ import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.PlantTag;
 
 public class WinterMelon extends LobberPlant {
-
     public WinterMelon(int id) {
         super(id, "Winter Melon", 500, 300, 5f, 2.9f, 80, 1f,
                 PlantTag.ICE, PlantTag.AOE);
     }
-
     @Override
     public void attack(GameObject target) {
         super.attack(target);
         if (target instanceof Zombie) {
-            ((Zombie) target).chill(0.5f, level >= 3 ? 5f : 3f);
+            float chillDuration = 3f;
+            if (level >= 3) {
+                chillDuration = 5f;
+            }
+            ((Zombie) target).chill(0.5f, chillDuration);
         }
     }
 }

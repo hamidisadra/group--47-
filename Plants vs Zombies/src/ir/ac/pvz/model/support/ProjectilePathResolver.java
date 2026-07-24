@@ -1,18 +1,16 @@
 package ir.ac.pvz.model.support;
 
 import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.ProjectileTrajectory;
 import ir.ac.pvz.model.enums.ProjectileType;
-import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.zombies.ArcadeZombie;
 import ir.ac.pvz.model.zombies.BarrelRollerZombie;
 import ir.ac.pvz.model.zombies.ImpZombie;
 import ir.ac.pvz.model.zombies.JesterZombie;
-
 import java.util.List;
 
 public class ProjectilePathResolver {
-
     public boolean deliver(Projectile projectile, Zombie target, Board board) {
         if (projectile == null || target == null || board == null) {
             return false;
@@ -27,7 +25,6 @@ public class ProjectilePathResolver {
         }
         return true;
     }
-
     private boolean isBlockedBeforeTarget(Projectile projectile, Zombie target,
                                           Board board) {
         if (projectile.trajectory == ProjectileTrajectory.ARC
@@ -44,7 +41,6 @@ public class ProjectilePathResolver {
         }
         return false;
     }
-
     private boolean blockProjectile(Projectile projectile, Tile tile,
                                     Board board) {
         if (hitPushedObject(projectile, tile, board)
@@ -65,7 +61,6 @@ public class ProjectilePathResolver {
         }
         return false;
     }
-
     private boolean hitOctopusBlock(Projectile projectile, Tile tile) {
         for (Plant plant : tile.getPlants()) {
             if (plant.isOctopusBlocked && plant.blockingOctopus != null) {
@@ -76,7 +71,6 @@ public class ProjectilePathResolver {
         }
         return false;
     }
-
     private boolean hitPushedObject(Projectile projectile, Tile tile,
                                     Board board) {
         for (Zombie zombie : tile.getZombies()) {
@@ -99,7 +93,6 @@ public class ProjectilePathResolver {
         }
         return false;
     }
-
     private boolean hitArcadeMachine(Projectile projectile,
                                      ArcadeZombie zombie) {
         ArcadeMachine machine = zombie.arcadeMachine;
@@ -110,7 +103,6 @@ public class ProjectilePathResolver {
         projectile.die();
         return true;
     }
-
     private boolean hitBarrel(Projectile projectile, Barrel barrel,
                               Board board) {
         if (barrel == null || barrel.health <= 0) {
@@ -123,7 +115,6 @@ public class ProjectilePathResolver {
         }
         return true;
     }
-
     private void spawnBarrelImps(Barrel barrel, Board board) {
         List<ImpZombie> imps = barrel.breakAndSpawnImps();
         for (ImpZombie imp : imps) {
@@ -131,7 +122,6 @@ public class ProjectilePathResolver {
         }
         board.removeLooseBarrel(barrel);
     }
-
     private void hitFrozenBlock(Projectile projectile, Tile tile,
                                 Board board) {
         if (projectile.type == ProjectileType.FIRE) {
@@ -143,7 +133,6 @@ public class ProjectilePathResolver {
             board.clearDestroyedObstacle(tile);
         }
     }
-
     private void deliverReflected(Projectile projectile, Zombie jester,
                                   ProjectileType originalType, Board board) {
         int start = (int) Math.floor(jester.currentPosition.x) - 1;
@@ -162,7 +151,6 @@ public class ProjectilePathResolver {
             }
         }
     }
-
     private Plant firstVulnerablePlant(Tile tile) {
         for (int index = tile.getPlants().size() - 1; index >= 0; index--) {
             Plant plant = tile.getPlants().get(index);
@@ -172,7 +160,6 @@ public class ProjectilePathResolver {
         }
         return null;
     }
-
     private void hitReflectedPlant(Projectile projectile,
                                    ProjectileType originalType,
                                    Plant plant, Board board) {
@@ -182,7 +169,6 @@ public class ProjectilePathResolver {
             applyHunterIceHit(plant, board);
         }
     }
-
     private void applyHunterIceHit(Plant plant, Board board) {
         plant.receiveHunterIceHit(3);
         if (!plant.isPermanentlyFrozen()) {

@@ -1,5 +1,7 @@
 package ir.ac.pvz.model.others;
 
+import ir.ac.pvz.controller.game_core.*;
+
 import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.enums.FallingSunType;
 import ir.ac.pvz.model.enums.SeasonType;
@@ -7,33 +9,32 @@ import ir.ac.pvz.model.interfaces.ISunProducer;
 import ir.ac.pvz.model.support.Board;
 import ir.ac.pvz.model.support.GridPosition;
 import ir.ac.pvz.model.support.Sun;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 public class SunManager {
-
     public int currentSunAmount;
     public int lastSkyDropTick;
     public float normalSunChance;
     public float specialSunChance;
     public float radioactiveSunChance;
     public float skySunFallDurationSeconds;
-
     private final List<Sun> suns;
     private final Map<Plant, Sun> plantSuns;
-    private final Random random;
+    private final RandomGenerator random;
     private Board board;
-
     public SunManager(int startingSun) {
         this(startingSun, null);
     }
-
     public SunManager(int startingSun, Board board) {
+        this(startingSun, board, new Random());
+    }
+    public SunManager(int startingSun, Board board, RandomGenerator random) {
         this.currentSunAmount = startingSun;
         this.lastSkyDropTick = 0;
         this.normalSunChance = 0.80f;
@@ -42,14 +43,15 @@ public class SunManager {
         this.skySunFallDurationSeconds = 5f;
         this.suns = new ArrayList<>();
         this.plantSuns = new HashMap<>();
-        this.random = new Random();
+        if (random == null) {
+            throw new IllegalArgumentException("Random generator cannot be null.");
+        }
+        this.random = random;
         this.board = board;
     }
-
     public float calculateDropIntervalSeconds(float elapsedSeconds) {
         return Math.max(6f + 0.05f * elapsedSeconds, 12f);
     }
-
     public Sun dropSkySun(Board board) {
         this.board = board;
         GridPosition position = new GridPosition(random.nextInt(board.columns), random.nextInt(board.rows));
@@ -74,7 +76,6 @@ public class SunManager {
                 + position.toUserString());
         return sun;
     }
-
     public Sun producePlantSun(Plant plant) {
         if (!(plant instanceof ISunProducer) || plantSuns.containsKey(plant)) {
             return null;
@@ -90,9 +91,6 @@ public class SunManager {
                 + plant.location.toUserString());
         return sun;
     }
-
-
-
     public Sun dropGroundSun(GridPosition position, int amount) {
         if (position == null || amount <= 0) {
             return null;
@@ -101,7 +99,6 @@ public class SunManager {
         suns.add(sun);
         return sun;
     }
-
     public Sun produceBonusPlantSun(Plant plant, int amount) {
         if (plant == null || plant.location == null || amount <= 0) {
             return null;
@@ -113,7 +110,6 @@ public class SunManager {
                 + plant.location.toUserString());
         return sun;
     }
-
     public boolean collectSun(GridPosition position) {
         for (Sun sun : new ArrayList<>(suns)) {
             if (!sun.isAlive || !sun.groundPosition.equals(position)) {
@@ -131,16 +127,12 @@ public class SunManager {
         }
         return false;
     }
-
     public void addSuns(int count) {
         currentSunAmount += count;
     }
-
     public int showSunAmount() {
         return currentSunAmount;
     }
-
-
     public int pullGroundSunsToward(GridPosition target, int maximumAmount) {
         if (target == null || maximumAmount <= 0) {
             return 0;
@@ -160,7 +152,6 @@ public class SunManager {
         }
         return stolen;
     }
-
     private void moveSunToward(Sun sun, GridPosition target) {
         int x = sun.groundPosition.x;
         int y = sun.groundPosition.y;
@@ -174,7 +165,6 @@ public class SunManager {
         sun.positionX = x;
         sun.positionY = y;
     }
-
     public int stealGroundSuns(int maximumAmount) {
         int stolen = 0;
         for (Sun sun : new ArrayList<>(suns)) {
@@ -193,19 +183,15 @@ public class SunManager {
         }
         return stolen;
     }
-
     public List<Sun> getActiveSuns() {
         return new ArrayList<>(suns);
     }
-
     public boolean isSkyDropAllowed(SeasonType seasonType) {
         return seasonType != SeasonType.DARK_AGES;
     }
-
     public boolean hasPendingPlantSun(Plant plant) {
         return plantSuns.containsKey(plant);
     }
-
     public boolean spendSuns(int count) {
         if (currentSunAmount < count) {
             return false;
@@ -213,7 +199,6 @@ public class SunManager {
         currentSunAmount -= count;
         return true;
     }
-
     public void update(int currentTick, float elapsedSeconds) {
         for (Sun sun : new ArrayList<>(suns)) {
             sun.update(1);
@@ -234,7 +219,6 @@ public class SunManager {
             }
         }
     }
-
     private void removeSun(Sun sun) {
         suns.remove(sun);
         plantSuns.values().removeIf(value -> value == sun);

@@ -13,15 +13,20 @@ import ir.ac.pvz.model.support.ArmorPiece;
 import ir.ac.pvz.model.support.ContinuousPosition;
 import ir.ac.pvz.model.support.Projectile;
 import ir.ac.pvz.model.support.ZombieAbility;
+import ir.ac.pvz.model.support.EatingAttackStrategy;
+import ir.ac.pvz.model.support.WalkingMovementStrategy;
+import ir.ac.pvz.model.support.ZombieAttackStrategy;
+import ir.ac.pvz.model.support.ZombieDeathEvent;
+import ir.ac.pvz.model.support.ZombieDeathListener;
+import ir.ac.pvz.model.support.ZombieMovementStrategy;
 import ir.ac.pvz.model.support.ZombieEffect;
-import ir.ac.pvz.model.core.Plant;
-
+import ir.ac.pvz.model.support.ZombieBaseStats;
+import ir.ac.pvz.model.support.ZombieDataRepository;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 public abstract class Zombie extends GameObject implements IMovable {
-
     public float speed;
     public int attackDamage;
     public ArmorDecorator armor;
@@ -38,14 +43,20 @@ public abstract class Zombie extends GameObject implements IMovable {
     public int initialWaveCost;
     public List<ArmorPiece> armorPieces;
     public Plant lastDamageSource;
+    public int lastDamageProjectileId;
     public int selectionWeight;
     public boolean canSpawnPlantFood;
-
+    public String type;
+    public String displayName;
+    public ZombieMovementStrategy movementStrategy;
+    public ZombieAttackStrategy attackStrategy;
+    public Projectile incomingProjectile;
     private float chillSlowFactor;
     private float attackProgress;
     private int poisonDamagePerSecond;
     private float poisonDamageAccumulator;
-
+    private boolean deathEventPublished;
+    private final List<ZombieDeathListener> deathListeners;
     protected Zombie(float speed, int health, int attackDamage, int waveCost) {
         super(8f, 0, health);
         this.speed = speed;
@@ -66,12 +77,41 @@ public abstract class Zombie extends GameObject implements IMovable {
         this.lastDamageSource = null;
         this.selectionWeight = 0;
         this.canSpawnPlantFood = true;
+        this.type = "Zombie";
+        this.displayName = this.type;
+        this.movementStrategy = new WalkingMovementStrategy();
+        this.attackStrategy = new EatingAttackStrategy();
+        this.incomingProjectile = null;
         this.chillSlowFactor = 1f;
         this.attackProgress = 0f;
         this.poisonDamagePerSecond = 0;
         this.poisonDamageAccumulator = 0f;
+        this.deathEventPublished = false;
+        this.deathListeners = new ArrayList<>();
+        this.deathListeners.add(event -> System.out.println(
+                "Zombie of type " + event.type + " is dead at ("
+                        + (event.position.x + 1f) + ", "
+                        + (event.position.y + 1) + ")"));
     }
-
+    protected Zombie(String zombieType) {
+        this(ZombieBaseStats.fromRepository(zombieType));
+        ZombieDataRepository.getInstance().applyTo(this, zombieType);
+        setIdentity(zombieType, zombieType);
+    }
+    private Zombie(ZombieBaseStats stats) {
+        this(stats.speed, stats.health, stats.eatDamagePerSecond,
+                stats.waveCost);
+    }
+    protected double requiredDataNumber(String key) {
+        ir.ac.pvz.model.support.ZombieDefinition definition =
+                ZombieDataRepository.getInstance().getByZombieType(type);
+        if (definition == null
+                || !definition.numericProperties.containsKey(key)) {
+            throw new IllegalStateException(
+                    "Missing zombie value " + key + " for " + type);
+        }
+        return definition.numericProperties.get(key);
+    }
     public void applyBaseData(float movementSpeed, int baseHealth,
                               int eatDamagePerSecond, int cost,
                               int weight, boolean plantFoodEligible) {
@@ -83,79 +123,86 @@ public abstract class Zombie extends GameObject implements IMovable {
         waveCost = cost;
         initialWaveCost = cost;
         selectionWeight = weight;
-        canSpawnPlantFood = true;
+        canSpawnPlantFood = plantFoodEligible;
         isGlowing = Math.random() < 0.05;
         isAlive = true;
+        deathEventPublished = false;
     }
-
     @Override
     public void move(float deltaX) {
         if (frozen || isStunned() || !isAlive) {
             return;
         }
-        float direction = isHypnotized ? 1f : -1f;
-        currentPosition.x += direction * deltaX * speed * chillSlowFactor;
-        positionX = currentPosition.x;
+        movementStrategy.move(this, deltaX);
     }
-
     public void onReachPlant(Plant plant) {
         attackPlant(plant);
     }
-
     public void onDeath() {
-        System.out.println("Zombie of type " + getClass().getSimpleName()
-                + " is dead at (" + (currentPosition.x + 1f) + ", "
-                + (lane + 1) + ")");
+        publishDeathEvent();
     }
-
     public void specialBehavior() {
     }
-
     public void receiveProjectile(Projectile projectile) {
+        if (projectile != null) {
+            lastDamageProjectileId = projectile.projectileId;
+        }
         if (projectile == null || !isAlive) {
             return;
         }
-        if (projectile.type == ProjectileType.FIRE) {
-            melt();
-            clearChill();
-            effects.removeIf(effect -> effect.type == ZombieEffectType.FROZEN
-                    || effect.type == ZombieEffectType.CHILLED);
-        }
-        if (projectile.damageMode == DamageMode.INSTANT_KILL) {
-            die();
-        }
-        else if (projectile.type == ProjectileType.POISON
-                || projectile.damageMode == DamageMode.IGNORE_ARMOR) {
-            super.takeDamage(projectile.damageAmount);
-            currentHealth = health;
-        }
-        else {
-            takeDamage(projectile.damageAmount);
-        }
-        if (projectile.type == ProjectileType.ICE) {
-            chill(0.5f, 3f);
-        }
-    }
-
-    public void attackPlant(Plant plant) {
-        if (plant != null && plant.isAlive) {
-            plant.takeDamage(damageToPlant);
-            if (plant instanceof IWall) {
-                ((IWall) plant).block(this);
+        for (ZombieAbility ability : new ArrayList<>(abilities)) {
+            if (ability.blocksProjectile(this, projectile)) {
+                return;
             }
         }
+        for (ZombieAbility ability : new ArrayList<>(abilities)) {
+            ability.onProjectileReceived(this, projectile, null);
+        }
+        incomingProjectile = projectile;
+        try {
+            if (projectile.type == ProjectileType.FIRE) {
+                melt();
+                clearChill();
+                effects.removeIf(effect -> effect.type == ZombieEffectType.FROZEN
+                        || effect.type == ZombieEffectType.CHILLED);
+            }
+            if (projectile.damageMode == DamageMode.INSTANT_KILL) {
+                if (!blocksAbilityDamage(projectile.damageAmount)) {
+                    die();
+                }
+            }
+            else if (projectile.type == ProjectileType.POISON
+                    || projectile.damageMode == DamageMode.IGNORE_ARMOR) {
+                if (!blocksAbilityDamage(projectile.damageAmount)) {
+                    super.takeDamage(projectile.damageAmount);
+                    currentHealth = health;
+                }
+            }
+            else {
+                takeDamage(projectile.damageAmount);
+            }
+            if (projectile.type == ProjectileType.ICE) {
+                chill(0.5f, 3f);
+            }
+        } finally {
+            incomingProjectile = null;
+        }
     }
-
+    public void attackPlant(Plant plant) {
+        attackStrategy.attack(this, plant);
+    }
     public LootType dropLoot() {
         return new LootDropService().rollLoot(this);
     }
-
     public boolean isDead() {
         return !isAlive || currentHealth <= 0;
     }
-
     @Override
     public void takeDamage(int amount) {
+        if (blocksAbilityDamage(amount)) {
+            return;
+        }
+        int armorPiecesBefore = armorPieces.size();
         int remaining = amount;
         Iterator<ArmorPiece> iterator = armorPieces.iterator();
         while (iterator.hasNext() && remaining > 0) {
@@ -165,29 +212,35 @@ public abstract class Zombie extends GameObject implements IMovable {
                 iterator.remove();
             }
         }
-        armor = armorPieces.isEmpty() ? null : armorPieces.get(0);
+        if (armorPieces.isEmpty()) {
+            armor = null;
+        } else {
+            armor = armorPieces.get(0);
+        }
         super.takeDamage(remaining);
         currentHealth = health;
+        for (ZombieAbility ability : new ArrayList<>(abilities)) {
+            ability.onDamaged(this, armorPiecesBefore, armorPieces.size());
+        }
     }
-
     public void receiveInstantKill(ProjectileTrajectory trajectory) {
         die();
     }
-
     public final void forceDie() {
         if (!isAlive) {
             return;
         }
         super.die();
         currentHealth = 0;
+        for (ZombieAbility ability : new ArrayList<>(abilities)) {
+            ability.onDeath(this, null);
+        }
         onDeath();
     }
-
     @Override
     public void die() {
         forceDie();
     }
-
     @Override
     public void update(int tickCount) {
         super.update(tickCount);
@@ -210,9 +263,13 @@ public abstract class Zombie extends GameObject implements IMovable {
             poisonDamageAccumulator = 0f;
         }
     }
-
     @Override
     public void freeze(int duration) {
+        for (ZombieAbility ability : new ArrayList<>(abilities)) {
+            if (ability.blocksFreeze(this)) {
+                return;
+            }
+        }
         super.freeze(duration);
         ZombieEffect frozenEffect = findEffect(ZombieEffectType.FROZEN);
         if (frozenEffect == null) {
@@ -223,8 +280,6 @@ public abstract class Zombie extends GameObject implements IMovable {
                     duration / 10f);
         }
     }
-
-
     public void chill(float slowFactor, float seconds) {
         if (!isAlive || slowFactor <= 0f || slowFactor >= 1f || seconds <= 0f) {
             return;
@@ -238,12 +293,10 @@ public abstract class Zombie extends GameObject implements IMovable {
             chilled.remainingSeconds = Math.max(chilled.remainingSeconds, seconds);
         }
     }
-
     public void clearChill() {
         chillSlowFactor = 1f;
         effects.removeIf(effect -> effect.type == ZombieEffectType.CHILLED);
     }
-
     public void stun(float seconds) {
         if (!isAlive || seconds <= 0f) {
             return;
@@ -256,11 +309,9 @@ public abstract class Zombie extends GameObject implements IMovable {
             stunned.remainingSeconds = Math.max(stunned.remainingSeconds, seconds);
         }
     }
-
     public boolean isStunned() {
         return findEffect(ZombieEffectType.STUNNED) != null;
     }
-
     public void poison(int damagePerSecond, float seconds) {
         if (!isAlive || damagePerSecond <= 0 || seconds <= 0f) {
             return;
@@ -274,7 +325,6 @@ public abstract class Zombie extends GameObject implements IMovable {
             poisoned.remainingSeconds = Math.max(poisoned.remainingSeconds, seconds);
         }
     }
-
     private void applyPoisonDamage(float elapsedSeconds) {
         if (poisonDamagePerSecond <= 0 || !isAlive
                 || findEffect(ZombieEffectType.POISONED) == null) {
@@ -289,7 +339,6 @@ public abstract class Zombie extends GameObject implements IMovable {
         super.takeDamage(damage);
         currentHealth = health;
     }
-
     public boolean canAttackThisTick() {
         if (frozen || isStunned() || !isAlive) {
             return false;
@@ -301,15 +350,12 @@ public abstract class Zombie extends GameObject implements IMovable {
         attackProgress -= 1f;
         return true;
     }
-
     public float getChillSlowFactor() {
         return chillSlowFactor;
     }
-
     public void equipArmor(ArmorDecorator armor) {
         this.armor = armor;
     }
-
     public final void addArmorPiece(ArmorPiece piece) {
         if (piece == null) {
             return;
@@ -317,7 +363,6 @@ public abstract class Zombie extends GameObject implements IMovable {
         armorPieces.add(piece);
         armor = armorPieces.get(0);
     }
-
     public int getRemainingArmorHealth() {
         int total = 0;
         for (ArmorPiece piece : armorPieces) {
@@ -325,27 +370,58 @@ public abstract class Zombie extends GameObject implements IMovable {
         }
         return total;
     }
-
     public ArmorDecorator getArmor() {
         return armor;
     }
-
     public String getName() {
-        return getClass().getSimpleName();
+        return displayName;
     }
-
+    private boolean blocksAbilityDamage(int amount) {
+        for (ZombieAbility ability : new ArrayList<>(abilities)) {
+            if (ability.blocksDamage(this, amount)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public String getType() {
+        return type;
+    }
+    public void setIdentity(String zombieType, String zombieName) {
+        if (zombieType != null && !zombieType.isBlank()) {
+            type = zombieType;
+        }
+        if (zombieName == null || zombieName.isBlank()) {
+            displayName = type;
+        } else {
+            displayName = zombieName;
+        }
+    }
+    public void addDeathListener(ZombieDeathListener listener) {
+        if (listener != null && !deathListeners.contains(listener)) {
+            deathListeners.add(listener);
+        }
+    }
+    private void publishDeathEvent() {
+        if (deathEventPublished) {
+            return;
+        }
+        deathEventPublished = true;
+        ZombieDeathEvent event = new ZombieDeathEvent(this);
+        for (ZombieDeathListener listener
+                : new ArrayList<>(deathListeners)) {
+            listener.onZombieDeath(event);
+        }
+    }
     public int getAttackDamage() {
         return attackDamage;
     }
-
     public int getWaveCost() {
         return waveCost;
     }
-
     public boolean isHypnotized() {
         return isHypnotized;
     }
-
     public void setHypnotized(boolean hypnotized) {
         isHypnotized = hypnotized;
         if (hypnotized && findEffect(ZombieEffectType.HYPNOTIZED) == null) {
@@ -353,7 +429,6 @@ public abstract class Zombie extends GameObject implements IMovable {
                     Float.POSITIVE_INFINITY));
         }
     }
-
     private ZombieEffect findEffect(ZombieEffectType type) {
         for (ZombieEffect effect : effects) {
             if (effect.type == type) {

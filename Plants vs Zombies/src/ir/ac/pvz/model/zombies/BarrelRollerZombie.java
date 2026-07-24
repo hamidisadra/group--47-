@@ -1,14 +1,12 @@
 package ir.ac.pvz.model.zombies;
 
+import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.support.Barrel;
 import ir.ac.pvz.model.support.ContinuousPosition;
 import ir.ac.pvz.model.support.ZombieBaseStats;
-import ir.ac.pvz.model.core.Zombie;
 
 public class BarrelRollerZombie extends Zombie {
-
     public Barrel barrel;
-
     public BarrelRollerZombie(ZombieBaseStats stats) {
         super(stats.speed, stats.health, stats.eatDamagePerSecond,
                 stats.waveCost);

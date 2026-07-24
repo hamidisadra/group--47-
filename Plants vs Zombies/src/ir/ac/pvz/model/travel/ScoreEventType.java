@@ -4,5 +4,6 @@ public enum ScoreEventType {
     MULTI_HIT,
     SPEED_KILL,
     SIMULTANEOUS_KILLS,
-    CHAIN_KILL
+    CHAIN_KILL,
+    FLAWLESS_DEFENSE
 }

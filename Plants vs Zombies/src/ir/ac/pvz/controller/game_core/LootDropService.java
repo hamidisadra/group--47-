@@ -1,36 +1,35 @@
 package ir.ac.pvz.controller.game_core;
 
+import ir.ac.pvz.model.others.*;
+
 import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.LootType;
-import ir.ac.pvz.model.others.GameSession;
-
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 public class LootDropService {
-
     public float dropChance;
     public float coinChanceAfterDrop;
     public float diamondChanceAfterDrop;
     public float potChanceAfterDrop;
     public int coinDropAmount;
     public int diamondDropAmount;
-
-    private final Random random;
-
+    private final RandomGenerator random;
     public LootDropService() {
         this(new Random());
     }
-
-    public LootDropService(Random random) {
+    public LootDropService(RandomGenerator random) {
         this.dropChance = 0.10f;
         this.coinChanceAfterDrop = 0.80f;
         this.diamondChanceAfterDrop = 0.10f;
         this.potChanceAfterDrop = 0.10f;
         this.coinDropAmount = 50;
         this.diamondDropAmount = 1;
-        this.random = random == null ? new Random() : random;
+        if (random == null) {
+            throw new IllegalArgumentException("Random generator cannot be null.");
+        }
+        this.random = random;
     }
-
     public LootType rollLoot(Zombie zombie) {
         if (zombie == null || random.nextFloat() >= dropChance) {
             return LootType.NONE;
@@ -45,7 +44,6 @@ public class LootDropService {
         }
         return LootType.POT;
     }
-
     public void applyLoot(LootType type, GameSession session) {
         if (type == null || type == LootType.NONE || session == null) {
             return;
@@ -63,7 +61,6 @@ public class LootDropService {
             printDrop("pot", session.getPots(), "pots");
         }
     }
-
     private void printDrop(String item, int amount, String plural) {
         System.out.println("A zombie dropeed a " + item + "; you have "
                 + amount + " " + plural + " now.");

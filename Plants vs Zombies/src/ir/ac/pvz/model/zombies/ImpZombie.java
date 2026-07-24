@@ -1,15 +1,13 @@
 package ir.ac.pvz.model.zombies;
 
-import ir.ac.pvz.model.support.ZombieDataRepository;
 import ir.ac.pvz.model.core.Zombie;
+import ir.ac.pvz.model.support.ZombieDataRepository;
 
 public class ImpZombie extends Zombie {
-
     public ImpZombie() {
-        super(0.22f, 190, 100, 100);
+        super("ImpZombie");
         applyFastEating(speed, attackDamage);
     }
-
     @Override
     public void applyBaseData(float movementSpeed, int baseHealth,
                               int eatDamagePerSecond, int cost,
@@ -18,7 +16,6 @@ public class ImpZombie extends Zombie {
                 cost, weight, plantFoodEligible);
         applyFastEating(movementSpeed, eatDamagePerSecond);
     }
-
     private void applyFastEating(float movementSpeed, int baseEatDps) {
         double basicSpeed = ZombieDataRepository.getInstance().getNumber(
                 "BasicZombie", "Speed", 0.185d);

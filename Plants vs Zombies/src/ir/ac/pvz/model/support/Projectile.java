@@ -9,6 +9,12 @@ import ir.ac.pvz.model.enums.ProjectileType;
 
 public class Projectile extends GameObject {
 
+    /** Unique id so kills can be traced back to the exact shot. */
+    private static int nextProjectileId = 1;
+
+    public final int projectileId;
+
+
     public ProjectileType type;
     public ProjectileTrajectory trajectory;
     public ContinuousPosition currentPosition;
@@ -21,6 +27,9 @@ public class Projectile extends GameObject {
     public boolean ignoresObstacles;
     public DamageMode damageMode;
     public boolean isReflected;
+    public float height;
+    public float flightProgress;
+    public float arcHeight;
 
     private boolean expired;
 
@@ -30,6 +39,7 @@ public class Projectile extends GameObject {
                       int pierceCount, float splashRadius, boolean ignoresObstacles,
                       DamageMode damageMode) {
         super(currentPosition.x, currentPosition.y, 1);
+        this.projectileId = nextProjectileId++;
         this.type = type;
         this.trajectory = trajectory;
         this.currentPosition = currentPosition;
@@ -42,6 +52,12 @@ public class Projectile extends GameObject {
         this.ignoresObstacles = ignoresObstacles;
         this.damageMode = damageMode;
         this.isReflected = false;
+        this.height = 0f;
+        this.flightProgress = 0f;
+        this.arcHeight = 0f;
+        if (trajectory == ProjectileTrajectory.ARC) {
+            this.arcHeight = 1f;
+        }
         this.expired = false;
     }
 
@@ -53,9 +69,15 @@ public class Projectile extends GameObject {
     }
 
     public void move() {
-        float direction = isReflected ? -1f : 1f;
+        float direction = 1f;
+        if (isReflected) {
+            direction = -1f;
+        }
         currentPosition.x += direction * movementSpeed / 10f;
         positionX = currentPosition.x;
+        if (trajectory == ProjectileTrajectory.ARC) {
+            updateArcHeight();
+        }
     }
 
     public boolean canHit(GameObject target) {
@@ -101,5 +123,20 @@ public class Projectile extends GameObject {
 
     public boolean isExpired() {
         return expired || !isAlive;
+    }
+
+    private void updateArcHeight() {
+        if (!(target instanceof GameObject)) {
+            return;
+        }
+        float targetX = target.positionX;
+        float sourceX = positionX;
+        if (sourcePlant != null) {
+            sourceX = sourcePlant.positionX;
+        }
+        float distance = Math.max(0.0001f, Math.abs(targetX - sourceX));
+        flightProgress = Math.min(1f,
+                Math.abs(currentPosition.x - sourceX) / distance);
+        height = 4f * arcHeight * flightProgress * (1f - flightProgress);
     }
 }

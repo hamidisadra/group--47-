@@ -9,17 +9,14 @@ import ir.ac.pvz.model.support.BalanceDefaults;
 import java.util.Random;
 
 public class SunProducerPlant extends Plant implements ISunProducer {
-
     public int sunAmount;
     public float productionInterval;
-
     protected float productionElapsedSeconds;
     private boolean producedOnce;
     private int queuedPlantFoodSun;
     private boolean productionPaused;
     private float doubleSunChance;
     private final Random random;
-
     public SunProducerPlant(int id, String name, int cost, int baseHp,
                             float rechargeTime, int sunAmount,
                             float productionInterval, PlantTag... tags) {
@@ -34,7 +31,6 @@ public class SunProducerPlant extends Plant implements ISunProducer {
         this.doubleSunChance = 0f;
         this.random = new Random();
     }
-
     @Override
     public void onTick() {
         super.onTick();
@@ -42,7 +38,6 @@ public class SunProducerPlant extends Plant implements ISunProducer {
             productionElapsedSeconds += 0.1f;
         }
     }
-
     @Override
     public int produceSun() {
         if (queuedPlantFoodSun > 0) {
@@ -66,30 +61,23 @@ public class SunProducerPlant extends Plant implements ISunProducer {
         }
         return sunAmount;
     }
-
     public void enableDoubleSunChance() {
         doubleSunChance = BalanceDefaults.DOUBLE_SUN_CHANCE;
     }
-
     public float getDoubleSunChance() {
         return doubleSunChance;
     }
-
     protected void queuePlantFoodSun(int amount) {
         queuedPlantFoodSun = amount;
     }
-
     public int consumeQueuedPlantFoodSun() {
         int amount = queuedPlantFoodSun;
         queuedPlantFoodSun = 0;
         return amount;
     }
-
-
     public void setProductionPaused(boolean paused) {
         this.productionPaused = paused;
     }
-
     public float getProductionInterval() {
         return productionInterval;
     }

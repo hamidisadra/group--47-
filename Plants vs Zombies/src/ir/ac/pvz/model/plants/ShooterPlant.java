@@ -8,11 +8,9 @@ import ir.ac.pvz.model.enums.ProjectileType;
 import ir.ac.pvz.model.interfaces.IAttacker;
 
 public class ShooterPlant extends Plant implements IAttacker {
-
     public int damage;
     public ProjectileType projectileType;
     public int multiShot;
-
     public ShooterPlant(int id, String name, int cost, int baseHp, float rechargeTime,
                         float actionInterval, int damage, ProjectileType projectileType,
                         int multiShot, PlantTag... tags) {
@@ -22,7 +20,6 @@ public class ShooterPlant extends Plant implements IAttacker {
         this.projectileType = projectileType;
         this.multiShot = multiShot;
     }
-
     @Override
     public void attack(GameObject target) {
         if (target == null || !target.isAlive) {
@@ -33,12 +30,10 @@ public class ShooterPlant extends Plant implements IAttacker {
             target.takeDamage(damage);
         }
     }
-
     @Override
     public int getDamage() {
         return damage;
     }
-
     @Override
     public int getRange() {
         return 9;
