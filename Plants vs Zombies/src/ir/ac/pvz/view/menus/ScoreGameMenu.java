@@ -178,8 +178,8 @@ public class ScoreGameMenu extends Menu{
 
     private void runGame(GameSession session) {
         CommandLineGame game = new CommandLineGame(session);
-        BufferedReader in = menuManager.getInputReader();
-        PrintWriter out = menuManager.getOutputWriter();
+        BufferedReader in = menuManager.getIn();
+        PrintWriter out = menuManager.getOut();
 
         try {
             if (in != null && out != null) {
