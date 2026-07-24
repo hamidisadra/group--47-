@@ -49,6 +49,11 @@ public class ZombieBehaviorController {
             ((WizardZombie) zombie).onReachPlant(plant);
             return true;
         }
+        if (zombie instanceof SquashZombie) {
+            plant.takeDamage(plant.currentHp);
+            zombie.forceDie();
+            return true;
+        }
         if (zombie instanceof SnorkelZombie) {
             ((SnorkelZombie) zombie).surfaceToEatPlant();
         }
@@ -114,6 +119,9 @@ public class ZombieBehaviorController {
         if (zombie instanceof WizardZombie) {
             return ((WizardZombie) zombie).spellCooldownSeconds;
         }
+        if (zombie instanceof PeashooterZombie) {
+            return ((PeashooterZombie) zombie).shootCooldownSeconds;
+        }
         if (zombie instanceof HunterZombie) {
             float cooldown = session.getStageConfig().getZombieAbilityCooldown(
                     zombie.getClass().getSimpleName());
@@ -142,6 +150,9 @@ public class ZombieBehaviorController {
         }
         if (zombie instanceof PianistZombie) {
             return moveAdjacentZombies((PianistZombie) zombie, session.getBoard());
+        }
+        if (zombie instanceof PeashooterZombie) {
+            return shootPea((PeashooterZombie) zombie, session);
         }
         if (zombie instanceof HunterZombie) {
             return updateHunter((HunterZombie) zombie, session);
@@ -370,6 +381,49 @@ public class ZombieBehaviorController {
             lanes.add(lane + 1);
         }
         return lanes;
+    }
+
+    /**
+     * Fires a pea forward and lets it damage the plant it reaches.
+     */
+    private boolean shootPea(PeashooterZombie zombie, GameSession session) {
+        Plant target = session.findNearestPlantAhead(zombie);
+        if (target == null || target.location.x > zombie.currentPosition.x) {
+            return false;
+        }
+        Projectile pea = zombie.shootAtNearestPlant(session);
+        if (pea == null) {
+            return false;
+        }
+        pea.hit(target);
+        return true;
+    }
+
+    public void updateJalapeno(JalapenoZombie zombie, GameSession session) {
+        if (session == null || zombie.exploded || zombie.isDead()) {
+            return;
+        }
+
+        zombie.addTime(session.getClock().getTickDurationSeconds());
+        if (!zombie.isReadyToExplode()) {
+            return;
+        }
+
+        zombie.exploded = true;
+        System.out.println("The jalapeno zombie exploded and burned row " + (zombie.lane + 1) + ".");
+
+        for (int x = 0; x < session.getBoard().columns; x++) {
+            Tile tile = session.getBoard().getTile(new GridPosition(x, zombie.lane));
+
+            if (tile == null) {
+                continue;
+            }
+
+            for (Plant plant : new java.util.ArrayList<>(tile.getPlants())) {
+                plant.takeDamage(plant.currentHp);
+            }
+        }
+        zombie.forceDie();
     }
 
     private boolean updateHunter(HunterZombie hunter, GameSession session) {
