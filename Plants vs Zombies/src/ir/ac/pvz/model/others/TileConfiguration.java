@@ -1,23 +1,21 @@
 package ir.ac.pvz.model.others;
 
+import ir.ac.pvz.controller.game_core.*;
+
 import ir.ac.pvz.model.enums.SeasonType;
 import ir.ac.pvz.model.enums.TileType;
 import ir.ac.pvz.model.support.GridPosition;
-
 public class TileConfiguration {
-
     public GridPosition position;
     public TileType type;
     public String containedPlantType;
     public String containedZombieType;
-
     public TileConfiguration(GridPosition position, TileType type) {
         this.position = position;
         this.type = type;
         this.containedPlantType = null;
         this.containedZombieType = null;
     }
-
     public boolean isAllowedFor(SeasonType season) {
         if (season == SeasonType.ANCIENT_EGYPT) {
             return type == TileType.EGYPT_GROUND || type == TileType.TOMBSTONE;

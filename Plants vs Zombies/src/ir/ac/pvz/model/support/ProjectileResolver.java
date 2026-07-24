@@ -1,32 +1,40 @@
 package ir.ac.pvz.model.support;
-
-
 import ir.ac.pvz.model.others.GameSession;
 import ir.ac.pvz.model.core.GameObject;
+import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.DamageMode;
 import ir.ac.pvz.model.enums.PlantCategory;
 import ir.ac.pvz.model.enums.PlantTag;
 import ir.ac.pvz.model.enums.ProjectileTrajectory;
 import ir.ac.pvz.model.enums.ProjectileType;
-import ir.ac.pvz.model.enums.ZombieEffectType;
+import ir.ac.pvz.model.plants.LobberPlant;
+import ir.ac.pvz.model.plants.MeleePlant;
 import ir.ac.pvz.model.plants.ShooterPlant;
 import ir.ac.pvz.model.plants.StrikeThroughPlant;
-import ir.ac.pvz.model.core.Plant;
-import ir.ac.pvz.model.core.Zombie;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.random.RandomGenerator;
 
 public class ProjectileResolver {
     private final Map<Plant, Integer> attackCycles = new IdentityHashMap<>();
-    private final transient Random random = new Random();
+    private final RandomGenerator random;
     private final ProjectilePathResolver pathResolver = new ProjectilePathResolver();
     private final ProjectileCollisionResolver collisionResolver =
             new ProjectileCollisionResolver();
+    public ProjectileResolver() {
+        this(new Random());
+    }
+    public ProjectileResolver(RandomGenerator random) {
+        if (random == null) {
+            throw new IllegalArgumentException("Random generator cannot be null.");
+        }
+        this.random = random;
+    }
     public void resolveMovement(Projectile projectile, Board board) {
         collisionResolver.resolveMovement(projectile, board);
     }
@@ -132,10 +140,15 @@ public class ProjectileResolver {
                     this, plant, target, damage, board);
             return true;
         }
-        int shots = plant instanceof ShooterPlant ? ((ShooterPlant) plant).multiShot : 1;
-        float plantFoodChance = plant.level >= 3
-                ? BalanceDefaults.MEGA_GATLING_LEVEL_THREE_PLANT_FOOD_CHANCE
-                : BalanceDefaults.MEGA_GATLING_PLANT_FOOD_CHANCE;
+        int shots = 1;
+        if (plant instanceof ShooterPlant) {
+            shots = ((ShooterPlant) plant).multiShot;
+        }
+        float plantFoodChance = BalanceDefaults.MEGA_GATLING_PLANT_FOOD_CHANCE;
+        if (plant.level >= 3) {
+            plantFoodChance =
+                    BalanceDefaults.MEGA_GATLING_LEVEL_THREE_PLANT_FOOD_CHANCE;
+        }
         if (type.equals("megagatlingpea")
                 && random.nextFloat() < plantFoodChance) {
             shots += 4;
@@ -169,12 +182,15 @@ public class ProjectileResolver {
         if (zombies.isEmpty()) {
             return false;
         }
-        int limit = plant instanceof StrikeThroughPlant
-                ? ((StrikeThroughPlant) plant).pierceCount : zombies.size();
+        int limit = zombies.size();
+        if (plant instanceof StrikeThroughPlant) {
+            limit = ((StrikeThroughPlant) plant).pierceCount;
+        }
         if (type.equals("fumeshroom")) {
             limit = zombies.size();
         }
-        for (int i = 0; i < zombies.size() && i < limit; i++) {
+        int targetCount = Math.min(zombies.size(), Math.max(0, limit));
+        for (int i = 0; i < targetCount; i++) {
             hitZombie(plant, zombies.get(i), plant.attackPower, ProjectileType.PIERCING,
                     session.getBoard());
         }
@@ -186,22 +202,27 @@ public class ProjectileResolver {
             return false;
         }
         int damage = plant.attackPower;
-        float butterChance = plant.level >= 2
-                ? BalanceDefaults.KERNEL_LEVEL_TWO_BUTTER_CHANCE
-                : BalanceDefaults.KERNEL_BUTTER_CHANCE;
+        float butterChance = BalanceDefaults.KERNEL_BUTTER_CHANCE;
+        if (plant.level >= 2) {
+            butterChance = BalanceDefaults.KERNEL_LEVEL_TWO_BUTTER_CHANCE;
+        }
         if (type.equals("kernelpult") && random.nextFloat() < butterChance) {
             damage = 40;
             target.stun(BalanceDefaults.KERNEL_BUTTER_STUN_SECONDS);
         }
         hitZombie(plant, target, damage, ProjectileType.LOBBED, session.getBoard());
         if (plant.plantTags.contains(PlantTag.AOE)) {
-            int splashDamage = damage + (plant.level >= 3 ? 15 : 0);
+            int splashBonus = 0;
+            if (plant.level >= 3) {
+                splashBonus = 15;
+            }
+            int splashDamage = damage + splashBonus;
             damageAreaAroundZombie(target, splashDamage, 1, session.getBoard(), target);
         }
         if (type.equals("wintermelon")) {
             for (Zombie zombie : session.getBoard().getZombiesAround(
                     new GridPosition((int) target.currentPosition.x, target.lane), 1)) {
-                zombie.chill(0.5f, plant.level >= 3 ? 5f : 3f);
+                zombie.chill(0.5f, chillDurationFor(plant));
             }
         }
         return true;
@@ -211,25 +232,35 @@ public class ProjectileResolver {
         List<Zombie> targets;
         if (type.equals("phatbeet") || type.equals("kiwibeast")) {
             targets = board.getZombiesAround(plant.location, 1);
-        } else {
-            targets = zombiesFrontAndBack(plant, plant.level >= 3
-                    && type.equals("wasabiwhip") ? 2 : 1, board);
+        }
+        else {
+            int range = 1;
+            if (plant.level >= 3 && type.equals("wasabiwhip")) {
+                range = 2;
+            }
+            targets = zombiesFrontAndBack(plant, range, board);
         }
         if (targets.isEmpty()) {
             return false;
         }
-        int damage = type.equals("kiwibeast") ? kiwibeastDamage(plant) : plant.attackPower;
+        int damage = plant.attackPower;
+        if (type.equals("kiwibeast")) {
+            damage = kiwibeastDamage(plant);
+        }
         if (type.equals("chomper")) {
             killZombie(plant, targets.get(0));
-        } else {
+        }
+        else {
+            ProjectileType projectileType = ProjectileType.PEA;
+            if (type.equals("wasabiwhip")) {
+                projectileType = ProjectileType.FIRE;
+            }
             for (Zombie zombie : targets) {
-                hitZombie(plant, zombie, damage, type.equals("wasabiwhip")
-                        ? ProjectileType.FIRE : ProjectileType.PEA, board);
+                hitZombie(plant, zombie, damage, projectileType, board);
             }
         }
         return true;
     }
-
     public void killZombie(Plant source, Zombie target) {
         if (target == null || target.isDead()) {
             return;
@@ -237,45 +268,74 @@ public class ProjectileResolver {
         target.lastDamageSource = source;
         target.receiveInstantKill(ProjectileTrajectory.STRAIGHT);
     }
-
     public void hitZombie(Plant plant, Zombie zombie, int damage, ProjectileType type,
                           Board board) {
         if (zombie == null || zombie.isDead()) {
             return;
         }
-        DamageMode mode = type == ProjectileType.POISON
-                ? DamageMode.IGNORE_ARMOR : DamageMode.ARMOR_FIRST;
-        ProjectileType resolvedType = type;
+        ProjectileType resolvedType = resolveProjectileType(plant, type);
         int resolvedDamage = damage;
-        if (type == ProjectileType.LOBBED && plant.plantTags.contains(PlantTag.FIRE)) {
-            resolvedType = ProjectileType.FIRE;
-        } else if (type == ProjectileType.LOBBED
-                && plant.plantTags.contains(PlantTag.ICE)) {
-            resolvedType = ProjectileType.ICE;
-        }
         if (isPeaProjectile(type) && hasTorchwoodBetween(plant, zombie, board)) {
             Plant torchwood = torchwoodBetween(plant, zombie, board);
             resolvedType = ProjectileType.FIRE;
-            resolvedDamage *= torchwood != null && torchwood.isBoostedByPlantFood ? 3 : 2;
+            int multiplier = 2;
+            if (torchwood != null && torchwood.isBoostedByPlantFood) {
+                multiplier = 3;
+            }
+            resolvedDamage *= multiplier;
         }
-        ProjectileTrajectory trajectory = type == ProjectileType.LOBBED
-                ? ProjectileTrajectory.ARC : trajectoryFor(resolvedType);
+        ProjectileTrajectory trajectory = trajectoryForAttack(type, resolvedType);
+        DamageMode mode = damageModeFor(type);
         Projectile projectile = new Projectile(resolvedType, trajectory,
                 new ContinuousPosition(plant.location.x, plant.location.y), 0f,
                 resolvedDamage, plant, zombie, 0, 0f,
                 trajectory != ProjectileTrajectory.STRAIGHT, mode);
         zombie.lastDamageSource = plant;
         pathResolver.deliver(projectile, zombie, board);
+        applyPostHitEffects(plant, zombie, type, resolvedType,
+                projectile, board);
+    }
+    private ProjectileType resolveProjectileType(
+            Plant plant, ProjectileType type) {
+        if (type != ProjectileType.LOBBED) {
+            return type;
+        }
+        if (plant.plantTags.contains(PlantTag.FIRE)) {
+            return ProjectileType.FIRE;
+        }
+        if (plant.plantTags.contains(PlantTag.ICE)) {
+            return ProjectileType.ICE;
+        }
+        return type;
+    }
+    private DamageMode damageModeFor(ProjectileType type) {
+        if (type == ProjectileType.POISON) {
+            return DamageMode.IGNORE_ARMOR;
+        }
+        return DamageMode.ARMOR_FIRST;
+    }
+    private ProjectileTrajectory trajectoryForAttack(
+            ProjectileType originalType, ProjectileType resolvedType) {
+        if (originalType == ProjectileType.LOBBED) {
+            return ProjectileTrajectory.ARC;
+        }
+        return trajectoryFor(resolvedType);
+    }
+    private void applyPostHitEffects(Plant plant, Zombie zombie,
+                                     ProjectileType originalType,
+                                     ProjectileType resolvedType,
+                                     Projectile projectile, Board board) {
         if (resolvedType == ProjectileType.ICE && !projectile.isReflected) {
-            zombie.chill(0.5f, plant.level >= 3 ? 5f : 3f);
+            zombie.chill(0.5f, chillDurationFor(plant));
         }
         if (resolvedType == ProjectileType.FIRE) {
             ProjectilePlantSupport.meltFrozenBlockAt(zombie, board);
         }
-        if (type == ProjectileType.POISON) {
-            int poisonDamage = plant.level >= 2
-                    ? BalanceDefaults.UPGRADED_POISON_DPS
-                    : BalanceDefaults.BASE_POISON_DPS;
+        if (originalType == ProjectileType.POISON) {
+            int poisonDamage = BalanceDefaults.BASE_POISON_DPS;
+            if (plant.level >= 2) {
+                poisonDamage = BalanceDefaults.UPGRADED_POISON_DPS;
+            }
             zombie.poison(poisonDamage, BalanceDefaults.POISON_DURATION_SECONDS);
         }
     }
@@ -291,6 +351,12 @@ public class ProjectileResolver {
         }
         return ProjectileTrajectory.STRAIGHT;
     }
+    private float chillDurationFor(Plant plant) {
+        if (plant.level >= 3) {
+            return 5f;
+        }
+        return 3f;
+    }
     private ProjectileType projectileTypeFor(Plant plant) {
         if (plant instanceof ShooterPlant) {
             return ((ShooterPlant) plant).projectileType;
@@ -302,7 +368,10 @@ public class ProjectileResolver {
     }
     private int nextBowlingDamage(Plant plant) {
         int cycle = nextCycle(plant, 3);
-        float regenerationReduction = plant.level >= 2 ? 1f : 0f;
+        float regenerationReduction = 0f;
+        if (plant.level >= 2) {
+            regenerationReduction = 1f;
+        }
         if (cycle == 0) {
             plant.actionInterval = Math.max(0.1f, 5f - regenerationReduction);
             return 40;
@@ -371,79 +440,25 @@ public class ProjectileResolver {
         return true;
     }
     private Zombie chooseHomingTarget(Plant plant, List<Zombie> zombies) {
-        if (plant.getNormalizedType().equals("electricblueberry") && plant.level >= 3) {
-            return zombies.stream().max(Comparator.comparingInt(zombie -> zombie.currentHealth))
-                    .orElse(zombies.get(0));
-        }
-        if (plant.getNormalizedType().equals("caulipower")) {
-            return zombies.get(random.nextInt(zombies.size()));
-        }
-        return zombies.stream().min(Comparator.comparingDouble(zombie ->
-                distance(plant.location, zombie.currentPosition))).orElse(zombies.get(0));
+        return ProjectileTargetSupport.chooseHomingTarget(
+                plant, zombies, random);
     }
     private boolean removeMagneticArmor(Plant plant, List<Zombie> zombies) {
-        Zombie target = zombies.stream().filter(this::hasMagneticArmor)
-                .filter(zombie -> ProjectilePlantSupport.isWithinAttackRange(
-                        plant, zombie))
-                .min(Comparator.comparingDouble(zombie ->
-                        distance(plant.location, zombie.currentPosition))).orElse(null);
-        if (target == null) {
-            return false;
-        }
-        removeOneMagneticArmor(target);
-        return true;
-    }
-    private boolean hasMagneticArmor(Zombie zombie) {
-        return zombie.armorPieces.stream().anyMatch(piece -> piece.magnetic);
-    }
-    private void removeOneMagneticArmor(Zombie zombie) {
-        for (int i = 0; i < zombie.armorPieces.size(); i++) {
-            if (zombie.armorPieces.get(i).magnetic) {
-                zombie.armorPieces.remove(i);
-                zombie.armor = zombie.armorPieces.isEmpty() ? null : zombie.armorPieces.get(0);
-                return;
-            }
-        }
-    }
-    private void removeAllMagneticArmor(Zombie zombie) {
-        zombie.armorPieces.removeIf(piece -> piece.magnetic);
-        zombie.armor = zombie.armorPieces.isEmpty() ? null : zombie.armorPieces.get(0);
+        return MagneticArmorSupport.removeNearest(plant, zombies);
     }
     public void freezeAllZombies(Board board, int ticks) {
-        board.getAllAliveZombies().forEach(zombie -> zombie.freeze(ticks));
+        ProjectileTargetSupport.freezeAllZombies(board, ticks);
     }
     public void damageAreaAroundZombie(Zombie center, int damage, int radius,
                                        Board board, Zombie excluded) {
-        GridPosition position = new GridPosition((int) Math.floor(center.currentPosition.x), center.lane);
-        for (Zombie zombie : board.getZombiesAround(position, radius)) {
-            if (zombie != excluded) {
-                zombie.takeDamage(damage);
-            }
-        }
+        ProjectileTargetSupport.damageAreaAroundZombie(
+                center, damage, radius, board, excluded);
     }
     public void resetSamePlantAges(Plant source, Board board) {
-        for (int row = 0; row < board.rows; row++) {
-            for (Plant plant : board.getPlantsInLane(row)) {
-                if (plant.getNormalizedType().equals(source.getNormalizedType())) {
-                    plant.resetAge();
-                }
-            }
-        }
+        ProjectileTargetSupport.resetSamePlantAges(source, board);
     }
     private int kiwibeastDamage(Plant plant) {
-        if (plant.level >= 4 && plant.getAgeSeconds() >= 120f) return 60;
-        if (plant.getAgeSeconds() >= 72f) return 45;
-        if (plant.getAgeSeconds() >= 24f) return 30;
-        return 15;
-    }
-    private void addOrRefreshEffect(Zombie zombie, ZombieEffectType type, float seconds) {
-        for (ZombieEffect effect : zombie.effects) {
-            if (effect.type == type) {
-                effect.remainingSeconds = Math.max(effect.remainingSeconds, seconds);
-                return;
-            }
-        }
-        zombie.effects.add(new ZombieEffect(type, seconds));
+        return ProjectileTargetSupport.kiwibeastDamage(plant);
     }
     private boolean isPeaProjectile(ProjectileType type) {
         return type == ProjectileType.PEA || type == ProjectileType.ICE
@@ -463,39 +478,20 @@ public class ProjectileResolver {
         return null;
     }
     public Zombie nearestAhead(Plant plant, Board board) {
-        Zombie target = board.getNearestZombieAhead(plant.location.x, plant.location.y);
-        return target != null && ProjectilePlantSupport
-                .isWithinAttackRange(plant, target) ? target : null;
+        return ProjectileTargetSupport.nearestAhead(plant, board);
     }
+
     public List<Zombie> aliveAheadInLane(Plant plant, Board board) {
-        List<Zombie> result = new ArrayList<>();
-        for (Zombie zombie : board.getZombiesInLane(plant.location.y)) {
-            if (!zombie.isDead() && zombie.currentPosition.x >= plant.location.x
-                    && ProjectilePlantSupport.isWithinAttackRange(
-                    plant, zombie)) {
-                result.add(zombie);
-            }
-        }
-        result.sort(Comparator.comparingDouble(zombie -> zombie.currentPosition.x));
-        return result;
+        return ProjectileTargetSupport.aliveAheadInLane(plant, board);
     }
     private List<Zombie> zombiesFrontAndBack(Plant plant, int range, Board board) {
-        List<Zombie> result = new ArrayList<>();
-        for (Zombie zombie : board.getZombiesInLane(plant.location.y)) {
-            if (!zombie.isDead() && Math.abs(zombie.currentPosition.x - plant.location.x) <= range) {
-                result.add(zombie);
-            }
-        }
-        return result;
+        return ProjectileTargetSupport.zombiesFrontAndBack(
+                plant, range, board);
     }
     public List<Zombie> randomTargets(List<Zombie> source, int count) {
-        List<Zombie> copy = new ArrayList<>(source);
-        java.util.Collections.shuffle(copy, random);
-        return new ArrayList<>(copy.subList(0, Math.min(count, copy.size())));
+        return ProjectileTargetSupport.randomTargets(source, count, random);
     }
     private double distance(GridPosition plant, ContinuousPosition zombie) {
-        double dx = plant.x - zombie.x;
-        double dy = plant.y - zombie.y;
-        return Math.sqrt(dx * dx + dy * dy);
+        return ProjectileTargetSupport.distance(plant, zombie);
     }
 }

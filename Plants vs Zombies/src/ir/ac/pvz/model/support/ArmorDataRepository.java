@@ -10,23 +10,18 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class ArmorDataRepository {
-
+public final class ArmorDataRepository implements ArmorDefinitionRepository {
     private static final ArmorDataRepository INSTANCE = load();
-
     private final Map<String, Integer> healthByAlias;
     private final Map<String, Boolean> metallicByAlias;
-
     private ArmorDataRepository(Map<String, Integer> healthByAlias,
                                 Map<String, Boolean> metallicByAlias) {
         this.healthByAlias = healthByAlias;
         this.metallicByAlias = metallicByAlias;
     }
-
     public static ArmorDataRepository getInstance() {
         return INSTANCE;
     }
-
     public int getHealth(String alias) {
         Integer health = healthByAlias.get(normalize(alias));
         if (health == null) {
@@ -34,11 +29,9 @@ public final class ArmorDataRepository {
         }
         return health;
     }
-
     public boolean isMetallic(String alias) {
         return metallicByAlias.getOrDefault(normalize(alias), false);
     }
-
     private static ArmorDataRepository load() {
         try (InputStream input = DataFileLocator.open("ArmorTypeData.json")) {
             String json = new String(input.readAllBytes(), StandardCharsets.UTF_8);
@@ -53,15 +46,27 @@ public final class ArmorDataRepository {
                         "BaseHealth", 0d));
                 metallic.put(normalize(alias), object.contains("\"metallic\""));
             }
-            if (health.size() != 6) {
-                throw new IOException("ArmorTypeData.json must contain 6 records.");
+            if (health.size() < 6) {
+                throw new IOException("ArmorTypeData.json must contain all required records.");
             }
+            validateOfficialHealth(health, "ConeDefault", 370);
+            validateOfficialHealth(health, "BucketDefault", 1100);
+            validateOfficialHealth(health, "BrickDefault", 2200);
+            validateOfficialHealth(health, "ShoulderArmorDefault", 1600);
+            validateOfficialHealth(health, "CrownDefault", 1600);
             return new ArmorDataRepository(health, metallic);
-        } catch (IOException exception) {
+        }
+        catch (IOException exception) {
             throw new ExceptionInInitializerError(exception);
         }
     }
-
+    private static void validateOfficialHealth(Map<String, Integer> values,
+                                               String alias, int expected)
+            throws IOException {
+        if (values.getOrDefault(normalize(alias), -1) != expected) {
+            throw new IOException(alias + " must have health " + expected + ".");
+        }
+    }
     private static List<String> splitTopLevelObjects(String json) {
         List<String> objects = new ArrayList<>();
         int depth = 0;
@@ -73,21 +78,25 @@ public final class ArmorDataRepository {
             if (quoted) {
                 if (escaped) {
                     escaped = false;
-                } else if (character == '\\') {
+                }
+                else if (character == '\\') {
                     escaped = true;
-                } else if (character == '"') {
+                }
+                else if (character == '"') {
                     quoted = false;
                 }
                 continue;
             }
             if (character == '"') {
                 quoted = true;
-            } else if (character == '{') {
+            }
+            else if (character == '{') {
                 if (depth == 0) {
                     start = index;
                 }
                 depth++;
-            } else if (character == '}') {
+            }
+            else if (character == '}') {
                 depth--;
                 if (depth == 0 && start >= 0) {
                     objects.add(json.substring(start, index + 1));
@@ -96,25 +105,30 @@ public final class ArmorDataRepository {
         }
         return objects;
     }
-
     private static String stringValue(String object, String key) {
         Pattern pattern = Pattern.compile("\\\"" + Pattern.quote(key)
                 + "\\\"\\s*:\\s*\\[\\s*\\\"([^\\\"]+)\\\"");
         Matcher matcher = pattern.matcher(object);
-        return matcher.find() ? matcher.group(1) : null;
+        if (!matcher.find()) {
+            return null;
+        }
+        return matcher.group(1);
     }
-
     private static double numberValue(String object, String key,
                                       double defaultValue) {
         Pattern pattern = Pattern.compile("\\\"" + Pattern.quote(key)
                 + "\\\"\\s*:\\s*(-?\\d+(?:\\.\\d+)?)");
         Matcher matcher = pattern.matcher(object);
-        return matcher.find() ? Double.parseDouble(matcher.group(1))
-                : defaultValue;
+        if (!matcher.find()) {
+            return defaultValue;
+        }
+        return Double.parseDouble(matcher.group(1));
     }
-
     private static String normalize(String value) {
-        return value == null ? "" : value.replace("-", "")
-                .replace("_", "").replace(" ", "").toLowerCase();
+        if (value == null) {
+            return "";
+        }
+        return value.replace("-", "").replace("_", "")
+                .replace(" ", "").toLowerCase();
     }
 }

@@ -4,14 +4,11 @@ import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.core.Zombie;
 
 public class FootballZombie extends Zombie {
-
     private boolean running;
-
     public FootballZombie() {
-        super(0.16f, 1100, 100, 1000);
+        super("FootballZombie");
         this.running = true;
     }
-
     @Override
     public void onReachPlant(Plant plant) {
         if (running && plant != null) {
@@ -22,7 +19,6 @@ public class FootballZombie extends Zombie {
         }
         super.onReachPlant(plant);
     }
-
     public boolean collideWithHypnotizedZombie(Zombie zombie) {
         if (!running || zombie == null || !zombie.isHypnotized) {
             return false;
@@ -30,7 +26,6 @@ public class FootballZombie extends Zombie {
         zombie.forceDie();
         return true;
     }
-
     public boolean isRunning() {
         return running;
     }

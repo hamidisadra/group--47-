@@ -7,7 +7,7 @@ import java.util.*;
 public class ScoreTracker {
     public static final int A_SECOND = 10;
     public static final int MIN_CHAIN_LENGTH = 3;
-    private List<ScoreEvent> events;
+    private final List<ScoreEvent> events = new ArrayList<>();
 
 
     public List<ScoreEvent> getEvents() {
@@ -69,7 +69,7 @@ public class ScoreTracker {
         List<Integer> ticks = new ArrayList<>(gameStatistics.getZombieKillTicks());
         Collections.sort(ticks);
 
-        for (int i = 0; i < ticks.size(); i++) {
+        for (int i = 1; i < ticks.size(); i++) {
             int space = ticks.get(i) - ticks.get(i - 1);
 
             if (space > 0 && space <= A_SECOND) {
@@ -85,7 +85,7 @@ public class ScoreTracker {
         int chainLength = 1;
         int chainStart = ticks.isEmpty() ? 0 : ticks.get(0);
 
-        for (int i = 0; i < ticks.size(); i++) {
+        for (int i = 1; i < ticks.size(); i++) {
             if (ticks.get(i) - ticks.get(i - 1) <= A_SECOND) {
                 chainLength++;
             }

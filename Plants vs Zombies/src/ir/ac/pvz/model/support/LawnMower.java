@@ -2,24 +2,19 @@ package ir.ac.pvz.model.support;
 
 import ir.ac.pvz.model.others.GameSession;
 import ir.ac.pvz.model.core.Zombie;
-
 import java.util.ArrayList;
 import java.util.List;
-
 public class LawnMower {
-
     public int relatedRow;
     public boolean activated;
     public List<Zombie> destroyedZombies;
     public boolean secondReachCausesLoss;
-
     public LawnMower(int relatedRow) {
         this.relatedRow = relatedRow;
         this.activated = false;
         this.destroyedZombies = new ArrayList<>();
         this.secondReachCausesLoss = true;
     }
-
     public void trigger(List<Zombie> zombies) {
         if (activated) {
             return;
@@ -32,15 +27,13 @@ public class LawnMower {
             if (canKill(zombie)) {
                 zombie.forceDie();
                 destroyedZombies.add(zombie);
-                System.out.println(zombie.getClass().getSimpleName());
+                System.out.println(zombie.getType());
             }
         }
     }
-
     public boolean canKill(Zombie zombie) {
         return zombie != null && zombie.isAlive && !zombie.isBoss;
     }
-
     public void handleZombieAtEnd(Zombie zombie, GameSession session) {
         if (!activated) {
             List<Zombie> zombies = new ArrayList<>(
@@ -56,15 +49,12 @@ public class LawnMower {
             session.lose();
         }
     }
-
     public int getRelatedRow() {
         return relatedRow;
     }
-
     public boolean isActivated() {
         return activated;
     }
-
     public List<Zombie> getDestroyedZombies() {
         return destroyedZombies;
     }

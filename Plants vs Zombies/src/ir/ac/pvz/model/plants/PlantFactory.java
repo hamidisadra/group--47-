@@ -1,193 +1,229 @@
 package ir.ac.pvz.model.plants;
 
 import ir.ac.pvz.model.core.Plant;
+import ir.ac.pvz.model.enums.PlantCategory;
+import ir.ac.pvz.model.enums.ProjectileType;
+import ir.ac.pvz.model.enums.TargetingMode;
 import ir.ac.pvz.model.support.PlantDataRepository;
+import ir.ac.pvz.model.support.PlantDefinition;
+import ir.ac.pvz.model.support.PlantDefinitionRepository;
+import ir.ac.pvz.model.support.BalanceDefaults;
 import ir.ac.pvz.model.support.Upgrade;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.IntFunction;
+import java.util.function.BiFunction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class PlantFactory {
-
-    private static final String[] PLANT_TYPES = {
-            "Sunflower",
-            "Twin Sunflower",
-            "Sun-shroom",
-            "Primal Sunflower",
-            "Gold Bloom",
-            "Peashooter",
-            "Repeater",
-            "Threepeater",
-            "Snow Pea",
-            "Rotobaga",
-            "Pea Pod",
-            "Split Pea",
-            "Citron",
-            "Caulipower",
-            "Electric Blueberry",
-            "Bowling Bulb",
-            "Cactus",
-            "Fire Peashooter",
-            "Starfruit",
-            "Goo Peashooter",
-            "Mega Gatling Pea",
-            "Sea-shroom",
-            "Puff-shroom",
-            "Fume-shroom",
-            "Cabbage-pult",
-            "Kernel-pult",
-            "Melon-pult",
-            "Winter Melon",
-            "Pepper-pult",
-            "Potato Mine",
-            "Primal Potato Mine",
-            "Cherry Bomb",
-            "Squash",
-            "Grapeshot",
-            "Jalapeno",
-            "Doom-shroom",
-            "Tangle Kelp",
-            "Iceberg Lettuce",
-            "Bonk Choy",
-            "Phat Beet",
-            "Chomper",
-            "Wasabi Whip",
-            "Kiwibeast",
-            "Wall-nut",
-            "Tall-nut",
-            "Endurian",
-            "Garlic",
-            "Sweet Potato",
-            "Explode-o-nut",
-            "Pumpkin",
-            "Sun Bean",
-            "Torchwood",
-            "Magnet-shroom",
-            "Hypno-shroom",
-            "Cat-tail",
-            "Imitater",
-            "Ice-shroom",
-            "Lily Pad",
-            "Hot Potato",
-            "Grave Buster",
-            "Enlighten-mint",
-            "Appease-mint",
-            "Arma-mint",
-            "Bombard-mint",
-            "Enforce-mint",
-            "Reinforce-mint",
-            "Enchant-mint",
-            "Pierce-mint",
-            "catTail-mint"
-    };
-
+    private static final Map<String, IntFunction<Plant>> REGISTRY =
+            createRegistry();
+    private static final Map<String, BiFunction<Integer, PlantDefinition, Plant>>
+            ARCHETYPES = createArchetypes();
     private PlantFactory() {
     }
-
     public static Plant create(int id, String type) {
-        String normalized = normalize(type);
-        Plant plant = createFirstGroup(id, normalized);
-        if (plant == null) {
-            plant = createSecondGroup(id, normalized);
+        return create(id, type, PlantDataRepository.getInstance());
+    }
+    public static Plant create(int id, String type,
+                               PlantDefinitionRepository repository) {
+        if (repository == null) {
+            throw new IllegalArgumentException("Plant repository is required.");
         }
-        if (plant == null) {
-            plant = createThirdGroup(id, normalized);
+        String normalized = normalize(type);
+        IntFunction<Plant> constructor = REGISTRY.get(normalized);
+        Plant plant;
+        if (constructor == null) {
+            plant = createFromData(id, type, repository);
+        }
+        else {
+            plant = constructor.apply(id);
         }
         if (plant != null) {
-            PlantDataRepository.getInstance().applyTo(plant);
+            repository.applyTo(plant);
             Upgrade.configureFor(plant, normalized);
         }
         return plant;
     }
-
-    private static Plant createFirstGroup(int id, String type) {
-        switch (type) {
-            case "sunflower": return new Sunflower(id);
-            case "twinsunflower": return new TwinSunflower(id);
-            case "sunshroom": return new SunShroom(id);
-            case "primalsunflower": return new PrimalSunflower(id);
-            case "goldbloom": return new GoldBloom(id);
-            case "peashooter": return new PeaShooter(id);
-            case "repeater": return new Repeater(id);
-            case "threepeater": return new Threepeater(id);
-            case "snowpea": return new SnowPea(id);
-            case "rotobaga": return new Rotobaga(id);
-            case "peapod": return new PeaPod(id);
-            case "splitpea": return new SplitPea(id);
-            case "citron": return new Citron(id);
-            case "caulipower": return new Caulipower(id);
-            case "electricblueberry": return new ElectricBlueberry(id);
-            case "bowlingbulb": return new BowlingBulb(id);
-            case "cactus": return new Cactus(id);
-            case "firepeashooter": return new FirePeashooter(id);
-            case "starfruit": return new Starfruit(id);
-            case "goopeashooter": return new GooPeashooter(id);
-            case "megagatlingpea": return new MegaGatlingPea(id);
-            case "seashroom": return new SeaShroom(id);
-            case "puffshroom": return new PuffShroom(id);
-            default: return null;
+    private static Map<String, IntFunction<Plant>> createRegistry() {
+        Map<String, IntFunction<Plant>> registry = new LinkedHashMap<>();
+        register(registry, "Sunflower", Sunflower::new);
+        register(registry, "Twin Sunflower", TwinSunflower::new);
+        register(registry, "Sun-shroom", SunShroom::new);
+        register(registry, "Primal Sunflower", PrimalSunflower::new);
+        register(registry, "Snow Pea", SnowPea::new);
+        register(registry, "Caulipower", Caulipower::new);
+        register(registry, "Fire Peashooter", FirePea::new);
+        register(registry, "Winter Melon", WinterMelon::new);
+        register(registry, "Potato Mine", PotatoMine::new);
+        register(registry, "Chomper", Chomper::new);
+        register(registry, "Kiwibeast", Kiwibeast::new);
+        register(registry, "Explode-o-nut", ExplodeONut::new);
+        register(registry, "Hypno-shroom", HypnoShroom::new);
+        register(registry, "Imitater", Imitater::new);
+        return registry;
+    }
+    private static void register(Map<String, IntFunction<Plant>> registry,
+                                 String type, IntFunction<Plant> constructor) {
+        registry.put(normalize(type), constructor);
+    }
+    private static Plant createFromData(int id, String type,
+                                        PlantDefinitionRepository repository) {
+        PlantDefinition definition = repository.get(type);
+        if (definition == null) {
+            return null;
         }
+        if (normalize(definition.name).endsWith("mint")) {
+            return createMint(id, definition);
+        }
+        BiFunction<Integer, PlantDefinition, Plant> builder = ARCHETYPES.get(
+                normalize(definition.category));
+        if (builder == null) {
+            return null;
+        }
+        return builder.apply(id, definition);
+    }
+    private static Map<String, BiFunction<Integer, PlantDefinition, Plant>>
+    createArchetypes() {
+        Map<String, BiFunction<Integer, PlantDefinition, Plant>> builders =
+                new LinkedHashMap<>();
+        builders.put("sunproducer", (id, data) -> new SunProducerPlant(id,
+                data.name, data.cost, data.baseHealth, data.recharge,
+                firstNumber(data.baseAbility, 25), data.actionInterval));
+        builders.put("shooter", (id, data) -> new ShooterPlant(id, data.name,
+                data.cost, data.baseHealth, data.recharge, data.actionInterval,
+                firstNumber(data.damage, 0), projectileType(data),
+                shotCount(data.damage)));
+        builders.put("lobber", (id, data) -> new LobberPlant(id, data.name,
+                data.cost, data.baseHealth, data.recharge, data.actionInterval,
+                firstNumber(data.damage, 0),
+                areaRadius(data)));
+        builders.put("explosive", (id, data) -> new ExplosivePlant(id,
+                data.name, data.cost, data.baseHealth, data.recharge,
+                data.actionInterval, firstNumber(data.damage, 0), 1f,
+                !normalize(data.tags).contains("trap")
+                        && !normalize(data.name).equals("gravebuster")));
+        builders.put("melee", (id, data) -> new MeleePlant(id, data.name,
+                data.cost, data.baseHealth, data.recharge, data.actionInterval,
+                firstNumber(data.damage, 0), false));
+        builders.put("wallnut", (id, data) -> new WallPlant(id, data.name,
+                data.cost, data.baseHealth, data.recharge, 0));
+        builders.put("modifier", (id, data) -> new ModifierPlant(id, data.name,
+                data.cost, data.baseHealth, data.recharge, data.actionInterval));
+        builders.put("strikethrough", (id, data) -> new StrikeThroughPlant(id,
+                data.name, data.cost, data.baseHealth, data.recharge,
+                data.actionInterval, firstNumber(data.damage, 0),
+                pierceCount(data)));
+        builders.put("homing", (id, data) -> new HomingPlant(id, data.name,
+                data.cost, data.baseHealth, data.recharge, data.actionInterval,
+                firstNumber(data.damage, 0), TargetingMode.NEAREST));
+        return builders;
+    }
+    private static Plant createMint(int id, PlantDefinition definition) {
+        PlantCategory family = PlantCategory.MODIFIER;
+        float duration = BalanceDefaults.ENCHANT_MINT_DURATION_SECONDS;
+        String type = normalize(definition.name);
+        if (type.equals("enlightenmint")) {
+            family = PlantCategory.SUN_PRODUCER;
+            duration = BalanceDefaults.ENLIGHTEN_MINT_DURATION_SECONDS;
+        }
+        else if (type.equals("appeasemint")) {
+            family = PlantCategory.SHOOTER;
+            duration = BalanceDefaults.APPEASE_MINT_DURATION_SECONDS;
+        }
+        else if (type.equals("armamint")) {
+            family = PlantCategory.LOBBER;
+            duration = BalanceDefaults.ARMA_MINT_DURATION_SECONDS;
+        }
+        else if (type.equals("bombardmint")) {
+            family = PlantCategory.EXPLOSIVE;
+            duration = BalanceDefaults.BOMBARD_MINT_DURATION_SECONDS;
+        }
+        else if (type.equals("enforcemint")) {
+            family = PlantCategory.MELEE;
+            duration = BalanceDefaults.ENFORCE_MINT_DURATION_SECONDS;
+        }
+        else if (type.equals("reinforcemint")) {
+            family = PlantCategory.WALL;
+            duration = BalanceDefaults.REINFORCE_MINT_DURATION_SECONDS;
+        }
+        else if (type.equals("piercemint")) {
+            family = PlantCategory.STRIKE_THROUGH;
+            duration = BalanceDefaults.PIERCE_MINT_DURATION_SECONDS;
+        }
+        else if (type.equals("cattailmint")) {
+            family = PlantCategory.HOMING;
+            duration = BalanceDefaults.CATTAIL_MINT_DURATION_SECONDS;
+        }
+        return new MintPlant(id, definition.name, definition.recharge,
+                duration, family);
+    }
+    private static int firstNumber(String expression, int fallback) {
+        if (expression == null) {
+            return fallback;
+        }
+        Matcher matcher = Pattern.compile("\\d+").matcher(toLatinDigits(expression));
+        if (!matcher.find()) {
+            return fallback;
+        }
+        return Integer.parseInt(matcher.group());
+    }
+    private static int shotCount(String expression) {
+        if (expression == null) {
+            return 1;
+        }
+        Matcher matcher = Pattern.compile("[xX](\\d+)").matcher(
+                toLatinDigits(expression));
+        if (!matcher.find()) {
+            return 1;
+        }
+        return Integer.parseInt(matcher.group(1));
+    }
+    private static float areaRadius(PlantDefinition definition) {
+        if (normalize(definition.tags).contains("aoe")) {
+            return 1f;
+        }
+        return 0f;
     }
 
-    private static Plant createSecondGroup(int id, String type) {
-        switch (type) {
-            case "fumeshroom": return new FumeShroom(id);
-            case "cabbagepult": return new CabbagePult(id);
-            case "kernelpult": return new KernelPult(id);
-            case "melonpult": return new MelonPult(id);
-            case "wintermelon": return new WinterMelon(id);
-            case "pepperpult": return new PepperPult(id);
-            case "potatomine": return new PotatoMine(id);
-            case "primalpotatomine": return new PrimalPotatoMine(id);
-            case "cherrybomb": return new CherryBomb(id);
-            case "squash": return new Squash(id);
-            case "grapeshot": return new Grapeshot(id);
-            case "jalapeno": return new Jalapeno(id);
-            case "doomshroom": return new DoomShroom(id);
-            case "tanglekelp": return new TangleKelp(id);
-            case "iceberglettuce": return new IcebergLettuce(id);
-            case "bonkchoy": return new BonkChoy(id);
-            case "phatbeet": return new PhatBeet(id);
-            case "chomper": return new Chomper(id);
-            case "wasabiwhip": return new WasabiWhip(id);
-            case "kiwibeast": return new Kiwibeast(id);
-            case "wallnut": return new WallNut(id);
-            case "tallnut": return new TallNut(id);
-            case "endurian": return new Endurian(id);
-            default: return null;
+    private static int pierceCount(PlantDefinition definition) {
+        if (normalize(definition.name).equals("cactus")) {
+            return 3;
         }
+        return 1;
     }
-
-    private static Plant createThirdGroup(int id, String type) {
-        switch (type) {
-            case "garlic": return new Garlic(id);
-            case "sweetpotato": return new SweetPotato(id);
-            case "explodeonut": return new ExplodeONut(id);
-            case "pumpkin": return new Pumpkin(id);
-            case "sunbean": return new SunBean(id);
-            case "torchwood": return new Torchwood(id);
-            case "magnetshroom": return new MagnetShroom(id);
-            case "hypnoshroom": return new HypnoShroom(id);
-            case "cattail": return new CatTail(id);
-            case "imitater": return new Imitater(id);
-            case "iceshroom": return new IceShroom(id);
-            case "lilypad": return new LilyPad(id);
-            case "hotpotato": return new HotPotato(id);
-            case "gravebuster": return new GraveBuster(id);
-            case "enlightenmint": return new EnlightenMint(id);
-            case "appeasemint": return new AppeaseMint(id);
-            case "armamint": return new ArmaMint(id);
-            case "bombardmint": return new BombardMint(id);
-            case "enforcemint": return new EnforceMint(id);
-            case "reinforcemint": return new ReinforceMint(id);
-            case "enchantmint": return new EnchantMint(id);
-            case "piercemint": return new PierceMint(id);
-            case "cattailmint": return new CatTailMint(id);
-            default: return null;
+    private static String toLatinDigits(String value) {
+        StringBuilder result = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++) {
+            char character = value.charAt(i);
+            if (character >= '\u06F0' && character <= '\u06F9') {
+                result.append((char) ('0' + character - '\u06F0'));
+            } else if (character >= '\u0660' && character <= '\u0669') {
+                result.append((char) ('0' + character - '\u0660'));
+            } else {
+                result.append(character);
+            }
         }
+        return result.toString();
     }
-
+    private static ProjectileType projectileType(PlantDefinition definition) {
+        String tags = normalize(definition.tags);
+        if (tags.contains("poison")) {
+            return ProjectileType.POISON;
+        }
+        if (tags.contains("ice")) {
+            return ProjectileType.ICE;
+        }
+        if (tags.contains("fire")) {
+            return ProjectileType.FIRE;
+        }
+        return ProjectileType.PEA;
+    }
     public static String[] getPlantTypes() {
-        return PLANT_TYPES.clone();
+        return PlantDataRepository.getInstance().getAll().stream()
+                .map(definition -> definition.name).toArray(String[]::new);
     }
-
     public static String normalize(String value) {
         if (value == null) {
             return "";

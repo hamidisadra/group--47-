@@ -14,28 +14,23 @@ import ir.ac.pvz.model.zombies.Gargantuar;
 import java.util.ArrayList;
 
 public class WallPlant extends Plant implements IWall {
-
     public int reflectDamage;
-
     public WallPlant(int id, String name, int cost, int baseHp, float rechargeTime,
                      int reflectDamage, PlantTag... tags) {
         super(id, name, cost, baseHp, rechargeTime, 0f, reflectDamage,
                 PlantCategory.WALL, tags);
         this.reflectDamage = reflectDamage;
     }
-
     @Override
     public void block(Zombie zombie) {
         if (zombie != null && reflectDamage > 0) {
             zombie.takeDamage(reflectDamage);
         }
     }
-
     @Override
     public int getHealth() {
         return health;
     }
-
     public static void resolvePassivePlant(Plant plant, GameSession session,
                                            ProjectileResolver resolver) {
         if (plant == null || !plant.isAlive) {
@@ -48,7 +43,6 @@ public class WallPlant extends Plant implements IWall {
             ExplosivePlant.resolveNearbyTrap(plant, session, resolver);
         }
     }
-
     public static void resolveZombiePlantContact(Zombie zombie, Plant plant,
                                                  GameSession session) {
         if (zombie == null || plant == null || !plant.isAlive) {
@@ -56,11 +50,14 @@ public class WallPlant extends Plant implements IWall {
         }
         String type = plant.getNormalizedType();
         if (type.equals("hypnoshroom")) {
-            HypnoShroom hypno = plant instanceof HypnoShroom
-                    ? (HypnoShroom) plant : null;
+            HypnoShroom hypno = null;
+            if (plant instanceof HypnoShroom) {
+                hypno = (HypnoShroom) plant;
+            }
             if (hypno != null && hypno.consumeGargantuarPlantFood()) {
                 transformEaterToGargantuar(zombie, hypno, session);
-            } else {
+            }
+            else {
                 zombie.setHypnotized(true);
                 applyHypnoLevelBuffs(zombie, plant.level);
             }
@@ -70,11 +67,15 @@ public class WallPlant extends Plant implements IWall {
         zombie.onReachPlant(plant);
         if (type.equals("garlic") && plant.isAlive) {
             moveZombieToAdjacentLane(zombie, session.getBoard());
-        } else if (type.equals("sunbean")) {
-            session.getSunManager().addSuns(plant.level >= 2 ? 10 : 5);
+        }
+        else if (type.equals("sunbean")) {
+            int sunAmount = 5;
+            if (plant.level >= 2) {
+                sunAmount = 10;
+            }
+            session.getSunManager().addSuns(sunAmount);
         }
     }
-
     public static void resolvePlantDeath(Plant plant, GameSession session) {
         if (plant == null || session == null) {
             return;
@@ -85,7 +86,6 @@ public class WallPlant extends Plant implements IWall {
                     plant.attackPower, 1, session.getBoard());
         }
     }
-
     private static void transformEaterToGargantuar(Zombie eater,
                                                    Plant plant,
                                                    GameSession session) {
@@ -96,11 +96,11 @@ public class WallPlant extends Plant implements IWall {
         eater.health = 0;
         eater.currentHealth = 0;
         Gargantuar ally = new Gargantuar();
+        ally.setIdentity("Gargantuar", "Gargantuar");
         ally.setHypnotized(true);
         applyHypnoLevelBuffs(ally, plant.level);
         session.getBoard().placeZombie(ally, position);
     }
-
     private static void applyHypnoLevelBuffs(Zombie zombie, int level) {
         if (level >= 3) {
             int bonusHealth = Math.max(1, zombie.currentHealth / 2);
@@ -112,7 +112,6 @@ public class WallPlant extends Plant implements IWall {
             zombie.damageToPlant += Math.max(1, zombie.damageToPlant / 2);
         }
     }
-
     private static void pullAdjacentZombies(Plant plant, Board board) {
         for (int row = plant.location.y - 1; row <= plant.location.y + 1; row++) {
             if (row == plant.location.y || row < 0 || row >= board.rows) {
@@ -125,9 +124,11 @@ public class WallPlant extends Plant implements IWall {
             }
         }
     }
-
     private static void moveZombieToAdjacentLane(Zombie zombie, Board board) {
-        int targetLane = zombie.lane > 0 ? zombie.lane - 1 : zombie.lane + 1;
+        int targetLane = zombie.lane + 1;
+        if (zombie.lane > 0) {
+            targetLane = zombie.lane - 1;
+        }
         if (targetLane >= 0 && targetLane < board.rows) {
             zombie.lane = targetLane;
             zombie.positionY = targetLane;

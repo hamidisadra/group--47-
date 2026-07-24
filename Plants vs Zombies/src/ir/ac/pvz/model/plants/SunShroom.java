@@ -4,47 +4,46 @@ import ir.ac.pvz.model.enums.PlantTag;
 import ir.ac.pvz.model.interfaces.IGrowable;
 
 public class SunShroom extends SunProducerPlant implements IGrowable {
-
     private int growthStage;
-    private float growthElapsedSeconds;
-
+    private int growthTicks;
     public SunShroom(int id) {
         super(id, "Sun-shroom", 25, 300, 5f, 25, 24f,
                 PlantTag.SHROOM, PlantTag.RAMP_UP, PlantTag.NIGHT);
         growthStage = 1;
-        growthElapsedSeconds = 0f;
+        growthTicks = 0;
     }
-
     @Override
     public void onTick() {
         super.onTick();
-        growthElapsedSeconds += 0.1f;
+        growthTicks++;
         grow();
     }
-
     @Override
     public void grow() {
-        float stageTwoTime = level >= 2 ? 19f : 24f;
-        float stageThreeTime = level >= 2 ? 67f : 72f;
-        if (growthElapsedSeconds >= stageThreeTime) {
+        int stageTwoTicks = 240;
+        int stageThreeTicks = 720;
+        if (level >= 2) {
+            stageTwoTicks = 190;
+            stageThreeTicks = 670;
+        }
+        if (growthTicks >= stageThreeTicks) {
             growthStage = 3;
             sunAmount = 75;
-        } else if (growthElapsedSeconds >= stageTwoTime) {
+        }
+        else if (growthTicks >= stageTwoTicks) {
             growthStage = 2;
             sunAmount = 50;
         }
     }
-
     @Override
     public boolean isMature() {
         return growthStage == 3;
     }
-
     @Override
     public void onPlantFood() {
         super.onPlantFood();
         growthStage = 3;
-        growthElapsedSeconds = 72f;
+        growthTicks = 720;
         sunAmount = 75;
         queuePlantFoodSun(225);
     }

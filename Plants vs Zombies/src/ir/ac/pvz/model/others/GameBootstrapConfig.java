@@ -1,28 +1,24 @@
 package ir.ac.pvz.model.others;
 
-import ir.ac.pvz.controller.game_core.StageConfigurationException;
-import ir.ac.pvz.controller.game_core.ZombieSpawner;
+import ir.ac.pvz.controller.game_core.*;
+
 import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.plants.PlantFactory;
 import ir.ac.pvz.model.support.Board;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameBootstrapConfig {
-
     public int rows;
     public int columns;
     public int startingSun;
     public StageConfig stageConfig;
     public List<TileConfiguration> tileConfigurations;
-
     public GameBootstrapConfig(int rows, int columns, int startingSun,
                                StageConfig stageConfig) {
         this(rows, columns, startingSun, stageConfig, new ArrayList<>());
     }
-
     public GameBootstrapConfig(int rows, int columns, int startingSun,
                                StageConfig stageConfig,
                                List<TileConfiguration> tileConfigurations) {
@@ -30,10 +26,13 @@ public class GameBootstrapConfig {
         this.columns = columns;
         this.startingSun = startingSun;
         this.stageConfig = stageConfig;
-        this.tileConfigurations = tileConfigurations == null
-                ? new ArrayList<>() : new ArrayList<>(tileConfigurations);
+        if (tileConfigurations == null) {
+            this.tileConfigurations = new ArrayList<>();
+        }
+        else {
+            this.tileConfigurations = new ArrayList<>(tileConfigurations);
+        }
     }
-
     public Board createBoard() {
         Board board = new Board(rows, columns, stageConfig.seasonType);
         for (TileConfiguration configuration : tileConfigurations) {
@@ -42,7 +41,6 @@ public class GameBootstrapConfig {
         configureFrozenContents(board);
         return board;
     }
-
     private void configureTerrain(Board board,
                                   TileConfiguration configuration) {
         if (!configuration.isAllowedFor(stageConfig.seasonType)) {
@@ -55,7 +53,6 @@ public class GameBootstrapConfig {
                     "Invalid tile configuration at " + configuration.position + ".");
         }
     }
-
     private void configureFrozenContents(Board board) {
         ZombieSpawner spawner = new ZombieSpawner(board, stageConfig);
         int plantId = -1;

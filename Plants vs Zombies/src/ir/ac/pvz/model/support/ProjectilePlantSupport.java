@@ -1,14 +1,11 @@
 package ir.ac.pvz.model.support;
 
-import ir.ac.pvz.model.enums.ProjectileType;
 import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.core.Zombie;
-
+import ir.ac.pvz.model.enums.ProjectileType;
 public final class ProjectilePlantSupport {
-
     private ProjectilePlantSupport() {
     }
-
     public static void bounceBowlingBulb(ProjectileResolver resolver,
                                          Plant plant, Zombie firstTarget,
                                          int damage, Board board) {
@@ -21,26 +18,35 @@ public final class ProjectilePlantSupport {
             }
         }
     }
-
     public static boolean isWithinAttackRange(Plant plant, Zombie zombie) {
         float range = Float.POSITIVE_INFINITY;
         String type = plant.getNormalizedType();
         if (type.equals("seashroom")) {
-            range = BalanceDefaults.SHORT_PROJECTILE_RANGE
-                    + (plant.level >= 2 ? 1 : 0);
-        } else if (type.equals("puffshroom")) {
-            range = BalanceDefaults.SHORT_PROJECTILE_RANGE
-                    + (plant.level >= 4 ? 1 : 0);
-        } else if (type.equals("fumeshroom")) {
-            range = BalanceDefaults.MEDIUM_PROJECTILE_RANGE
-                    + (plant.level >= 2 ? 1 : 0);
-        } else if (type.equals("magnetshroom")) {
-            range = BalanceDefaults.SHORT_PROJECTILE_RANGE
-                    + (plant.level >= 2 ? 1 : 0);
+            range = BalanceDefaults.SHORT_PROJECTILE_RANGE;
+            if (plant.level >= 2) {
+                range++;
+            }
+        }
+        else if (type.equals("puffshroom")) {
+            range = BalanceDefaults.SHORT_PROJECTILE_RANGE;
+            if (plant.level >= 4) {
+                range++;
+            }
+        }
+        else if (type.equals("fumeshroom")) {
+            range = BalanceDefaults.MEDIUM_PROJECTILE_RANGE;
+            if (plant.level >= 2) {
+                range++;
+            }
+        }
+        else if (type.equals("magnetshroom")) {
+            range = BalanceDefaults.SHORT_PROJECTILE_RANGE;
+            if (plant.level >= 2) {
+                range++;
+            }
         }
         return zombie.currentPosition.x - plant.location.x <= range + 0.0001f;
     }
-
     public static void meltFrozenBlockAt(Zombie zombie, Board board) {
         GridPosition position = new GridPosition(
                 (int) Math.floor(zombie.currentPosition.x), zombie.lane);

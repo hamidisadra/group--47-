@@ -1,18 +1,17 @@
 package ir.ac.pvz.model.others;
 
+import ir.ac.pvz.controller.game_core.*;
+
 import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.PlantCategory;
 import ir.ac.pvz.model.enums.PlantTag;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
-
 public class GameStatistics {
-
     private int collectedSun;
     private int plantedPlants;
     private int lostPlants;
@@ -33,7 +32,6 @@ public class GameStatistics {
     private final Map<Integer, Integer> killsByProjectile;
     private final Map<String, Integer> killsByZombieType;
     private final List<Integer> zombieKillTicks;
-
     public GameStatistics() {
         collectedSun = 0;
         plantedPlants = 0;
@@ -56,11 +54,9 @@ public class GameStatistics {
         killsByZombieType = new LinkedHashMap<>();
         zombieKillTicks = new ArrayList<>();
     }
-
     public void recordSunCollected(int amount) {
         collectedSun += Math.max(0, amount);
     }
-
     public void recordPlantPlaced(Plant plant) {
         plantedPlants++;
         if (plant == null) {
@@ -79,24 +75,25 @@ public class GameStatistics {
             explosivePlantsUsed++;
         }
     }
-
     public void recordPlantLost() {
         recordPlantLost(null);
     }
-
     public void recordPlantLost(Plant plant) {
         lostPlants++;
         if (plant != null) {
             lostByPlantType.merge(plant.type, 1, Integer::sum);
         }
     }
-
     public void recordZombieKilled(Zombie zombie, int currentTick) {
+        if (zombie != null && zombie.lastDamageProjectileId > 0) {
+            killsByProjectile.merge(
+                    zombie.lastDamageProjectileId, 1, Integer::sum);
+        }
         killedZombies++;
         lastZombieKillTick = currentTick;
         zombieKillTicks.add(currentTick);
         if (zombie != null) {
-            killsByZombieType.merge(zombie.getClass().getSimpleName(),
+            killsByZombieType.merge(zombie.getType(),
                     1, Integer::sum);
         }
         if (zombie != null && zombie.currentPosition != null) {
@@ -123,17 +120,14 @@ public class GameStatistics {
             killsByPlantTag.merge(tag, 1, Integer::sum);
         }
     }
-
     public void recordLawnMowerKills(int count) {
         lawnMowerKills += Math.max(0, count);
     }
-
     public void recordFirstWaveStart(int currentTick) {
         if (firstWaveStartTick < 0) {
             firstWaveStartTick = currentTick;
         }
     }
-
     public int getCollectedSun() { return collectedSun; }
     public int getPlantedPlants() { return plantedPlants; }
     public int getLostPlants() { return lostPlants; }
@@ -142,56 +136,44 @@ public class GameStatistics {
     public int getLawnMowerKills() { return lawnMowerKills; }
     public int getFirstWaveStartTick() { return firstWaveStartTick; }
     public int getLastZombieKillTick() { return lastZombieKillTick; }
-
     public Map<String, Integer> getPlantedByPlantType() {
         return Collections.unmodifiableMap(plantedByPlantType);
     }
-
     public Map<PlantCategory, Integer> getPlantedByPlantCategory() {
         return Collections.unmodifiableMap(plantedByPlantCategory);
     }
-
     public Map<PlantTag, Integer> getPlantedByPlantTag() {
         return Collections.unmodifiableMap(plantedByPlantTag);
     }
-
     public Map<String, Integer> getPlantPlacementsByCell() {
         return Collections.unmodifiableMap(plantPlacementsByCell);
     }
-
     public Map<String, Integer> getLostByPlantType() {
         return Collections.unmodifiableMap(lostByPlantType);
     }
-
     public Map<String, Integer> getKillsByPlantType() {
         return Collections.unmodifiableMap(killsByPlantType);
     }
-
     public Map<PlantCategory, Integer> getKillsByPlantCategory() {
         return Collections.unmodifiableMap(killsByPlantCategory);
     }
-
     public Map<PlantTag, Integer> getKillsByPlantTag() {
         return Collections.unmodifiableMap(killsByPlantTag);
     }
-
     public Map<String, Integer> getKillsByZombieType() {
         return Collections.unmodifiableMap(killsByZombieType);
     }
-
     public List<Integer> getZombieKillTicks() {
         return Collections.unmodifiableList(zombieKillTicks);
     }
-
     public Map<String, Integer> getZombieKillsByCell() {
         return Collections.unmodifiableMap(zombieKillsByCell);
+    }
+    private String cellKey(int x, int y) {
+        return x + "," + y;
     }
 
     public Map<Integer, Integer> getKillsByProjectile() {
         return Collections.unmodifiableMap(killsByProjectile);
-    }
-
-    private String cellKey(int x, int y) {
-        return x + "," + y;
     }
 }

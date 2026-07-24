@@ -22,7 +22,7 @@ import java.util.List;
 public class ScoreGameMenu extends Menu{
     private static final int STARTING_SUN = 150;
     private static final int WAVE_COUNT = 3;
-    private static final int BASE_WAVE_COST = 200;
+    private static final int BASE_WAVE_COST = 1000;
 
     private List<String> selectedPlants;
     private ScoredGame scoredGame;

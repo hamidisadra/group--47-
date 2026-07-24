@@ -8,10 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class DataFileLocator {
-
     private DataFileLocator() {
     }
-
     public static InputStream open(String fileName) throws IOException {
         for (Path path : candidates(fileName)) {
             if (Files.isRegularFile(path)) {
@@ -25,17 +23,16 @@ public final class DataFileLocator {
         }
         throw new IOException("Data file not found: " + fileName);
     }
-
     public static boolean exists(String fileName) {
         try {
             InputStream input = open(fileName);
             input.close();
             return true;
-        } catch (IOException exception) {
+        }
+        catch (IOException exception) {
             return false;
         }
     }
-
     private static List<Path> candidates(String fileName) {
         List<Path> paths = new ArrayList<>();
         String configured = System.getProperty("pvz.data.dir");

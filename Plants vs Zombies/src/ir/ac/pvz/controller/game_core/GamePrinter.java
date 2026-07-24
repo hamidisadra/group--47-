@@ -1,6 +1,7 @@
 package ir.ac.pvz.controller.game_core;
 
-import ir.ac.pvz.model.others.GameSession;
+import ir.ac.pvz.model.others.*;
+
 import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.support.ArmorPiece;
@@ -9,12 +10,10 @@ import ir.ac.pvz.model.support.GridPosition;
 import ir.ac.pvz.model.support.LawnMower;
 import ir.ac.pvz.model.support.PlantStatusView;
 import ir.ac.pvz.model.support.ZombieEffect;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class GamePrinter {
-
     public String showMap(GameSession session) {
         StringBuilder builder = new StringBuilder();
         builder.append("wave: ").append(session.currentWaveNumber)
@@ -23,15 +22,25 @@ public class GamePrinter {
                 .append(System.lineSeparator());
         builder.append("suns: ").append(session.currentSunAmount)
                 .append(System.lineSeparator());
+        for (ir.ac.pvz.model.support.LootDrop drop : session.getPendingLoot()) {
+            builder.append("loot ").append(drop.type.name().toLowerCase())
+                    .append(" at ").append(drop.position.toUserString())
+                    .append(System.lineSeparator());
+        }
         for (LawnMower mower : session.getLawnMowers()) {
             builder.append("lawn mower row ").append(mower.relatedRow + 1)
-                    .append(": ").append(mower.activated ? "used" : "available")
+                    .append(": ").append(mowerStatus(mower))
                     .append(System.lineSeparator());
         }
         builder.append(session.getBoard().printMap());
         return builder.toString();
     }
-
+    private String mowerStatus(LawnMower mower) {
+        if (mower.activated) {
+            return "used";
+        }
+        return "available";
+    }
     public List<PlantStatusView> showPlantsStatus(GameSession session) {
         List<PlantStatusView> statusViews = new ArrayList<>();
         for (Plant plant : session.getPlantCatalog()) {
@@ -42,14 +51,12 @@ public class GamePrinter {
         }
         return statusViews;
     }
-
     public String showTileStatus(Board board, GridPosition position) {
         if (board == null || !board.isInside(position)) {
             return "";
         }
         return board.getTile(position).getStatus();
     }
-
     public String zombiesInfo(Board board) {
         StringBuilder builder = new StringBuilder();
         for (int row = 0; row < board.rows; row++) {
@@ -59,9 +66,8 @@ public class GamePrinter {
         }
         return builder.toString();
     }
-
     private void appendZombie(StringBuilder builder, Zombie zombie) {
-        builder.append(zombie.getClass().getSimpleName()).append(':')
+        builder.append(zombie.getType()).append(':')
                 .append(System.lineSeparator());
         builder.append("    position: ").append(zombie.currentPosition.x + 1f)
                 .append(", ").append(zombie.lane + 1)

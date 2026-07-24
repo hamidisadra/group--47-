@@ -115,7 +115,7 @@ public class PlantSelectionMenu extends Menu{
         System.out.println("Starting the game...");
 
         SeasonType seasonType =board.getSeasonType();
-        StageConfig stageConfig = StageConfig.of(seasonType, 3, 200);
+        StageConfig stageConfig = StageConfig.of(seasonType, 3, 1000);
 
         stageConfig.setSelectedPlantTypes(user.getCollection().getSelectedPlants().toArray(new String[0]));
 

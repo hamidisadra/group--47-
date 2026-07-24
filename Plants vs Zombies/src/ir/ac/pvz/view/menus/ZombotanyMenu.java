@@ -24,7 +24,7 @@ public class ZombotanyMenu extends Menu {
 
     private static final int STARTING_SUN = 150;
     private static final int WAVE_COUNT = 3;
-    private static final int BASE_WAVE_COST = 400;
+    private static final int BASE_WAVE_COST = 1000;
 
     private List<String> selectedPlants;
     private int stageNumber;

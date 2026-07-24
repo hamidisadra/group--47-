@@ -4,20 +4,16 @@ import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.SeasonType;
 import ir.ac.pvz.model.enums.TileType;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class Board {
-
     public int rows;
     public int columns;
     public SeasonType seasonType;
-
     private final Tile[][] tiles;
     private final List<LawnMower> lawnMowers;
     private final List<Barrel> looseBarrels;
-
     public Board(int rows, int columns, SeasonType seasonType) {
         this.rows = rows;
         this.columns = columns;
@@ -33,7 +29,6 @@ public class Board {
             }
         }
     }
-
     public static TileType getDefaultTileType(SeasonType type) {
         if (type == SeasonType.FROSTBITE_CAVES) {
             return TileType.FROSTBITE_GROUND;
@@ -46,8 +41,6 @@ public class Board {
         }
         return TileType.EGYPT_GROUND;
     }
-
-
     public boolean configureTile(GridPosition position, TileType type) {
         Tile tile = getTile(position);
         if (tile == null || type == null) {
@@ -57,8 +50,15 @@ public class Board {
             tile.setNativeGroundType(type);
         }
         tile.type = type;
-        tile.slipDeltaRow = type == TileType.SLIPPERY_UP ? -1
-                : type == TileType.SLIPPERY_DOWN ? 1 : 0;
+        if (type == TileType.SLIPPERY_UP) {
+            tile.slipDeltaRow = -1;
+        }
+        else if (type == TileType.SLIPPERY_DOWN) {
+            tile.slipDeltaRow = 1;
+        }
+        else {
+            tile.slipDeltaRow = 0;
+        }
         tile.isWater = type == TileType.WATER;
         tile.isLowTideSpawn = type == TileType.LOW_TIDE
                 || type == TileType.NECROMANCY;
@@ -69,7 +69,6 @@ public class Board {
         tile.obstacle = createObstacle(type);
         return true;
     }
-
     public void clearDestroyedObstacle(Tile tile) {
         if (tile == null || tile.obstacle == null || tile.obstacle.isAlive) {
             return;
@@ -78,7 +77,6 @@ public class Board {
         tile.obstacle = null;
         tile.restoreNativeGround();
     }
-
     public boolean configureFrozenPlant(GridPosition position, Plant plant) {
         Tile tile = getTile(position);
         if (tile == null || plant == null) {
@@ -90,7 +88,6 @@ public class Board {
         tile.obstacle = new FrozenBlock(plant);
         return true;
     }
-
     public boolean configureFrozenZombie(GridPosition position, Zombie zombie) {
         Tile tile = getTile(position);
         if (tile == null || zombie == null) {
@@ -102,7 +99,6 @@ public class Board {
         tile.obstacle = new FrozenBlock(zombie);
         return true;
     }
-
     public List<Tile> getTilesByType(TileType type) {
         List<Tile> result = new ArrayList<>();
         for (int row = 0; row < rows; row++) {
@@ -115,7 +111,6 @@ public class Board {
         }
         return result;
     }
-
     private TileObstacle createObstacle(TileType type) {
         if (type == TileType.TOMBSTONE) {
             return new Tombstone();
@@ -125,14 +120,12 @@ public class Board {
         }
         return null;
     }
-
     public Tile getTile(GridPosition position) {
         if (!isInside(position)) {
             return null;
         }
         return tiles[position.y][position.x];
     }
-
     public List<Zombie> getZombiesInLane(int row) {
         List<Zombie> zombies = new ArrayList<>();
         if (row < 0 || row >= rows) {
@@ -143,7 +136,6 @@ public class Board {
         }
         return zombies;
     }
-
     public List<Plant> getPlantsInLane(int row) {
         List<Plant> plants = new ArrayList<>();
         if (row < 0 || row >= rows) {
@@ -154,9 +146,6 @@ public class Board {
         }
         return plants;
     }
-
-
-
     public List<Plant> getAllPlants() {
         List<Plant> plants = new ArrayList<>();
         for (int row = 0; row < rows; row++) {
@@ -164,7 +153,6 @@ public class Board {
         }
         return plants;
     }
-
     public boolean movePlant(Plant plant, GridPosition target) {
         if (plant == null || target == null || !isInside(target)) {
             return false;
@@ -183,7 +171,6 @@ public class Board {
         }
         return true;
     }
-
     public void removeZombieEverywhere(Zombie zombie) {
         for (int row = 0; row < rows; row++) {
             for (int column = 0; column < columns; column++) {
@@ -191,7 +178,6 @@ public class Board {
             }
         }
     }
-
     public boolean placeZombie(Zombie zombie, ContinuousPosition position) {
         if (zombie == null || position == null) {
             return false;
@@ -209,22 +195,17 @@ public class Board {
         getTile(tilePosition).addZombie(zombie);
         return true;
     }
-
-
     public void addLooseBarrel(Barrel barrel) {
         if (barrel != null && barrel.health > 0 && !looseBarrels.contains(barrel)) {
             looseBarrels.add(barrel);
         }
     }
-
     public void removeLooseBarrel(Barrel barrel) {
         looseBarrels.remove(barrel);
     }
-
     public List<Barrel> getLooseBarrels() {
         return new ArrayList<>(looseBarrels);
     }
-
     public List<Zombie> getAllAliveZombies() {
         List<Zombie> zombies = new ArrayList<>();
         for (int row = 0; row < rows; row++) {
@@ -236,7 +217,6 @@ public class Board {
         }
         return zombies;
     }
-
     public List<Zombie> getWaterZombies() {
         List<Zombie> zombies = new ArrayList<>();
         for (Zombie zombie : getAllAliveZombies()) {
@@ -248,7 +228,6 @@ public class Board {
         }
         return zombies;
     }
-
     public List<Zombie> getZombiesAround(GridPosition center, int radius) {
         List<Zombie> zombies = new ArrayList<>();
         for (int row = center.y - radius; row <= center.y + radius; row++) {
@@ -261,7 +240,6 @@ public class Board {
         }
         return zombies;
     }
-
     public Zombie getNearestZombieAhead(int x, int row) {
         Zombie nearest = null;
         for (Zombie zombie : getZombiesInLane(row)) {
@@ -273,7 +251,6 @@ public class Board {
         }
         return nearest;
     }
-
     public Zombie getNearestZombieBehind(int x, int row) {
         Zombie nearest = null;
         for (Zombie zombie : getZombiesInLane(row)) {
@@ -285,16 +262,16 @@ public class Board {
         }
         return nearest;
     }
-
     public LawnMower getLawnMower(int row) {
-        return row < 0 || row >= lawnMowers.size() ? null : lawnMowers.get(row);
+        if (row < 0 || row >= lawnMowers.size()) {
+            return null;
+        }
+        return lawnMowers.get(row);
     }
-
     public boolean isInside(GridPosition position) {
         return position != null && position.x >= 0 && position.x < columns
                 && position.y >= 0 && position.y < rows;
     }
-
     public String printMap() {
         StringBuilder builder = new StringBuilder();
         for (int row = 0; row < rows; row++) {
@@ -306,7 +283,6 @@ public class Board {
         }
         return builder.toString();
     }
-
     private String symbolFor(Tile tile) {
         if (!tile.getZombies().isEmpty() && !tile.getPlants().isEmpty()) {
             return "[PZ]";
@@ -349,15 +325,12 @@ public class Board {
         }
         return "[ E]";
     }
-
     public int getRows() {
         return rows;
     }
-
     public int getColumns() {
         return columns;
     }
-
     public SeasonType getSeasonType() {
         return seasonType;
     }

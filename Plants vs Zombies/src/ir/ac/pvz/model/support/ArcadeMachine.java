@@ -23,7 +23,8 @@ public class ArcadeMachine {
         }
         if (target instanceof Zombie) {
             ((Zombie) target).forceDie();
-        } else {
+        }
+        else {
             target.die();
         }
     }

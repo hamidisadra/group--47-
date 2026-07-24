@@ -1,28 +1,24 @@
 package ir.ac.pvz.model.zombies;
 
-
 import ir.ac.pvz.model.core.Zombie;
 
 public class RaZombie extends Zombie {
-
-    private static final int MAX_STOLEN_SUNS = 250;
-
+    private final int maxStolenSuns;
     private int stolenSuns;
-
     public RaZombie() {
-        super(0.2f, 190, 100, 100);
+        super("RaZombie");
+        this.maxStolenSuns = Math.max(1, (int) Math.round(
+                ir.ac.pvz.model.support.ZombieDataRepository.getInstance()
+                        .getNumber("RaZombie", "MaxClaimedSunCurrency", 250d)));
         this.stolenSuns = 0;
     }
-
     public void stealSun(int amount) {
-        int capacity = MAX_STOLEN_SUNS - stolenSuns;
+        int capacity = maxStolenSuns - stolenSuns;
         stolenSuns += Math.min(Math.max(0, amount), capacity);
     }
-
     public int getRemainingSunCapacity() {
-        return Math.max(0, MAX_STOLEN_SUNS - stolenSuns);
+        return Math.max(0, maxStolenSuns - stolenSuns);
     }
-
     public int releaseStolenSuns() {
         int released = stolenSuns;
         stolenSuns = 0;

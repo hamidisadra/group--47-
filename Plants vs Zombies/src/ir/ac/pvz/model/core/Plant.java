@@ -8,15 +8,13 @@ import ir.ac.pvz.model.support.FrozenBlock;
 import ir.ac.pvz.model.support.GridPosition;
 import ir.ac.pvz.model.support.Tile;
 import ir.ac.pvz.model.support.Tombstone;
-import ir.ac.pvz.model.support.OctopusBlock;
 import ir.ac.pvz.model.support.Upgrade;
-
+import ir.ac.pvz.model.support.OctopusBlock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public abstract class Plant extends GameObject implements IUpgradable {
-
     public int id;
     public String name;
     public int cost;
@@ -38,14 +36,16 @@ public abstract class Plant extends GameObject implements IUpgradable {
     public boolean isCatTransformed;
     public boolean isOctopusBlocked;
     public OctopusBlock blockingOctopus;
-
+    public String abilityType;
+    public double abilityValue;
+    public String plantFoodType;
+    public double plantFoodValue;
     private int hunterIceHitCount;
     private int activeCatCurses;
     private float ageSeconds;
     protected float lifeSpanSeconds;
     private boolean permanentlyFrozen;
     private boolean destroyedByDamage;
-
     protected Plant(int id, String name, int cost, int baseHp, float rechargeTime,
                     float actionInterval, int attackPower, PlantCategory category,
                     PlantTag... tags) {
@@ -71,18 +71,20 @@ public abstract class Plant extends GameObject implements IUpgradable {
         this.isCatTransformed = false;
         this.isOctopusBlocked = false;
         this.blockingOctopus = null;
+        this.abilityType = "NONE";
+        this.abilityValue = 0d;
+        this.plantFoodType = "NONE";
+        this.plantFoodValue = 0d;
         this.hunterIceHitCount = 0;
         this.activeCatCurses = 0;
         this.ageSeconds = 0f;
-        this.lifeSpanSeconds = resolveInitialLifeSpan();
+        this.lifeSpanSeconds = 0f;
         this.permanentlyFrozen = false;
         this.destroyedByDamage = false;
     }
-
     public void onPlantFood() {
         isBoostedByPlantFood = true;
     }
-
     public void onTick() {
         ageSeconds += 0.1f;
         if (cooldownRemaining > 0f) {
@@ -92,7 +94,6 @@ public abstract class Plant extends GameObject implements IUpgradable {
             die();
         }
     }
-
     @Override
     public void update(int tickCount) {
         super.update(tickCount);
@@ -103,7 +104,6 @@ public abstract class Plant extends GameObject implements IUpgradable {
             onTick();
         }
     }
-
     @Override
     public void takeDamage(int amount) {
         boolean aliveBeforeDamage = isAlive;
@@ -113,7 +113,6 @@ public abstract class Plant extends GameObject implements IUpgradable {
             destroyedByDamage = true;
         }
     }
-
     @Override
     public void die() {
         if (!isAlive) {
@@ -126,7 +125,6 @@ public abstract class Plant extends GameObject implements IUpgradable {
                     + location.toUserString() + " is destroyed.");
         }
     }
-
     @Override
     public void upgrade() {
         int nextLevel = level + 1;
@@ -137,7 +135,6 @@ public abstract class Plant extends GameObject implements IUpgradable {
             }
         }
     }
-
     public boolean canPlantOn(Tile tile) {
         if (tile == null) {
             return false;
@@ -164,15 +161,12 @@ public abstract class Plant extends GameObject implements IUpgradable {
         return canStack || tile.canStackPlants || tile.getPlants().stream()
                 .anyMatch(plant -> plant.canStack);
     }
-
     public void applyPlantFoodEffect() {
         onPlantFood();
     }
-
     public void resetCooldown() {
         cooldownRemaining = rechargeTime;
     }
-
     public void addCatCurse() {
         activeCatCurses++;
         isCatTransformed = true;
@@ -180,7 +174,6 @@ public abstract class Plant extends GameObject implements IUpgradable {
             freeze(Integer.MAX_VALUE);
         }
     }
-
     public void removeCatCurse() {
         activeCatCurses = Math.max(0, activeCatCurses - 1);
         isCatTransformed = activeCatCurses > 0;
@@ -189,11 +182,9 @@ public abstract class Plant extends GameObject implements IUpgradable {
             melt();
         }
     }
-
     public int getActiveCatCurseCount() {
         return activeCatCurses;
     }
-
     public void receiveHunterIceHit(int requiredHits) {
         hunterIceHitCount++;
         if (hunterIceHitCount >= requiredHits) {
@@ -201,94 +192,66 @@ public abstract class Plant extends GameObject implements IUpgradable {
             freeze(Integer.MAX_VALUE);
         }
     }
-
     public void releaseFromIce() {
         hunterIceHitCount = 0;
         permanentlyFrozen = false;
         melt();
     }
-
     public boolean isPermanentlyFrozen() {
         return permanentlyFrozen;
     }
-
     public boolean canAct() {
         return isAlive && !frozen && !permanentlyFrozen
                 && !isCatTransformed && !isOctopusBlocked;
     }
-
     public void receiveInstantKill() {
         die();
     }
-
     public boolean wasDestroyedByDamage() {
         return destroyedByDamage;
     }
-
     public void resetAge() {
         ageSeconds = 0f;
     }
-
     public float getAgeSeconds() {
         return ageSeconds;
     }
-
     public void setLifeSpanSeconds(float seconds) {
         lifeSpanSeconds = Math.max(0f, seconds);
     }
-
     public float getLifeSpanSeconds() {
         return lifeSpanSeconds;
     }
-
     public String getNormalizedType() {
         return PlantFactory.normalize(type);
     }
-
     public static String[] getSpreadsheetTypes() {
         return PlantFactory.getPlantTypes();
     }
-
     public static Plant createSpreadsheetPlant(int id, String type) {
         return PlantFactory.create(id, type);
     }
-
-    private float resolveInitialLifeSpan() {
-        String normalized = PlantFactory.normalize(name);
-        if (normalized.equals("seashroom") || normalized.equals("puffshroom")) {
-            return 60f;
-        }
-        return 0f;
-    }
-
     public int getId() {
         return id;
     }
-
     public String getName() {
         return name;
     }
-
     public int getCost() {
         return sunCost;
     }
-
     public int getBaseHp() {
         return baseHp;
     }
-
     public PlantCategory getCategory() {
         return category;
     }
-
     public float getCooldownRemaining() {
         return cooldownRemaining;
     }
-
     public List<PlantTag> getPlantTags() {
         return plantTags;
     }
-
     public int getLevel() {
         return level;
     }
