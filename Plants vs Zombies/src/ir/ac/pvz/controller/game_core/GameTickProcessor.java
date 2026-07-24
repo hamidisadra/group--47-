@@ -160,10 +160,11 @@ public class GameTickProcessor {
             if (zombie.isFrozen() || zombie.isStunned()) {
                 continue;
             }
-            if (zombie instanceof ir.ac.pvz.model.zombies.JalapenoZombie) {
-                zombieBehaviorController.updateJalapeno(
-                        (ir.ac.pvz.model.zombies.JalapenoZombie) zombie, session);
+
+            if (zombie instanceof JalapenoZombie) {
+                zombieBehaviorController.updateJalapeno((JalapenoZombie) zombie, session);
             }
+
             zombieBehaviorController.update(zombie, session);
             if (zombie.isHypnotized) {
                 updateHypnotizedZombie(zombie);

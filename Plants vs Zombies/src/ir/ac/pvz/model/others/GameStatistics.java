@@ -101,6 +101,15 @@ public class GameStatistics {
                     (int) Math.floor(zombie.currentPosition.x),
                     zombie.lane), 1, Integer::sum);
         }
+        if (zombie != null && zombie.lastDamageProjectileId > 0) {
+
+            if (killsByProjectile.containsKey(zombie.lastDamageProjectileId)) {
+                killsByProjectile.put(zombie.lastDamageProjectileId, killsByProjectile.get(zombie.lastDamageProjectileId) + 1);
+            }
+            else {
+                killsByProjectile.put(zombie.lastDamageProjectileId, 1);
+            }
+        }
         if (zombie == null || zombie.lastDamageSource == null) {
             return;
         }

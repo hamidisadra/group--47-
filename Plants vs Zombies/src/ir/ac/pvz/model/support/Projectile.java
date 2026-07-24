@@ -9,11 +9,9 @@ import ir.ac.pvz.model.enums.ProjectileType;
 
 public class Projectile extends GameObject {
 
-    /** Unique id so kills can be traced back to the exact shot. */
     private static int nextProjectileId = 1;
 
     public final int projectileId;
-
 
     public ProjectileType type;
     public ProjectileTrajectory trajectory;

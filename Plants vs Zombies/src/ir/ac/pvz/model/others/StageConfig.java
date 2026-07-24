@@ -20,6 +20,7 @@ import java.util.Map;
 
 public class StageConfig {
     public SeasonType seasonType;
+    private Long randomSeed;
     public int totalWaves;
     public int baseWaveCost;
     public float waveGrowthRate;
@@ -169,6 +170,15 @@ public class StageConfig {
         return this;
     }
     private Long randomSeed;
+
+    public StageConfig setRandomSeed(Long randomSeed) {
+        this.randomSeed = randomSeed;
+        return this;
+    }
+
+    public Long getRandomSeed() {
+        return randomSeed;
+    }
 
     public StageConfig setRandomSeed(Long randomSeed) {
         this.randomSeed = randomSeed;
