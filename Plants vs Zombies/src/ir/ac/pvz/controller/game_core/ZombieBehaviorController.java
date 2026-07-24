@@ -397,7 +397,7 @@ public class ZombieBehaviorController {
         pea.hit(target);
         return true;
     }
-    
+
     public void updateJalapeno(JalapenoZombie zombie, GameSession session) {
         if (session == null || zombie.exploded || zombie.isDead()) {
             return;
@@ -435,7 +435,6 @@ public class ZombieBehaviorController {
             return false;
         }
         hunterTargets.put(hunter, target);
-        // Page 39: one cast is one hit; the Plant component freezes on hit 3.
         projectile.hit(target);
         if (!target.isPermanentlyFrozen()) {
             return true;
