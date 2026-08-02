@@ -169,16 +169,6 @@ public class StageConfig {
         }
         return this;
     }
-    private Long randomSeed;
-
-    public StageConfig setRandomSeed(Long randomSeed) {
-        this.randomSeed = randomSeed;
-        return this;
-    }
-
-    public Long getRandomSeed() {
-        return randomSeed;
-    }
 
     public StageConfig setRandomSeed(Long randomSeed) {
         this.randomSeed = randomSeed;

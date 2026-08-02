@@ -105,9 +105,17 @@ public class CollectionMenu extends Menu{
     }
 
     private void showAllZombies() {
-        System.out.println("========== All Zombies ==========");
+        List<ZombieDefinition> zombies = ZombieDataRepository.getInstance().getAll();
 
-        //for (String zombieName : ZombieFa)
+        if (zombies.isEmpty()) {
+            System.out.println("No zombies are defined in the game.");
+            return;
+        }
+
+        System.out.println("========== All Zombies ==========");
+        for (ZombieDefinition zombie : zombies) {
+            System.out.println("- " + zombie.gameType);
+        }
     }
 
     private void showSeenZombies() {
@@ -288,7 +296,7 @@ public class CollectionMenu extends Menu{
         try {
             Plant plant = Plant.createSpreadsheetPlant(0, plantName);
 
-            System.out.println(plantName + "Details : ");
+            System.out.println(plantName + " details: ");
             System.out.println("Sun Cost:    " + plant.getCost());
             System.out.println("Base Health: " + plant.getBaseHp());
             System.out.println("Damage:      " + plant.attackPower);
