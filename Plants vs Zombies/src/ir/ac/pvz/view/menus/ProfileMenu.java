@@ -159,6 +159,7 @@ public class ProfileMenu extends Menu{
 
         user.setNickName(nickname);
         System.out.println("Nickname changed successfully.");
+        userManager.saveAll();
     }
 
     private void changeEmail(String email) {

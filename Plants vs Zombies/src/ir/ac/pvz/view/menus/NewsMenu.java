@@ -111,7 +111,7 @@ public class NewsMenu extends Menu{
         else {
             System.out.println("========== All News ==========");
             for (News news : allNews) {
-                if (news.isRead()) {
+                if (!news.isRead()) {
                     System.out.println("(NEW) [" + news.getType() + "]   " + news.getMessage() + "    (" + news.getFormattedDate() + ")");
                 }
                 else {

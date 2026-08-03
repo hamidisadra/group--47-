@@ -1,5 +1,6 @@
 package ir.ac.pvz.view.menus;
 
+import ir.ac.pvz.controller.managers.UserManager;
 import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.user.CollectionStatus;
 import ir.ac.pvz.model.user.TransactionStatus;
@@ -18,8 +19,11 @@ import java.util.regex.Pattern;
 
 public class CollectionMenu extends Menu{
 
+    private UserManager userManager;
+
     public CollectionMenu() {
         super("Collection Menu");
+        this.userManager = UserManager.getInstance();
     }
 
     @Override
@@ -105,9 +109,17 @@ public class CollectionMenu extends Menu{
     }
 
     private void showAllZombies() {
-        System.out.println("========== All Zombies ==========");
+        List<ZombieDefinition> zombies = ZombieDataRepository.getInstance().getAll();
 
-        //for (String zombieName : ZombieFa)
+        if (zombies.isEmpty()) {
+            System.out.println("No zombies are defined in the game.");
+            return;
+        }
+
+        System.out.println("========== All Zombies ==========");
+        for (ZombieDefinition zombie : zombies) {
+            System.out.println("- " + zombie.gameType);
+        }
     }
 
     private void showSeenZombies() {
@@ -186,6 +198,7 @@ public class CollectionMenu extends Menu{
 
         user.getCollection().unlockPlant(plantName);
         System.out.println("Plant " + plantName + " purchased successfully.");
+        userManager.saveAll();
     }
 
     private void upgradePlant(String plantName) {
@@ -217,6 +230,7 @@ public class CollectionMenu extends Menu{
                 new LevelBasedUpgradeCost());
 
         reportUpgrade(user, plantName, plant, result);
+        userManager.saveAll();
     }
 
     private void reportUpgrade(User user, String plantName, Plant plant,
@@ -288,7 +302,7 @@ public class CollectionMenu extends Menu{
         try {
             Plant plant = Plant.createSpreadsheetPlant(0, plantName);
 
-            System.out.println(plantName + "Details : ");
+            System.out.println(plantName + " details: ");
             System.out.println("Sun Cost:    " + plant.getCost());
             System.out.println("Base Health: " + plant.getBaseHp());
             System.out.println("Damage:      " + plant.attackPower);
