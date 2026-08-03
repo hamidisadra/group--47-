@@ -1,12 +1,16 @@
 package ir.ac.pvz.view.menus;
 
+import ir.ac.pvz.controller.managers.UserManager;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SettingsMenu extends Menu{
+    private UserManager userManager;
 
     public SettingsMenu() {
         super("Settings Menu");
+        this.userManager = UserManager.getInstance();
     }
 
     @Override
@@ -56,6 +60,7 @@ public class SettingsMenu extends Menu{
         }
         else {
             System.out.println("Difficulty level successfully changed to " + level + ".");
+            userManager.saveAll();
         }
     }
 

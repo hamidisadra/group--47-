@@ -1,6 +1,7 @@
 package ir.ac.pvz.view.menus;
 
 import ir.ac.pvz.controller.managers.GameplayManager;
+import ir.ac.pvz.controller.managers.UserManager;
 import ir.ac.pvz.model.minigame.Beghouled;
 import ir.ac.pvz.model.user.User;
 import ir.ac.pvz.model.zombies.BeghouledZombie;
@@ -92,8 +93,12 @@ public class BeghouledMenu extends Menu {
         if (beghouled.checkWinCondition()) {
             System.out.println("All zombies vanish. You cleared this Beghouled stage!");
             beghouled.finishGame(true);
+            user.addGame();
+
             GameplayManager.getInstance().getLeaderboard()
                     .getOrCreateEntry(user.getUsername()).addMinigameCompleted();
+
+            UserManager.getInstance().saveAll();
             menuManager.popMenu();
         }
     }
@@ -111,6 +116,12 @@ public class BeghouledMenu extends Menu {
     private void advance(int ticks) {
         beghouled.advanceTime(ticks);
         if (beghouled.isLost()) {
+            User user = menuManager.getActiveUser();
+
+            if (user != null) {
+                user.addGame();
+                UserManager.getInstance().saveAll();
+            }
             menuManager.popMenu();
         }
     }

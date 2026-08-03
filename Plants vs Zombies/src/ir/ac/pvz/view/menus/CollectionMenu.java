@@ -1,5 +1,6 @@
 package ir.ac.pvz.view.menus;
 
+import ir.ac.pvz.controller.managers.UserManager;
 import ir.ac.pvz.model.core.Plant;
 import ir.ac.pvz.model.user.CollectionStatus;
 import ir.ac.pvz.model.user.TransactionStatus;
@@ -18,8 +19,11 @@ import java.util.regex.Pattern;
 
 public class CollectionMenu extends Menu{
 
+    private UserManager userManager;
+
     public CollectionMenu() {
         super("Collection Menu");
+        this.userManager = UserManager.getInstance();
     }
 
     @Override
@@ -194,6 +198,7 @@ public class CollectionMenu extends Menu{
 
         user.getCollection().unlockPlant(plantName);
         System.out.println("Plant " + plantName + " purchased successfully.");
+        userManager.saveAll();
     }
 
     private void upgradePlant(String plantName) {
@@ -225,6 +230,7 @@ public class CollectionMenu extends Menu{
                 new LevelBasedUpgradeCost());
 
         reportUpgrade(user, plantName, plant, result);
+        userManager.saveAll();
     }
 
     private void reportUpgrade(User user, String plantName, Plant plant,

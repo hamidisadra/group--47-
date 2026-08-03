@@ -1,15 +1,18 @@
 package ir.ac.pvz.view.menus;
 
 import ir.ac.pvz.controller.managers.GameplayManager;
+import ir.ac.pvz.controller.managers.UserManager;
 import ir.ac.pvz.model.user.TransactionStatus;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GameMenu extends Menu{
+    private UserManager userManager;
 
     public GameMenu() {
         super("Game Menu");
+        this.userManager = UserManager.getInstance();
     }
 
     @Override
@@ -137,6 +140,7 @@ public class GameMenu extends Menu{
 
         if (status == TransactionStatus.SUCCESS) {
             System.out.println("Added " + amount + " " + type + "(s) successfully.");
+            userManager.saveAll();
         }
         else if (status == TransactionStatus.INVALID_AMOUNT) {
             System.out.println("Error: The amount must be grater than 0!");
