@@ -1,5 +1,6 @@
 package ir.ac.pvz.view.menus;
 
+import ir.ac.pvz.controller.managers.UserManager;
 import ir.ac.pvz.model.user.GreenHouse;
 import ir.ac.pvz.model.user.HarvestResult;
 import ir.ac.pvz.model.user.Pot;
@@ -99,6 +100,7 @@ public class GreenhouseMenu extends Menu {
         }
 
         greenHouse.plantRandom(pot, user.getCollection().getUnlockedPlants());
+        UserManager.getInstance().saveAll();
         System.out.println("A " + pot.getPlantType() + " seed was planted at (" + x + ", " + y + ").");
     }
 
@@ -129,10 +131,14 @@ public class GreenhouseMenu extends Menu {
         if (result.getCoins() > 0) {
             user.getWallet().addCoins(result.getCoins());
             System.out.println("Collected " + result.getCoins() + " coins.");
-        } else {
-            user.getCollection().boostPlant(result.getBoostedPlant());
+        }
+
+        else {
+            user.getCollection().earnPlantBoost(result.getBoostedPlant());
             System.out.println("Collected a boost for " + result.getBoostedPlant() + ".");
         }
+
+        UserManager.getInstance().saveAll();
     }
 
     private void grow(int x, int y) {
@@ -166,6 +172,7 @@ public class GreenhouseMenu extends Menu {
         }
 
         pot.growInstantly();
+        UserManager.getInstance().saveAll();
         System.out.println("The plant at (" + x + ", " + y + ") is now fully grown.");
     }
 }

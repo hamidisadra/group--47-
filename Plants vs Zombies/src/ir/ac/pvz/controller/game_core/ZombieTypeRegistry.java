@@ -48,9 +48,13 @@ public final class ZombieTypeRegistry {
     public Zombie create(String type) {
         Supplier<Zombie> factory = factories.get(normalize(type));
         if (factory != null) {
+            ZombieDefinition definition = zombieRepository.getByZombieType(type);
+            if (definition == null) {
+                return null;
+            }
             Zombie zombie = factory.get();
-            zombieRepository.applyTo(zombie, type);
-            zombie.setIdentity(type, type);
+            zombieRepository.applyTo(zombie, definition.runtimeType);
+            zombie.setIdentity(definition.runtimeType, definition.gameType);
             return zombie;
         }
         ZombieDefinition definition = zombieRepository.getByZombieType(type);

@@ -22,7 +22,7 @@ public class LawnMower {
         activated = true;
         destroyedZombies.clear();
         System.out.println("The lawn mower in the row " + (relatedRow + 1)
-                + "is triggered and killed these zombies:");
+                + " is triggered and killed these zombies:");
         for (Zombie zombie : new ArrayList<>(zombies)) {
             if (canKill(zombie)) {
                 zombie.forceDie();
@@ -36,6 +36,10 @@ public class LawnMower {
     }
     public void handleZombieAtEnd(Zombie zombie, GameSession session) {
         if (!activated) {
+            if (zombie != null && !canKill(zombie)) {
+                session.lose();
+                return;
+            }
             List<Zombie> zombies = new ArrayList<>(
                     session.getBoard().getZombiesInLane(relatedRow));
             if (zombie != null && !zombies.contains(zombie)) {
@@ -45,7 +49,6 @@ public class LawnMower {
             return;
         }
         if (secondReachCausesLoss) {
-            System.out.println("The zombie ate your brain; LOSER!!!");
             session.lose();
         }
     }
@@ -56,6 +59,6 @@ public class LawnMower {
         return activated;
     }
     public List<Zombie> getDestroyedZombies() {
-        return destroyedZombies;
+        return new ArrayList<>(destroyedZombies);
     }
 }

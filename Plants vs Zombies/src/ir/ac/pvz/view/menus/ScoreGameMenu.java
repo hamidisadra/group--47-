@@ -74,18 +74,21 @@ public class ScoreGameMenu extends Menu{
             return;
         }
 
-        if (!user.getCollection().getUnlockedPlants().contains(plantType)) {
+        String canonicalPlant = user.getCollection()
+                .getCanonicalUnlockedPlant(plantType);
+        if (canonicalPlant == null) {
             System.out.println("Error: You have not unlocked this plant!");
             return;
         }
 
-        if (selectedPlants.contains(plantType)) {
+        if (selectedPlants.stream().anyMatch(selected -> normalize(selected)
+                .equals(normalize(canonicalPlant)))) {
             System.out.println("Error: This plant is already selected!");
             return;
         }
 
-        selectedPlants.add(plantType);
-        System.out.println("Plant " + plantType + " selected successfully.");
+        selectedPlants.add(canonicalPlant);
+        System.out.println("Plant " + canonicalPlant + " selected successfully.");
     }
 
     private void showSelected() {
@@ -191,6 +194,15 @@ public class ScoreGameMenu extends Menu{
         } catch (IOException | RuntimeException e) {
             System.out.println("An error occurred: " + e.getMessage());
         }
+    }
+
+    private String normalize(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        return value.replace("-", "").replace("_", "")
+                .replace(" ", "").toLowerCase();
     }
 
 }

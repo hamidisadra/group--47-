@@ -166,7 +166,13 @@ public class ExplosivePlant extends Plant {
                 if (tile != null) {
                     for (Zombie zombie : new ArrayList<>(tile.getZombies())) {
                         zombie.lastDamageSource = source;
-                        zombie.takeDamage(damage);
+                        if (source != null
+                                && source.plantTags.contains(PlantTag.FIRE)) {
+                            zombie.takeFireDamage(damage);
+                        }
+                        else {
+                            zombie.takeDamage(damage);
+                        }
                     }
                 }
             }
@@ -242,8 +248,7 @@ public class ExplosivePlant extends Plant {
     private static void explodeLane(Plant plant, Board board) {
         for (Zombie zombie : board.getZombiesInLane(plant.location.y)) {
             zombie.lastDamageSource = plant;
-            zombie.takeDamage(plant.attackPower);
-            zombie.melt();
+            zombie.takeFireDamage(plant.attackPower);
         }
         meltLaneIce(plant.location.y, board);
         plant.die();

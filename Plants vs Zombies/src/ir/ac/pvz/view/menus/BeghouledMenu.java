@@ -1,7 +1,6 @@
 package ir.ac.pvz.view.menus;
 
 import ir.ac.pvz.controller.managers.GameplayManager;
-import ir.ac.pvz.controller.managers.UserManager;
 import ir.ac.pvz.model.minigame.Beghouled;
 import ir.ac.pvz.model.user.User;
 import ir.ac.pvz.model.zombies.BeghouledZombie;
@@ -22,7 +21,10 @@ public class BeghouledMenu extends Menu {
     public void executeCommand(String command) {
         command = command.trim();
 
-        String swapRegex = "^swap\\s+plants\\s+-a\\s+\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)\\s+-b\\s+\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)$";
+        String swapRegex = "^swap\\s+plants\\s+-a\\s+\\(\\s*(\\d+)"
+                + "\\s*,\\s*(\\d+)\\s*\\)\\s+-b\\s+\\(\\s*(\\d+)"
+                + "\\s*,\\s*(\\d+)\\s*\\)$";
+
         String upgradeRegex = "^upgrade\\s+plant\\s+-t\\s+(\\S+)$";
         String advanceRegex = "^advance\\s+time\\s+-t\\s+(\\d+)\\s+ticks$";
 
@@ -92,13 +94,12 @@ public class BeghouledMenu extends Menu {
 
         if (beghouled.checkWinCondition()) {
             System.out.println("All zombies vanish. You cleared this Beghouled stage!");
+
             beghouled.finishGame(true);
-            user.addGame();
 
             GameplayManager.getInstance().getLeaderboard()
                     .getOrCreateEntry(user.getUsername()).addMinigameCompleted();
 
-            UserManager.getInstance().saveAll();
             menuManager.popMenu();
         }
     }
@@ -115,13 +116,8 @@ public class BeghouledMenu extends Menu {
 
     private void advance(int ticks) {
         beghouled.advanceTime(ticks);
-        if (beghouled.isLost()) {
-            User user = menuManager.getActiveUser();
 
-            if (user != null) {
-                user.addGame();
-                UserManager.getInstance().saveAll();
-            }
+        if (beghouled.isLost()) {
             menuManager.popMenu();
         }
     }
@@ -135,6 +131,7 @@ public class BeghouledMenu extends Menu {
 
         for (int y = 1; y <= grid.length; y++) {
             StringBuilder line = new StringBuilder();
+
             for (int x = 1; x <= grid[y - 1].length; x++) {
                 if (beghouled.isCrater(x, y)) {
                     line.append("[  crater  ]");
@@ -144,6 +141,7 @@ public class BeghouledMenu extends Menu {
                     line.append("[").append(pad(grid[y - 1][x - 1])).append("]");
                 }
             }
+
             line.append(zombiesInRow(y));
             System.out.println(line.toString());
         }

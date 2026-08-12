@@ -23,6 +23,7 @@ public class StageConfig {
     private Long randomSeed;
     public int totalWaves;
     public int baseWaveCost;
+    private int difficultyLevel;
     public float waveGrowthRate;
     public float finalWaveMultiplier;
     public List<String> allowedZombieTypes;
@@ -42,6 +43,7 @@ public class StageConfig {
         this.seasonType = seasonType;
         this.totalWaves = Math.max(0, totalWaves);
         this.baseWaveCost = Math.max(0, baseWaveCost);
+        this.difficultyLevel = 3;
         this.waveGrowthRate = waveGrowthRate;
         this.finalWaveMultiplier = finalWaveMultiplier;
         if (allowedZombieTypes == null) {
@@ -169,16 +171,54 @@ public class StageConfig {
         }
         return this;
     }
-
     public StageConfig setRandomSeed(Long randomSeed) {
         this.randomSeed = randomSeed;
         return this;
     }
-
     public Long getRandomSeed() {
         return randomSeed;
     }
-
+    public StageConfig setDifficultyLevel(int difficultyLevel) {
+        if (difficultyLevel < 1 || difficultyLevel > 5) {
+            throw new IllegalArgumentException(
+                    "Difficulty level must be between 1 and 5.");
+        }
+        this.difficultyLevel = difficultyLevel;
+        return this;
+    }
+    public int getDifficultyLevel() {
+        return difficultyLevel;
+    }
+    public float getDifficultyIncreaseMultiplier() {
+        return difficultyLevel / 3f;
+    }
+    public float getDifficultyDecreaseMultiplier() {
+        return 3f / difficultyLevel;
+    }
+    public int scaleZombieStat(int baseValue) {
+        if (baseValue <= 0) {
+            return baseValue;
+        }
+        return Math.max(1, Math.round(baseValue
+                * getDifficultyIncreaseMultiplier()));
+    }
+    public int scaleZombieWaveCost(int baseCost) {
+        if (baseCost <= 0 || difficultyLevel == 3) {
+            return baseCost;
+        }
+        float scaled = baseCost * getDifficultyDecreaseMultiplier();
+        int unit = difficultyLevel < 3 ? 125 : 50;
+        int quantized;
+        if (difficultyLevel < 3) {
+            quantized = Math.round(scaled / unit) * unit;
+            quantized = Math.max(baseCost, quantized);
+        }
+        else {
+            quantized = (int) Math.floor(scaled / unit) * unit;
+            quantized = Math.min(baseCost, quantized);
+        }
+        return Math.max(unit, quantized);
+    }
     public ZombieBaseStats getZombieBaseStats(String zombieType) {
         return zombieBaseStats.get(normalize(zombieType));
     }
@@ -224,7 +264,6 @@ public class StageConfig {
         if (!costs.isEmpty()) {
             previousCost = costs.get(costs.size() - 1);
         }
-        // Page 25: data-driven stage values retain the mandatory flag minimum.
         costs.add(Math.round(previousCost * Math.max(2f,
                 finalWaveMultiplier)));
         return costs;
@@ -257,6 +296,9 @@ public class StageConfig {
         if (totalWaves < 2) {
             errors.add("A stage requires at least one normal wave and one final wave.");
         }
+        if (difficultyLevel < 1 || difficultyLevel > 5) {
+            errors.add("Difficulty level must be between 1 and 5.");
+        }
         if (waveGrowthRate < 0f) {
             errors.add("Wave growth rate cannot be negative.");
         }
@@ -282,22 +324,24 @@ public class StageConfig {
         if (explicitWaveCosts.get(0) < 1000) {
             errors.add("The first explicit wave cost must be at least 1000.");
         }
-        for (int index = 1; index < explicitWaveCosts.size(); index++) {
+        for (int index = 1; index < explicitWaveCosts.size() - 1; index++) {
             int previous = explicitWaveCosts.get(index - 1);
             int current = explicitWaveCosts.get(index);
-            if (current < previous + 500) {
-                errors.add("Each explicit wave must cost at least 500 more "
-                        + "than the previous wave.");
+            int requiredMinimum = previous + 500;
+            if (current < requiredMinimum) {
+                errors.add("Each explicit normal wave must cost at least 500 "
+                        + "more than the previous wave.");
                 break;
             }
         }
         if (explicitWaveCosts.size() >= 2) {
             int previous = explicitWaveCosts.get(explicitWaveCosts.size() - 2);
             int last = explicitWaveCosts.get(explicitWaveCosts.size() - 1);
-            if (last != Math.round(previous * Math.max(2f,
-                    finalWaveMultiplier))) {
-                errors.add("The final explicit wave cost must equal the final "
-                        + "wave multiplier applied to the previous wave.");
+            int requiredMinimum = Math.round(previous * Math.max(2f,
+                    finalWaveMultiplier));
+            if (last < requiredMinimum) {
+                errors.add("The final explicit wave cost must be at least the "
+                        + "final wave multiplier applied to the previous wave.");
             }
         }
     }
@@ -318,9 +362,26 @@ public class StageConfig {
         if (!sandboxMode && selectedPlantTypes.isEmpty()) {
             errors.add("At least one selected plant type is required.");
         }
-        if (imitaterTargetType != null
-                && plants.get(imitaterTargetType) == null) {
-            errors.add("Unknown Imitater target: " + imitaterTargetType);
+        boolean imitaterSelected = isPlantSelected("Imitater");
+        boolean targetDefined = imitaterTargetType != null
+                && !imitaterTargetType.trim().isEmpty();
+        if (!sandboxMode && imitaterSelected && !targetDefined) {
+            errors.add("Selected Imitater requires a target plant.");
+        }
+        if (targetDefined) {
+            if (!imitaterSelected) {
+                errors.add("Imitater target requires Imitater to be selected.");
+            }
+            if (normalize(imitaterTargetType).equals("imitater")) {
+                errors.add("Imitater cannot target itself.");
+            }
+            else if (plants.get(imitaterTargetType) == null) {
+                errors.add("Unknown Imitater target: " + imitaterTargetType);
+            }
+            else if (!isPlantSelected(imitaterTargetType)) {
+                errors.add("Imitater target must also be selected: "
+                        + imitaterTargetType);
+            }
         }
     }
     private void validateSpecialSpawnEvents(Board board,
@@ -397,6 +458,8 @@ public class StageConfig {
                 "KingZombie", "DelayBetweenKnightings", 2.5d));
         cooldowns.put("pianistzombie",
                 BalanceDefaults.PIANIST_MUSIC_LOOP_SECONDS);
+        cooldowns.put("hunterzombie",
+                BalanceDefaults.HUNTER_THROW_COOLDOWN_SECONDS);
         return cooldowns;
     }
     private Map<String, Integer> defaultAbilityValues() {
@@ -407,12 +470,16 @@ public class StageConfig {
     }
     private Map<String, ZombieBaseStats> defaultZombieBaseStats() {
         Map<String, ZombieBaseStats> stats = new LinkedHashMap<>();
+        ir.ac.pvz.model.support.ZombieDefinition barrel = ZombieDataRepository
+                .getInstance().getByZombieType("BarrelRollerZombie");
+        if (barrel == null) {
+            throw new IllegalStateException(
+                    "Missing zombie definition: BarrelRollerZombie");
+        }
         stats.put("barrelrollerzombie", new ZombieBaseStats(
-                BalanceDefaults.BARREL_ROLLER_SPEED,
-                BalanceDefaults.BARREL_ROLLER_HEALTH,
-                BalanceDefaults.BARREL_ROLLER_EAT_DPS,
-                BalanceDefaults.BARREL_ROLLER_WAVE_COST,
-                BalanceDefaults.BARREL_HEALTH));
+                barrel.speed, barrel.health, barrel.eatDamagePerSecond,
+                barrel.waveCost, (int) Math.round(barrel.getNumber(
+                "BarrelHealth", BalanceDefaults.BARREL_HEALTH))));
         return stats;
     }
     private String normalize(String value) {
@@ -422,13 +489,13 @@ public class StageConfig {
         return value.replace("-", "").replace("_", "")
                 .replace(" ", "").toLowerCase();
     }
-
     private static List<String> commonZombiePool() {
         return new ArrayList<>(Arrays.asList(
                 "BasicZombie", "ConeheadZombie", "BucketheadZombie",
                 "KnightZombie", "BlockheadZombie", "Gargantuar",
                 "ImpZombie", "FootballZombie", "ArcadeZombie",
                 "ParasolZombie", "TurquoiseZombie", "ProspectorZombie",
-                "PianistZombie", "NewspaperZombie"));
+                "PianistZombie", "NewspaperZombie",
+                "BarrelRollerZombie"));
     }
 }

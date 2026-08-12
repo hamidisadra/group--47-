@@ -33,4 +33,8 @@ public final class StandardZombieAbility extends ZombieAbility {
     public boolean blocksFreeze(Zombie zombie) {
         return kind == Kind.FREEZE_IMMUNITY;
     }
+    @Override
+    public boolean blocksFireDamage(Zombie zombie) {
+        return kind == Kind.FIRE_IMMUNITY;
+    }
 }

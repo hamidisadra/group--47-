@@ -11,6 +11,8 @@ public abstract class Stage {
     protected List<Wave> waves;
     protected int currentWaveIndex;
     protected boolean started;
+    protected boolean unlocked;
+    protected boolean completed;
 
     public Stage(int number, int difficulty, int waveCount) {
         this.number = number;
@@ -19,10 +21,20 @@ public abstract class Stage {
         this.waves = new ArrayList<>();
         this.currentWaveIndex = 0;
         this.started = false;
+        this.unlocked = false;
+        this.completed = false;
 
+        int stageNumber = Math.max(1, number);
+        int waveCost = 1000 + (stageNumber - 1) * 500;
         for (int i = 1; i <= waveCount; i++) {
-            int cost = 100 + i * 50 * difficulty;
-            waves.add(new Wave(i, cost, 0, i == waveCount, new ArrayList<>()));
+            if (i == waveCount && i > 1) {
+                waveCost = waves.get(waves.size() - 1).waveCost * 2;
+            }
+            else if (i > 1) {
+                waveCost += 500;
+            }
+            waves.add(new Wave(i, waveCost, 0, i == waveCount,
+                    new ArrayList<>()));
         }
     }
 
@@ -44,6 +56,27 @@ public abstract class Stage {
 
     public boolean isStarted() {
         return started;
+    }
+
+    public boolean isUnlocked() {
+        return unlocked;
+    }
+
+    public void unlock() {
+        unlocked = true;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public boolean markCompleted() {
+        if (completed) {
+            return false;
+        }
+        completed = true;
+        unlocked = true;
+        return true;
     }
 
     public Wave getCurrentWave() {

@@ -8,7 +8,8 @@ public class TimedWarStage extends SpecialStage {
     private int killedCount;
     private int sunProduced;
 
-    public TimedWarStage(int number, int difficulty, int waveCount, int timeLimitSeconds, int killTarget, int sunTarget) {
+    public TimedWarStage(int number, int difficulty, int waveCount,
+                         int timeLimitSeconds, int killTarget, int sunTarget) {
         super(number, difficulty, waveCount);
         this.timeLimitSeconds = timeLimitSeconds;
         this.killTarget = killTarget;

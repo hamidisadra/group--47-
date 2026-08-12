@@ -29,16 +29,22 @@ public class PlayerUpgradeWallet implements UpgradeResourceWallet {
 
     @Override
     public boolean spendSeedPackets(String plantType, int amount) {
-        if (inventory.getSeedPacketCount(plantType) < amount) {
+        return inventory.useSeedPackets(plantType, amount);
+    }
+    @Override
+    public boolean refundCoins(int amount) {
+        return wallet.addCoins(amount) == TransactionStatus.SUCCESS;
+    }
+
+    @Override
+    public boolean refundSeedPackets(String plantType, int amount) {
+        try {
+            inventory.addSeedPackets(plantType, amount);
+            return true;
+        }
+        catch (IllegalArgumentException exception) {
             return false;
         }
-
-        for (int i = 0; i < amount; i++) {
-            if (!inventory.useSeedPacket(plantType)) {
-                inventory.addSeedPackets(plantType, i);
-                return false;
-            }
-        }
-        return true;
     }
+
 }

@@ -16,7 +16,9 @@ public abstract class Quest {
     protected int targetProgress;
     protected boolean completed;
 
-    public Quest(String id, String title, String description, String page, QuestCategory category, QuestPriority priority, int targetProgress, Reward reward) {
+    public Quest(String id, String title, String description, String page,
+                 QuestCategory category, QuestPriority priority,
+                 int targetProgress, Reward reward) {
         this.id = id;
         this.title = title;
         this.description = description;

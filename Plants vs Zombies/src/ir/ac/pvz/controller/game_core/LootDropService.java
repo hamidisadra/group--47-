@@ -1,9 +1,9 @@
 package ir.ac.pvz.controller.game_core;
 
-import ir.ac.pvz.model.others.*;
-
 import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.LootType;
+import ir.ac.pvz.model.others.GameSession;
+
 import java.util.Random;
 import java.util.random.RandomGenerator;
 
@@ -15,35 +15,41 @@ public class LootDropService {
     public int coinDropAmount;
     public int diamondDropAmount;
     private final RandomGenerator random;
+
     public LootDropService() {
         this(new Random());
     }
+
     public LootDropService(RandomGenerator random) {
-        this.dropChance = 0.10f;
-        this.coinChanceAfterDrop = 0.80f;
-        this.diamondChanceAfterDrop = 0.10f;
-        this.potChanceAfterDrop = 0.10f;
-        this.coinDropAmount = 50;
-        this.diamondDropAmount = 1;
         if (random == null) {
             throw new IllegalArgumentException("Random generator cannot be null.");
         }
+        dropChance = 0.10f;
+        coinChanceAfterDrop = 0.80f;
+        diamondChanceAfterDrop = 0.10f;
+        potChanceAfterDrop = 0.10f;
+        coinDropAmount = 50;
+        diamondDropAmount = 1;
         this.random = random;
     }
+
     public LootType rollLoot(Zombie zombie) {
+        validateConfiguration();
         if (zombie == null || random.nextFloat() >= dropChance) {
             return LootType.NONE;
         }
         float result = random.nextFloat();
-        if (result < coinChanceAfterDrop) {
+        float coinUpperBound = coinChanceAfterDrop;
+        float diamondUpperBound = coinChanceAfterDrop + diamondChanceAfterDrop;
+        if (result < coinUpperBound) {
             return LootType.COIN;
         }
-        float diamondUpperBound = 1f - potChanceAfterDrop;
         if (result < diamondUpperBound) {
             return LootType.DIAMOND;
         }
         return LootType.POT;
     }
+
     public void applyLoot(LootType type, GameSession session) {
         if (type == null || type == LootType.NONE || session == null) {
             return;
@@ -61,8 +67,28 @@ public class LootDropService {
             printDrop("pot", session.getPots(), "pots");
         }
     }
-    private void printDrop(String item, int amount, String plural) {
-        System.out.println("A zombie dropeed a " + item + "; you have "
-                + amount + " " + plural + " now.");
+
+    private void validateConfiguration() {
+        if (dropChance < 0f || dropChance > 1f) {
+            throw new IllegalStateException("Drop chance must be between 0 and 1.");
+        }
+        if (coinChanceAfterDrop < 0f || diamondChanceAfterDrop < 0f
+                || potChanceAfterDrop < 0f) {
+            throw new IllegalStateException("Loot probabilities cannot be negative.");
+        }
+        float total = coinChanceAfterDrop + diamondChanceAfterDrop
+                + potChanceAfterDrop;
+        if (Math.abs(total - 1f) > 0.0001f) {
+            throw new IllegalStateException("Loot probabilities must add up to 1.");
+        }
+        if (coinDropAmount < 0 || diamondDropAmount < 0) {
+            throw new IllegalStateException("Loot amounts cannot be negative.");
+        }
+    }
+
+    private void printDrop(String singular, int amount, String plural) {
+        String unit = amount == 1 ? singular : plural;
+        System.out.println("A zombie dropped a " + singular + "; you have "
+                + amount + " " + unit + " now.");
     }
 }

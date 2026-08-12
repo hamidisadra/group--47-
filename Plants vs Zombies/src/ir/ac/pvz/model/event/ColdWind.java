@@ -16,6 +16,8 @@ public class ColdWind {
         for (int row : affectedRows) {
             rows.append(row).append(" ");
         }
-        System.out.println("A cold wind blows through rows " + rows.toString().trim() + ", increasing the ice level of the tiles.");
+        System.out.println("A cold wind blows through rows "
+                + rows.toString().trim()
+                + ", increasing the ice level of the tiles.");
     }
 }

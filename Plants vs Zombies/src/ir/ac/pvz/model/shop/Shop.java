@@ -36,7 +36,8 @@ public class Shop {
         System.out.println("========== Shop ==========");
         for (ShopItem item : permanentItems) {
             String price = item.getPriceCoins() > 0 ? item.getPriceCoins() + " coins" : item.getPriceGems() + " gems";
-            System.out.println(item.getId() + " - " + item.getName() + " (" + price + " for " + item.getBuyUnit() + ")");
+            System.out.println(item.getId() + " - " + item.getName() + " ("
+                    + price + " for " + item.getBuyUnit() + ")");
         }
     }
 
@@ -46,10 +47,14 @@ public class Shop {
             System.out.println("No daily offer is available today.");
             return;
         }
-        System.out.println("Daily offer: 10 seed packets of " + dailyOffer.getPlantType() + " for " + dailyOffer.getPriceCoins() + " coins.");
+        System.out.println("Daily offer: 10 seed packets of "
+                + dailyOffer.getPlantType() + " for "
+                + dailyOffer.getPriceCoins() + " coins.");
     }
 
-    public ShopResult buyItem(String itemId, int count, String plantType, PlayerWallet wallet, GreenHouse greenHouse, Collection collection, Inventory inventory) {
+    public ShopResult buyItem(String itemId, int count, String plantType,
+                              PlayerWallet wallet, GreenHouse greenHouse,
+                              Collection collection, Inventory inventory) {
         if (count <= 0) {
             return ShopResult.INVALID_ITEM;
         }
@@ -110,7 +115,9 @@ public class Shop {
         return ShopResult.SUCCESS;
     }
 
-    private ShopResult buyRandomSeed(int count, PlayerWallet wallet, Collection collection, Inventory inventory, ShopItem item) {
+    private ShopResult buyRandomSeed(int count, PlayerWallet wallet,
+                                     Collection collection, Inventory inventory,
+                                     ShopItem item) {
         List<String> unlockedPlants = collection.getUnlockedPlants();
         if (unlockedPlants.isEmpty()) {
             return ShopResult.PLANT_NOT_UNLOCKED;
@@ -126,18 +133,22 @@ public class Shop {
         return ShopResult.SUCCESS;
     }
 
-    private ShopResult buySelectiveSeed(int count, String plantType, PlayerWallet wallet, Collection collection, Inventory inventory, ShopItem item) {
+    private ShopResult buySelectiveSeed(int count, String plantType,
+                                        PlayerWallet wallet,
+                                        Collection collection,
+                                        Inventory inventory, ShopItem item) {
         if (plantType == null) {
             return ShopResult.PLANT_TYPE_REQUIRED;
         }
-        if (!collection.getUnlockedPlants().contains(plantType)) {
+        String canonicalPlant = collection.getCanonicalUnlockedPlant(plantType);
+        if (canonicalPlant == null) {
             return ShopResult.PLANT_NOT_UNLOCKED;
         }
         int totalPrice = item.getPriceGems() * count;
         if (wallet.spendGems(totalPrice) == TransactionStatus.INSUFFICIENT_FUND) {
             return ShopResult.INSUFFICIENT_FUNDS;
         }
-        inventory.addSeedPackets(plantType, item.getBuyUnit() * count);
+        inventory.addSeedPackets(canonicalPlant, item.getBuyUnit() * count);
         return ShopResult.SUCCESS;
     }
 

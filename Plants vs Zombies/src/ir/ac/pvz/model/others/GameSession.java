@@ -34,14 +34,17 @@ public class GameSession {
     private int coins;
     private int diamonds;
     private int pots;
-    private final List<LootDrop> pendingLoot;
     private GameOutcomeListener outcomeListener;
     private boolean outcomeNotified;
+    private float simulationTickAccumulator;
     public GameSession(Board board, int startingSun) {
         this(board, startingSun, StageConfig.unconfigured(board.seasonType));
     }
     @SuppressWarnings("this-escape")
     public GameSession(Board board, int startingSun, StageConfig stageConfig) {
+        if (board == null) {
+            throw new IllegalArgumentException("Board cannot be null.");
+        }
         this.board = board;
         if (stageConfig == null) {
             this.stageConfig = StageConfig.unconfigured(board.seasonType);
@@ -52,18 +55,29 @@ public class GameSession {
         this.currentSunAmount = startingSun;
         this.plantFoodCount = 0;
         this.currentWaveNumber = 0;
-        this.sunManager = new SunManager(startingSun, board);
+        float difficultyMultiplier =
+                this.stageConfig.getDifficultyIncreaseMultiplier();
+        this.sunManager = new SunManager(startingSun, board,
+                randomFor(this.stageConfig, 11L));
+        this.sunManager.setSkySunDropIntervalMultiplier(
+                difficultyMultiplier * difficultyMultiplier);
         this.plantFoodInventory = new PlantFoodInventory(3);
         this.clock = new TickClock(10);
-        this.zombieSpawner = new ZombieSpawner(board, this.stageConfig);
+        this.zombieSpawner = new ZombieSpawner(board, this.stageConfig,
+                randomFor(this.stageConfig, 23L));
         this.waveController = new WaveController(this.stageConfig.baseWaveCost,
                 this.stageConfig.waveGrowthRate,
                 this.stageConfig.finalWaveMultiplier,
                 this.stageConfig.totalWaves,
                 this.stageConfig.explicitWaveCosts, zombieSpawner);
-        this.lootDropService = new LootDropService();
-        this.projectileResolver = new ProjectileResolver();
-        this.zombieBehaviorController = new ZombieBehaviorController();
+        this.lootDropService = new LootDropService(
+                randomFor(this.stageConfig, 37L));
+        this.projectileResolver = new ProjectileResolver(
+                randomFor(this.stageConfig, 41L),
+                zombieSpawner::prepareSpawnedZombie);
+        this.zombieBehaviorController = new ZombieBehaviorController(
+                randomFor(this.stageConfig, 53L),
+                ZombieDataRepository.getInstance());
         this.statistics = new GameStatistics();
         this.cooldowns = new LinkedHashMap<>();
         this.cooldownDisabled = false;
@@ -73,9 +87,9 @@ public class GameSession {
         this.coins = 0;
         this.diamonds = 0;
         this.pots = 0;
-        this.pendingLoot = new ArrayList<>();
         this.outcomeListener = null;
         this.outcomeNotified = false;
+        this.simulationTickAccumulator = 0f;
     }
     public void start() {
         if (status == GameStatus.RUNNING
@@ -93,9 +107,18 @@ public class GameSession {
             return;
         }
         for (int tick = 0; tick < count && status == GameStatus.RUNNING; tick++) {
+            simulationTickAccumulator +=
+                    stageConfig.getDifficultyIncreaseMultiplier();
+            processSimulationTicks();
+            synchronizePublicState();
+        }
+    }
+    private void processSimulationTicks() {
+        while (simulationTickAccumulator + 0.0001f >= 1f
+                && status == GameStatus.RUNNING) {
             clock.advance(1);
             tickProcessor.updateOneTick();
-            synchronizePublicState();
+            simulationTickAccumulator -= 1f;
         }
     }
     public boolean collectSun(GridPosition position) {
@@ -103,13 +126,14 @@ public class GameSession {
         boolean collected = sunManager.collectSun(position);
         if (collected) {
             statistics.recordSunCollected(sunManager.currentSunAmount - before);
+            tickProcessor.reconcileExternalStateChange();
         }
         synchronizePublicState();
         return collected;
     }
     public boolean plantPlant(String type, GridPosition position) {
         String cardType = normalize(type);
-        Plant plant = createPlantForCard(type);
+        Plant plant = createPlantForCard(type, nextPlantId);
         if (getPlantingError(type, position, plant) != null) {
             return false;
         }
@@ -125,12 +149,14 @@ public class GameSession {
                 plantFoodInventory.boostPlant(mergedPlant, this,
                         projectileResolver);
             }
+            tickProcessor.reconcileExternalStateChange();
             synchronizePublicState();
             return true;
         }
         if (!tile.addPlant(plant)) {
             return false;
         }
+        nextPlantId++;
         finishPlanting(plant, cardType);
         applyImitaterEntranceFood(cardType, plant);
         if (plant.getNormalizedType().equals("goldbloom")) {
@@ -144,13 +170,13 @@ public class GameSession {
             else if (!plant.getNormalizedType().equals("goldbloom")) {
                 ExplosivePlant.resolveInstantPlant(plant, this, projectileResolver);
             }
-            tickProcessor.removeDestroyedObjects();
         }
+        tickProcessor.reconcileExternalStateChange();
         synchronizePublicState();
         return true;
     }
     public String getPlantingError(String type, GridPosition position) {
-        return getPlantingError(type, position, createPlantForCard(type));
+        return getPlantingError(type, position, createPlantForCard(type, 0));
     }
     private String getPlantingError(String type, GridPosition position,
                                     Plant plant) {
@@ -166,7 +192,11 @@ public class GameSession {
         if (!cooldownDisabled && getCooldown(normalize(type)) > 0f) {
             return "Plant is on cooldown.";
         }
-        if (!plant.canPlantOn(board.getTile(position))) {
+        Tile tile = board.getTile(position);
+        if (isPeaPodAtMaximum(tile, plant)) {
+            return "Pea Pod already has maximum heads.";
+        }
+        if (!plant.canPlantOn(tile)) {
             return "Plant cannot be planted on this tile.";
         }
         if (currentSunAmount < plant.sunCost) {
@@ -192,6 +222,22 @@ public class GameSession {
             plantFoodInventory.boostPlant(plant, this, projectileResolver);
         }
     }
+    private boolean isPeaPodAtMaximum(Tile tile, Plant plant) {
+        if (tile == null || !plant.getNormalizedType().equals("peapod")) {
+            return false;
+        }
+        boolean hasPeaPod = false;
+        for (Plant existing : tile.getPlants()) {
+            if (existing.getNormalizedType().equals("peapod")
+                    && existing instanceof ShooterPlant) {
+                hasPeaPod = true;
+                if (((ShooterPlant) existing).multiShot < 5) {
+                    return false;
+                }
+            }
+        }
+        return hasPeaPod;
+    }
     private boolean mergePeaPod(Tile tile, Plant plant) {
         if (!plant.getNormalizedType().equals("peapod")) {
             return false;
@@ -212,7 +258,7 @@ public class GameSession {
         String type = plant.getNormalizedType();
         return type.endsWith("mint") || type.equals("goldbloom")
                 || type.equals("iceshroom")
-                || type.equals("hotpotato") || type.equals("gravebuster")
+                || type.equals("hotpotato")
                 || type.equals("doomshroom") || type.equals("jalapeno")
                 || plant instanceof ExplosivePlant && ((ExplosivePlant) plant).instantUse;
     }
@@ -232,6 +278,9 @@ public class GameSession {
         }
         boolean fed = plantFoodInventory.feedPlant(tile.getPlant(), this,
                 projectileResolver);
+        if (fed) {
+            tickProcessor.reconcileExternalStateChange();
+        }
         synchronizePublicState();
         return fed;
     }
@@ -243,7 +292,8 @@ public class GameSession {
         for (Zombie zombie : board.getAllAliveZombies()) {
             zombie.forceDie();
         }
-        tickProcessor.removeDestroyedObjects();
+        tickProcessor.reconcileExternalStateChange();
+        synchronizePublicState();
     }
     public void win() {
         if (status == GameStatus.WON || status == GameStatus.LOST) {
@@ -259,6 +309,7 @@ public class GameSession {
             return;
         }
         status = GameStatus.LOST;
+        System.out.println("The zombie ate your brain; LOSER!!!");
         notifyOutcome();
     }
     public Plant findPlantTarget(Zombie zombie) {
@@ -337,30 +388,6 @@ public class GameSession {
     public Zombie cheatSpawnZombie(String type, int x, int y) {
         return zombieSpawner.spawnZombie(type, new ContinuousPosition(x, y));
     }
-    public boolean collectLoot(GridPosition position) {
-        if (position == null) {
-            return false;
-        }
-        Iterator<LootDrop> iterator = pendingLoot.iterator();
-        while (iterator.hasNext()) {
-            LootDrop drop = iterator.next();
-            if (drop.position.equals(position)) {
-                lootDropService.applyLoot(drop.type, this);
-                iterator.remove();
-                return true;
-            }
-        }
-        return false;
-    }
-    public void registerLootDrop(LootType type, GridPosition position) {
-        if (type != null && type != LootType.NONE && position != null) {
-            pendingLoot.add(new LootDrop(type,
-                    new GridPosition(position.x, position.y)));
-        }
-    }
-    public List<LootDrop> getPendingLoot() {
-        return new ArrayList<>(pendingLoot);
-    }
     public Zombie spawnConfiguredZombie(String type,
                                         ContinuousPosition position) {
         if (type == null || position == null) {
@@ -368,13 +395,16 @@ public class GameSession {
         }
         return zombieSpawner.spawnZombie(type, position);
     }
+    public void prepareSpawnedZombie(Zombie zombie) {
+        zombieSpawner.prepareSpawnedZombie(zombie);
+    }
     public List<Plant> getPlantCatalog() {
         List<Plant> plants = new ArrayList<>();
         for (String type : Plant.getSpreadsheetTypes()) {
             if (!stageConfig.isPlantSelected(type)) {
                 continue;
             }
-            Plant plant = createPlant(type);
+            Plant plant = createPlant(type, 0);
             if (plant != null) {
                 plants.add(plant);
             }
@@ -401,6 +431,10 @@ public class GameSession {
     public void setOutcomeListener(GameOutcomeListener listener) {
         this.outcomeListener = listener;
     }
+    private static Random randomFor(StageConfig config, long salt) {
+        Long seed = config == null ? null : config.getRandomSeed();
+        return seed == null ? new Random() : new Random(seed + salt);
+    }
     private void notifyOutcome() {
         if (outcomeNotified || outcomeListener == null) {
             return;
@@ -413,25 +447,42 @@ public class GameSession {
             outcomeListener.onGameLost(this);
         }
     }
+    public int getCurrentSunAmount() { return sunManager.showSunAmount(); }
+    public int getPlantFoodCount() { return plantFoodInventory.count; }
+    public int getCurrentWaveNumber() { return waveController.currentWaveNumber; }
     public int getCoins() { return coins; }
     public int getDiamonds() { return diamonds; }
     public int getPots() { return pots; }
-    public void addCoins(int amount) { coins += amount; }
-    public void addDiamonds(int amount) { diamonds += amount; }
-    public void addPots(int amount) { pots += amount; }
+    public void addCoins(int amount) { coins = checkedResourceTotal(coins, amount); }
+    public void addDiamonds(int amount) { diamonds = checkedResourceTotal(diamonds, amount); }
+    public void addPots(int amount) { pots = checkedResourceTotal(pots, amount); }
+    private int checkedResourceTotal(int current, int amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Resource amount cannot be negative.");
+        }
+        long result = (long) current + amount;
+        if (result > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Resource amount exceeds the supported limit.");
+        }
+        return (int) result;
+    }
     private void synchronizePublicState() {
         currentSunAmount = sunManager.currentSunAmount;
         plantFoodCount = plantFoodInventory.count;
         currentWaveNumber = waveController.currentWaveNumber;
     }
-    private Plant createPlant(String type) {
+    private Plant createPlant(String type, int id) {
         if (type == null) {
             return null;
         }
-        Plant plant = Plant.createSpreadsheetPlant(nextPlantId++, type);
+        Plant plant = Plant.createSpreadsheetPlant(id, type);
         if (plant == null) {
             return null;
         }
+        applyConfiguredLevel(type, plant);
+        return plant;
+    }
+    private void applyConfiguredLevel(String type, Plant plant) {
         int targetLevel = stageConfig.getPlantLevel(type);
         for (int nextLevel = plant.level + 1;
              nextLevel <= targetLevel; nextLevel++) {
@@ -442,16 +493,15 @@ public class GameSession {
                         + " upgrade for " + plant.type + ".");
             }
         }
-        return plant;
     }
-    private Plant createPlantForCard(String type) {
+    private Plant createPlantForCard(String type, int id) {
         if (!normalize(type).equals("imitater")) {
-            return createPlant(type);
+            return createPlant(type, id);
         }
         if (stageConfig.imitaterTargetType == null) {
             return null;
         }
-        Plant copiedPlant = createPlant(stageConfig.imitaterTargetType);
+        Plant copiedPlant = createPlant(stageConfig.imitaterTargetType, id);
         applyImitaterCardUpgrades(copiedPlant);
         return copiedPlant;
     }

@@ -19,21 +19,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.random.RandomGenerator;
+import java.util.function.Consumer;
 
 public class ProjectileResolver {
     private final Map<Plant, Integer> attackCycles = new IdentityHashMap<>();
     private final RandomGenerator random;
-    private final ProjectilePathResolver pathResolver = new ProjectilePathResolver();
+    private final ProjectilePathResolver pathResolver;
     private final ProjectileCollisionResolver collisionResolver =
             new ProjectileCollisionResolver();
     public ProjectileResolver() {
         this(new Random());
     }
     public ProjectileResolver(RandomGenerator random) {
+        this(random, null);
+    }
+    public ProjectileResolver(RandomGenerator random,
+                              Consumer<Zombie> spawnPreparer) {
         if (random == null) {
             throw new IllegalArgumentException("Random generator cannot be null.");
         }
         this.random = random;
+        Consumer<Zombie> resolvedPreparer = spawnPreparer;
+        if (resolvedPreparer == null) {
+            resolvedPreparer = zombie -> zombie.isGlowing =
+                    zombie.canSpawnPlantFood && random.nextFloat() < 0.05f;
+        }
+        this.pathResolver = new ProjectilePathResolver(resolvedPreparer);
     }
     public void resolveMovement(Projectile projectile, Board board) {
         collisionResolver.resolveMovement(projectile, board);

@@ -22,6 +22,8 @@ import ir.ac.pvz.model.support.ZombieMovementStrategy;
 import ir.ac.pvz.model.support.ZombieEffect;
 import ir.ac.pvz.model.support.ZombieBaseStats;
 import ir.ac.pvz.model.support.ZombieDataRepository;
+import ir.ac.pvz.model.support.ZombieDefinition;
+import ir.ac.pvz.model.support.ZombieAbilityRegistry;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -67,10 +69,10 @@ public abstract class Zombie extends GameObject implements IMovable {
         this.currentPosition = new ContinuousPosition(8f, 0);
         this.lane = 0;
         this.currentHealth = health;
-        this.damageToPlant = attackDamage / 10;
+        this.damageToPlant = Math.max(0, Math.round(attackDamage / 10f));
         this.abilities = new ArrayList<>();
         this.effects = new ArrayList<>();
-        this.isGlowing = Math.random() < 0.05;
+        this.isGlowing = false;
         this.isBoss = false;
         this.initialWaveCost = waveCost;
         this.armorPieces = new ArrayList<>();
@@ -95,15 +97,28 @@ public abstract class Zombie extends GameObject implements IMovable {
     }
     protected Zombie(String zombieType) {
         this(ZombieBaseStats.fromRepository(zombieType));
-        ZombieDataRepository.getInstance().applyTo(this, zombieType);
-        setIdentity(zombieType, zombieType);
+        initializeDefinitionData(zombieType);
     }
     private Zombie(ZombieBaseStats stats) {
         this(stats.speed, stats.health, stats.eatDamagePerSecond,
                 stats.waveCost);
     }
-    protected double requiredDataNumber(String key) {
-        ir.ac.pvz.model.support.ZombieDefinition definition =
+    private void initializeDefinitionData(String zombieType) {
+        ZombieDefinition definition = ZombieDataRepository.getInstance()
+                .getByZombieType(zombieType);
+        if (definition == null) {
+            throw new IllegalArgumentException("Unknown zombie type: " + zombieType);
+        }
+        selectionWeight = definition.weight;
+        canSpawnPlantFood = definition.canSpawnPlantFood;
+        type = definition.runtimeType;
+        displayName = definition.gameType;
+        for (String abilityName : definition.abilities) {
+            abilities.add(ZombieAbilityRegistry.create(abilityName, definition));
+        }
+    }
+    protected final double requiredDataNumber(String key) {
+        ZombieDefinition definition =
                 ZombieDataRepository.getInstance().getByZombieType(type);
         if (definition == null
                 || !definition.numericProperties.containsKey(key)) {
@@ -119,12 +134,12 @@ public abstract class Zombie extends GameObject implements IMovable {
         health = baseHealth;
         currentHealth = baseHealth;
         attackDamage = eatDamagePerSecond;
-        damageToPlant = eatDamagePerSecond / 10;
+        damageToPlant = Math.max(0, Math.round(eatDamagePerSecond / 10f));
         waveCost = cost;
         initialWaveCost = cost;
         selectionWeight = weight;
         canSpawnPlantFood = plantFoodEligible;
-        isGlowing = Math.random() < 0.05;
+        isGlowing = false;
         isAlive = true;
         deathEventPublished = false;
     }
@@ -196,6 +211,18 @@ public abstract class Zombie extends GameObject implements IMovable {
     }
     public boolean isDead() {
         return !isAlive || currentHealth <= 0;
+    }
+    public void takeFireDamage(int amount) {
+        for (ZombieAbility ability : new ArrayList<>(abilities)) {
+            if (ability.blocksFireDamage(this)) {
+                return;
+            }
+        }
+        melt();
+        clearChill();
+        effects.removeIf(effect -> effect.type == ZombieEffectType.FROZEN
+                || effect.type == ZombieEffectType.CHILLED);
+        takeDamage(amount);
     }
     @Override
     public void takeDamage(int amount) {

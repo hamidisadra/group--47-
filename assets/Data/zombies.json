@@ -489,7 +489,7 @@
       "SoundOnAsh": "Play_Zomb_Global_Gargantuar_Mvmt_Death_Ash",
       "SoundOnElectrocute": "Play_Zomb_Global_Gargantuar_Mvmt_Shock",
       "SoundOnIdle": "Play_Zomb_Egypt_Gargantuar_Mvmt_Idle",
-      "Speed": 0.24,
+      "Speed": 0.12,
       "StaticArtImageAsset": "IMAGE_GARGANTUAR",
       "ThrowImpDuration": 1,
       "WavePointCost": 1500,
@@ -501,7 +501,7 @@
         },
         {
           "Type": "speed",
-          "Value": "speed3"
+          "Value": "speed0"
         }
       ]
     }
@@ -2422,7 +2422,7 @@
         "mX": 10,
         "mY": 10
       },
-      "Hitpoints": 490,
+      "Hitpoints": 1100,
       "JamStyle": "jam_8bit",
       "ScaledProps": [
         {
@@ -2464,6 +2464,24 @@
           "Value": "speed3"
         }
       ]
+    }
+  },
+  {
+    "aliases": [
+      "ZombieBarrelRoller"
+    ],
+    "GameType": "BarrelRollerZombie",
+    "RuntimeType": "BarrelRollerZombie",
+    "objclass": "ZombieBarrelRollerProps",
+    "objdata": {
+      "BarrelHealth": 1100,
+      "CanSpawnPlantFood": true,
+      "Cost": 150,
+      "EatDPS": 100,
+      "Hitpoints": 190,
+      "Speed": 0.185,
+      "WavePointCost": 500,
+      "Weight": 1000
     }
   }
 ]

@@ -28,9 +28,20 @@ public final class DodoFlightAbility extends ZombieAbility {
         if (!obstacle) {
             return false;
         }
+        return flyPast(zombie, session, plant.location.x);
+    }
+    public boolean escapeSlipperyTile(Zombie zombie, GameSession session,
+                                      int slipperyTileX) {
+        return flyPast(zombie, session, slipperyTileX);
+    }
+    private boolean flyPast(Zombie zombie, GameSession session,
+                            int obstacleX) {
+        if (zombie == null || session == null) {
+            return false;
+        }
         float destinationX = Math.max(0f,
-                plant.location.x - maximumGridSquares);
-        if (destinationX >= plant.location.x) {
+                obstacleX - maximumGridSquares);
+        if (destinationX >= obstacleX) {
             return false;
         }
         return session.getBoard().placeZombie(zombie,

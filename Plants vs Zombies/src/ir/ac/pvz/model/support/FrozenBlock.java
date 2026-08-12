@@ -51,6 +51,23 @@ public class FrozenBlock extends TileObstacle {
         super.destroy();
         releaseContent();
     }
+    public void relocateContent(Tile source, Tile destination) {
+        if (source == null || destination == null) {
+            return;
+        }
+        if (containedPlant != null) {
+            source.getPlants().remove(containedPlant);
+            source.canStackPlants = source.getPlants().stream()
+                    .anyMatch(plant -> plant.canStack);
+            destination.addFrozenPlant(containedPlant);
+            destination.canStackPlants = destination.canStackPlants
+                    || containedPlant.canStack;
+        }
+        if (containedZombie != null) {
+            source.removeZombie(containedZombie);
+            destination.addFrozenZombie(containedZombie);
+        }
+    }
     public void releaseContent() {
         if (containedPlant != null) {
             containedPlant.releaseFromIce();

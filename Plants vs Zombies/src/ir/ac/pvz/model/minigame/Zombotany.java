@@ -21,18 +21,28 @@ public class Zombotany extends MiniGame {
 
     public void spawnPlantZombie(PlantZombieType type, int row) {
         switch (type) {
-            case PEASHOOTER_ZOMBIE:
+            case PEASHOOTER_ZOMBIE: {
                 System.out.println("A peashooter zombie spawns in row " + row + " and shoots peas at plants ahead.");
                 break;
-            case WALLNUT_ZOMBIE:
+            }
+
+            case WALLNUT_ZOMBIE: {
                 System.out.println("A wall-nut zombie spawns in row " + row + ". It is slow but very tanky.");
                 break;
-            case JALAPENO_ZOMBIE:
-                System.out.println("A jalapeno zombie spawns in row " + row + ". It will explode after 10 seconds if it does not reach the house.");
+            }
+
+            case JALAPENO_ZOMBIE: {
+                System.out.println("A jalapeno zombie spawns in row " + row
+                        + ". It will explode after 10 seconds if it does not reach the house.");
                 break;
-            case SQUASH_ZOMBIE:
-                System.out.println("A squash zombie spawns in row " + row + ". It moves fast and squashes the first plant it reaches.");
+            }
+
+            case SQUASH_ZOMBIE: {
+                System.out.println("A squash zombie spawns in row " + row
+                        + ". It moves fast and squashes the first plant it reaches.");
                 break;
+            }
+
             default:
                 break;
         }

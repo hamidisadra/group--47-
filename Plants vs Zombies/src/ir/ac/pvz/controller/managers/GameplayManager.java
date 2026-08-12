@@ -20,6 +20,7 @@ public class GameplayManager {
     private Stage currentStage;
     private Shop shop;
     private Leaderboard leaderboard;
+    private int currentChapterProgressOffset;
 
     private GameplayManager() {
         this.shop = new Shop();
@@ -34,40 +35,115 @@ public class GameplayManager {
     }
 
     public boolean enterChapter(String chapterName) {
-        Chapter chapter;
-        SeasonType season;
+        int progressOffset = getChapterProgressOffset(chapterName);
+        return enterChapter(chapterName, Math.max(0, progressOffset));
+    }
 
-        switch (chapterName.toLowerCase()) {
-            case "ancient egypt":
-                chapter = new AncientEgypt();
-                season = SeasonType.ANCIENT_EGYPT;
-                break;
-            case "frostbite caves":
-                chapter = new FrostbiteCaves();
-                season = SeasonType.FROSTBITE_CAVES;
-                break;
-            case "big wave beach":
-                chapter = new BigWaveBeach();
-                season = SeasonType.BIG_WAVE_BEACH;
-                break;
-            case "dark ages":
-                chapter = new DarkAges();
-                season = SeasonType.DARK_AGES;
-                break;
-            default:
-                return false;
+    public boolean enterChapter(String chapterName, int gameProgress) {
+        int progressOffset = getChapterProgressOffset(chapterName);
+        if (progressOffset < 0 || gameProgress < progressOffset) {
+            return false;
+        }
+
+        Chapter chapter = createChapter(chapterName);
+        SeasonType season = getChapterSeason(chapterName);
+        if (chapter == null || season == null) {
+            return false;
         }
 
         this.board = new Board(5, 9, season);
         chapter.startChapter();
         chapter.applyChapterEffects(board);
-
-        Stage stage = new NormalStage(1, 1, 3);
-        chapter.addStage(stage);
+        addStages(chapter);
 
         this.currentChapter = chapter;
-        this.currentStage = stage;
+        this.currentChapterProgressOffset = progressOffset;
+        restoreStageProgress(gameProgress);
         return true;
+    }
+
+    private Chapter createChapter(String chapterName) {
+        switch (chapterName.toLowerCase()) {
+            case "ancient egypt":
+                return new AncientEgypt();
+            case "frostbite caves":
+                return new FrostbiteCaves();
+            case "big wave beach":
+                return new BigWaveBeach();
+            case "dark ages":
+                return new DarkAges();
+            default:
+                return null;
+        }
+    }
+
+    private SeasonType getChapterSeason(String chapterName) {
+        switch (chapterName.toLowerCase()) {
+            case "ancient egypt":
+                return SeasonType.ANCIENT_EGYPT;
+            case "frostbite caves":
+                return SeasonType.FROSTBITE_CAVES;
+            case "big wave beach":
+                return SeasonType.BIG_WAVE_BEACH;
+            case "dark ages":
+                return SeasonType.DARK_AGES;
+            default:
+                return null;
+        }
+    }
+
+    private int getChapterProgressOffset(String chapterName) {
+        switch (chapterName.toLowerCase()) {
+            case "ancient egypt":
+                return 0;
+            case "frostbite caves":
+                return 4;
+            case "big wave beach":
+                return 8;
+            case "dark ages":
+                return 12;
+            default:
+                return -1;
+        }
+    }
+
+    private void addStages(Chapter chapter) {
+        for (int stageNumber = 1; stageNumber <= 4; stageNumber++) {
+            int waveCount = stageNumber + 2;
+            chapter.addStage(new NormalStage(stageNumber, stageNumber,
+                    waveCount));
+        }
+    }
+
+    private void restoreStageProgress(int gameProgress) {
+        int completedCount = Math.max(0, Math.min(4,
+                gameProgress - currentChapterProgressOffset));
+        for (int index = 0; index < currentChapter.getStages().size(); index++) {
+            Stage stage = currentChapter.getStage(index);
+            if (index < completedCount) {
+                stage.markCompleted();
+            }
+            if (index <= completedCount) {
+                stage.unlock();
+            }
+        }
+        int currentIndex = Math.min(completedCount,
+                currentChapter.getStages().size() - 1);
+        this.currentStage = currentChapter.getStage(currentIndex);
+    }
+
+    public int completeStage(Stage playedStage) {
+        if (playedStage == null || playedStage != currentStage
+                || !playedStage.isUnlocked() || !playedStage.markCompleted()) {
+            return -1;
+        }
+        int stageIndex = currentChapter.getStages().indexOf(playedStage);
+        Stage nextStage = currentChapter.getStage(stageIndex + 1);
+        if (nextStage != null) {
+            nextStage.unlock();
+            currentStage = nextStage;
+        }
+        return currentChapterProgressOffset + playedStage.getNumber();
     }
 
     public Board getBoard() {

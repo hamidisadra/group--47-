@@ -20,21 +20,30 @@ public class PlantFoodInventory {
     public int maxCapacity;
     private final PlantFoodStrategyRegistry strategyRegistry;
     public PlantFoodInventory(int maxCapacity) {
+        if (maxCapacity < 1) {
+            throw new IllegalArgumentException("Plant food capacity must be positive.");
+        }
         this.count = 0;
         this.maxCapacity = maxCapacity;
         this.strategyRegistry = createStrategyRegistry();
     }
     public boolean addFromGlowingZombie(Zombie zombie) {
-        if (zombie == null || !zombie.isGlowing || count >= maxCapacity) {
+        if (zombie == null || !zombie.isGlowing
+                || !zombie.canSpawnPlantFood || count >= maxCapacity) {
             return false;
         }
         count++;
-        System.out.println("The glowing zombie dropeed a plant food; you have "
-                + count + " plant foods now.");
+        String unit = count == 1 ? "plant food" : "plant foods";
+        System.out.println("The glowing zombie dropped a plant food; you have "
+                + count + " " + unit + " now.");
         return true;
     }
     public boolean feedPlant(Plant plant) {
         if (plant == null || count <= 0) {
+            return false;
+        }
+        PlantFoodStrategy strategy = strategyRegistry.resolve(plant.plantFoodType);
+        if (strategy == null || "NONE".equalsIgnoreCase(plant.plantFoodType)) {
             return false;
         }
         count--;
@@ -46,8 +55,12 @@ public class PlantFoodInventory {
         if (plant == null || count <= 0 || session == null || resolver == null) {
             return false;
         }
+        PlantFoodStrategy strategy = strategyRegistry.resolve(plant.plantFoodType);
+        if (strategy == null) {
+            return false;
+        }
         count--;
-        applyPlantFood(plant, session, resolver);
+        applyPlantFood(plant, session, resolver, strategy);
         return true;
     }
     public boolean boostPlant(Plant plant, GameSession session,
@@ -55,7 +68,11 @@ public class PlantFoodInventory {
         if (plant == null || session == null || resolver == null) {
             return false;
         }
-        applyPlantFood(plant, session, resolver);
+        PlantFoodStrategy strategy = strategyRegistry.resolve(plant.plantFoodType);
+        if (strategy == null) {
+            return false;
+        }
+        applyPlantFood(plant, session, resolver, strategy);
         return true;
     }
     public boolean cheatAddPlantFood() {
@@ -73,13 +90,17 @@ public class PlantFoodInventory {
     }
     private void applyPlantFood(Plant plant, GameSession session,
                                 ProjectileResolver resolver) {
-        plant.applyPlantFoodEffect();
-        String type = plant.getNormalizedType();
         PlantFoodStrategy strategy = strategyRegistry.resolve(plant.plantFoodType);
         if (strategy == null) {
             throw new IllegalStateException("Unknown Plant Food strategy: "
                     + plant.plantFoodType + " for " + plant.type + ".");
         }
+        applyPlantFood(plant, session, resolver, strategy);
+    }
+    private void applyPlantFood(Plant plant, GameSession session,
+                                ProjectileResolver resolver,
+                                PlantFoodStrategy strategy) {
+        plant.applyPlantFoodEffect();
         strategy.apply(plant, session, resolver);
     }
     private PlantFoodStrategyRegistry createStrategyRegistry() {

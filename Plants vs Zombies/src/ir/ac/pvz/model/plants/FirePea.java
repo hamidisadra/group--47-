@@ -13,8 +13,7 @@ public class FirePea extends ShooterPlant implements IFireEffect {
     @Override
     public void burn(Zombie target) {
         if (target != null) {
-            target.melt();
-            target.takeDamage(getBurnDamage());
+            target.takeFireDamage(getBurnDamage());
         }
     }
     @Override

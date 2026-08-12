@@ -50,6 +50,7 @@ public class ZombieBehaviorController {
             ability.onTick(zombie, session,
                     session.getClock().getTickDurationSeconds());
         }
+        startTurquoiseStealing(zombie, session);
         updateImmediateBehavior(zombie, session);
         updateTimedBehavior(zombie, session);
     }
@@ -73,6 +74,16 @@ public class ZombieBehaviorController {
         }
         if (zombie instanceof HunterZombie) {
             hunterTargets.remove((HunterZombie) zombie);
+        }
+    }
+    private void startTurquoiseStealing(Zombie zombie, GameSession session) {
+        if (!(zombie instanceof TurquoiseZombie)) {
+            return;
+        }
+        TurquoiseZombie turquoise = (TurquoiseZombie) zombie;
+        if (!turquoise.isStealingSun() && !turquoise.hasFinishedStealing()
+                && hasPlantWithinFourTiles(turquoise, session.getBoard())) {
+            turquoise.startStealing();
         }
     }
     private void updateImmediateBehavior(Zombie zombie, GameSession session) {
@@ -120,10 +131,6 @@ public class ZombieBehaviorController {
             zombie.forceDie();
             return true;
         });
-        contactBehaviors.put(WizardZombie.class, (zombie, plant, session) -> {
-            ((WizardZombie) zombie).onReachPlant(plant);
-            return true;
-        });
         contactBehaviors.put(ArcadeZombie.class, (zombie, plant, session) -> {
             ((ArcadeZombie) zombie).collideWith(plant);
             return true;
@@ -144,33 +151,18 @@ public class ZombieBehaviorController {
     private void registerIntervalProviders() {
         intervalProviders.put(PeashooterZombie.class, (zombie, session) ->
                 ((PeashooterZombie) zombie).shootCooldownSeconds);
-        intervalProviders.put(WizardZombie.class, (zombie, session) ->
-                ((WizardZombie) zombie).spellCooldownSeconds);
         intervalProviders.put(TurquoiseZombie.class,
                 (zombie, session) -> 1f);
         intervalProviders.put(RaZombie.class, (zombie, session) -> 1f);
         intervalProviders.put(OctopusZombie.class, (zombie, session) ->
                 ((OctopusZombie) zombie).throwOctopusCooldownSeconds);
-        intervalProviders.put(HunterZombie.class, (zombie, session) -> {
-            float cooldown = session.getStageConfig().getZombieAbilityCooldown(
-                    zombie.getType());
-            if (cooldown > 0f) {
-                return cooldown;
-            }
-            return session.getClock().getTickDurationSeconds();
-        });
+        intervalProviders.put(HunterZombie.class, (zombie, session) ->
+                session.getStageConfig().getZombieAbilityCooldown(
+                        zombie.getType()));
     }
     private void registerTimedBehaviors() {
         timedBehaviors.put(PeashooterZombie.class, (zombie, session) ->
                 shootPea((PeashooterZombie) zombie, session));
-        timedBehaviors.put(WizardZombie.class, (zombie, session) -> {
-            WizardZombie wizard = (WizardZombie) zombie;
-            if (wizard.transformRandomPlantToCat(session.getBoard())) {
-                wizard.scheduleNextSpell();
-                return true;
-            }
-            return false;
-        });
         timedBehaviors.put(TurquoiseZombie.class, (zombie, session) ->
                 updateTurquoise((TurquoiseZombie) zombie, session));
         timedBehaviors.put(RaZombie.class, (zombie, session) ->
@@ -200,7 +192,6 @@ public class ZombieBehaviorController {
         boolean thrown = zombie.hasThrownImp();
         zombie.specialBehavior();
         if (!thrown && zombie.hasThrownImp()) {
-            // Page 34: Factory path keeps a thrown Imp data-driven.
             session.spawnConfiguredZombie("ImpZombie",
                     new ContinuousPosition(2f, zombie.lane));
         }
@@ -231,12 +222,13 @@ public class ZombieBehaviorController {
                 target.forceDie();
             }
         }
-        destination.obstacle = source.obstacle;
+        FrozenBlock block = (FrozenBlock) source.obstacle;
+        block.relocateContent(source, destination);
+        destination.obstacle = block;
         destination.type = ir.ac.pvz.model.enums.TileType.FROZEN_TILE;
         destination.canPlant = false;
         source.obstacle = null;
-        source.type = ir.ac.pvz.model.enums.TileType.FROSTBITE_GROUND;
-        source.canPlant = true;
+        source.restoreNativeGround();
     }
     private boolean updateTurquoise(TurquoiseZombie zombie,
                                     GameSession session) {
@@ -298,7 +290,8 @@ public class ZombieBehaviorController {
             for (int column = 0; column < board.columns; column++) {
                 Tile tile = board.getTile(new GridPosition(column, row));
                 if (!tile.isWater && !tile.hasObstacle()
-                        && tile.getPlants().isEmpty()) {
+                        && tile.getPlants().isEmpty()
+                        && tile.getZombies().isEmpty()) {
                     tiles.add(tile);
                 }
             }
@@ -360,7 +353,8 @@ public class ZombieBehaviorController {
     private boolean moveAdjacentZombies(PianistZombie pianist, Board board) {
         boolean moved = false;
         for (Zombie zombie : new ArrayList<>(board.getAllAliveZombies())) {
-            if (zombie == pianist) {
+            if (zombie == pianist || zombie instanceof KingZombie
+                    || zombie instanceof FishermanZombie) {
                 continue;
             }
             List<Integer> lanes = adjacentLanes(zombie.lane, board.rows);

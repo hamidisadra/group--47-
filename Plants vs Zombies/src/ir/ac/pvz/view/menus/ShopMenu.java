@@ -66,7 +66,9 @@ public class ShopMenu extends Menu {
         }
 
         Shop shop = GameplayManager.getInstance().getShop();
-        ShopResult result = shop.buyItem(itemId, count, plantType, user.getWallet(), user.getGreenHouse(), user.getCollection(), user.getInventory());
+        ShopResult result = shop.buyItem(itemId, count, plantType,
+                user.getWallet(), user.getGreenHouse(), user.getCollection(),
+                user.getInventory());
 
         switch (result) {
             case SUCCESS:

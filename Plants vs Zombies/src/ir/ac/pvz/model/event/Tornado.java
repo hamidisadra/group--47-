@@ -17,6 +17,7 @@ public class Tornado {
 
     public void moveZombie(String zombieType, int fromColumn) {
         int newColumn = Math.max(1, fromColumn - (1 + (int) (Math.random() * 4)));
-        System.out.println("Tornado moved " + zombieType + " from column " + fromColumn + " to column " + newColumn + ".");
+        System.out.println("Tornado moved " + zombieType + " from column "
+                + fromColumn + " to column " + newColumn + ".");
     }
 }

@@ -14,7 +14,8 @@ public class PlantWhatYouGetStage extends SpecialStage {
 
     @Override
     public void applySpecialRules() {
-        System.out.println("You start with " + initialSun + " sun. No more sun will fall and sun producing plants are disabled.");
+        System.out.println("You start with " + initialSun
+                + " sun. No more sun will fall and sun producing plants are disabled.");
     }
 
     @Override

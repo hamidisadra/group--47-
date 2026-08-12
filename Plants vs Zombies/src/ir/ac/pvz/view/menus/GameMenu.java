@@ -29,12 +29,18 @@ public class GameMenu extends Menu{
 
         if (enterChapterMatcher.matches()) {
             String chapterName = enterChapterMatcher.group(1).trim().toLowerCase();
-            boolean entered = GameplayManager.getInstance().enterChapter(chapterName);
+
+            int gameProgress = menuManager.getActiveUser() == null
+                    ? 0 : menuManager.getActiveUser().getGameProgress();
+
+            boolean entered = GameplayManager.getInstance()
+                    .enterChapter(chapterName, gameProgress);
 
             if (entered) {
                 menuManager.pushMenu(new PlantSelectionMenu());
-            } else {
-                System.out.println("Invalid chapter name!");
+            }
+            else {
+                System.out.println("Invalid or locked chapter!");
             }
         }
 

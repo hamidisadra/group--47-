@@ -133,16 +133,11 @@ public class WaveController {
         if (zombieSpawner != null) {
             zombieSpawner.requireExactCost(cost);
         }
-        if (finalWave) {
-            System.out.println(finalWaveMessage());
-        }
-        else {
-            System.out.println("Wave " + number + " started.");
-        }
         List<Zombie> zombies = spawn(cost);
         Wave wave = new Wave(number, cost, 0, finalWave, zombies);
         waves.add(wave);
         currentWaveNumber = number;
+        System.out.println(finalWave ? finalWaveMessage() : startWaveMessage(wave));
         printSpawnMessages(wave);
     }
     private List<Zombie> spawn(int cost) {

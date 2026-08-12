@@ -7,12 +7,14 @@ import ir.ac.pvz.model.support.GridPosition;
 public class TurquoiseZombie extends Zombie {
     private int stolenSuns;
     private float stealingSeconds;
+    private boolean stealingStarted;
     private final float chargingTimeSeconds;
     private final float laserCooldownSeconds;
     public TurquoiseZombie() {
         super("TurquoiseZombie");
         this.stolenSuns = 0;
         this.stealingSeconds = 0f;
+        this.stealingStarted = false;
         this.chargingTimeSeconds = (float) ir.ac.pvz.model.support
                 .ZombieDataRepository.getInstance().getNumber(
                         "TurquoiseZombie", "ChargingTime", 5d);
@@ -20,8 +22,14 @@ public class TurquoiseZombie extends Zombie {
                 .ZombieDataRepository.getInstance().getNumber(
                         "TurquoiseZombie", "LaserCooldownTime", 5d);
     }
+    public void startStealing() {
+        if (!hasFinishedStealing()) {
+            stealingStarted = true;
+        }
+    }
     public void stealSunForOneSecond(GameSession session) {
-        if (session == null || stealingSeconds >= chargingTimeSeconds) {
+        if (session == null || !stealingStarted
+                || stealingSeconds >= chargingTimeSeconds) {
             return;
         }
         int stolen = session.stealSuns(25);
@@ -32,7 +40,7 @@ public class TurquoiseZombie extends Zombie {
         }
     }
     public boolean isStealingSun() {
-        return stealingSeconds > 0f && stealingSeconds < chargingTimeSeconds;
+        return stealingStarted && stealingSeconds < chargingTimeSeconds;
     }
     public boolean hasFinishedStealing() {
         return stealingSeconds >= chargingTimeSeconds;
