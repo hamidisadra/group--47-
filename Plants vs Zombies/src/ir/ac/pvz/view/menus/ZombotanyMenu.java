@@ -2,7 +2,6 @@ package ir.ac.pvz.view.menus;
 
 import ir.ac.pvz.controller.game_core.CommandLineGame;
 import ir.ac.pvz.controller.managers.GameplayManager;
-import ir.ac.pvz.controller.managers.UserManager;
 import ir.ac.pvz.model.enums.SeasonType;
 import ir.ac.pvz.model.others.GameSession;
 import ir.ac.pvz.model.others.StageConfig;
@@ -82,18 +81,22 @@ public class ZombotanyMenu extends Menu {
             return;
         }
 
-        if (!user.getCollection().getUnlockedPlants().contains(plantType)) {
+        String canonicalPlant = user.getCollection()
+                .getCanonicalUnlockedPlant(plantType);
+
+        if (canonicalPlant == null) {
             System.out.println("Error: You have not unlocked this plant!");
             return;
         }
 
-        if (selectedPlants.contains(plantType)) {
+        if (selectedPlants.stream().anyMatch(selected -> normalize(selected)
+                .equals(normalize(canonicalPlant)))) {
             System.out.println("Error: This plant is already selected!");
             return;
         }
 
-        selectedPlants.add(plantType);
-        System.out.println("Plant " + plantType + " selected successfully.");
+        selectedPlants.add(canonicalPlant);
+        System.out.println("Plant " + canonicalPlant + " selected successfully.");
     }
 
     private void removePlant(String plantType) {
@@ -153,7 +156,6 @@ public class ZombotanyMenu extends Menu {
             GameplayManager.getInstance().getLeaderboard()
                     .getOrCreateEntry(user.getUsername()).addMinigameCompleted();
         }
-        UserManager.getInstance().saveAll();
 
         menuManager.popMenu();
     }
@@ -176,4 +178,14 @@ public class ZombotanyMenu extends Menu {
             System.out.println("The mini game could not run: " + exception.getMessage());
         }
     }
+
+    private String normalize(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        return value.replace("-", "").replace("_", "")
+                .replace(" ", "").toLowerCase();
+    }
+
 }

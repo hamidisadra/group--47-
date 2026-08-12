@@ -118,9 +118,8 @@ public class WallPlant extends Plant implements IWall {
                 continue;
             }
             for (Zombie zombie : new ArrayList<>(board.getZombiesInLane(row))) {
-                zombie.lane = plant.location.y;
-                zombie.positionY = plant.location.y;
-                zombie.currentPosition.y = plant.location.y;
+                board.placeZombie(zombie, new ContinuousPosition(
+                        zombie.currentPosition.x, plant.location.y));
             }
         }
     }
@@ -130,9 +129,8 @@ public class WallPlant extends Plant implements IWall {
             targetLane = zombie.lane - 1;
         }
         if (targetLane >= 0 && targetLane < board.rows) {
-            zombie.lane = targetLane;
-            zombie.positionY = targetLane;
-            zombie.currentPosition.y = targetLane;
+            board.placeZombie(zombie, new ContinuousPosition(
+                    zombie.currentPosition.x, targetLane));
         }
     }
 

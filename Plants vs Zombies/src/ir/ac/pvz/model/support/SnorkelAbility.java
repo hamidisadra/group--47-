@@ -19,10 +19,11 @@ public final class SnorkelAbility extends ZombieAbility {
         }
         Tile tile = session.getBoard().getTile(new GridPosition(
                 (int) Math.floor(zombie.currentPosition.x), zombie.lane));
-        if (tile != null && tile.isWater && !underwater) {
-            underwater = true;
-            zombie.effects.add(new ZombieEffect(ZombieEffectType.UNDERWATER,
-                    Float.POSITIVE_INFINITY));
+        boolean onWater = tile != null && tile.isWater;
+        if (onWater && !underwater) {
+            submerge(zombie);
+        } else if (!onWater && underwater) {
+            surface(zombie);
         }
     }
     @Override
@@ -40,10 +41,20 @@ public final class SnorkelAbility extends ZombieAbility {
     public boolean onPlantContact(Zombie zombie, Plant plant,
                                   GameSession session) {
         if (underwater) {
-            underwater = false;
-            zombie.effects.removeIf(effect ->
-                    effect.type == ZombieEffectType.UNDERWATER);
+            surface(zombie);
         }
         return false;
+    }
+    private void submerge(Zombie zombie) {
+        underwater = true;
+        zombie.effects.removeIf(effect ->
+                effect.type == ZombieEffectType.UNDERWATER);
+        zombie.effects.add(new ZombieEffect(ZombieEffectType.UNDERWATER,
+                Float.POSITIVE_INFINITY));
+    }
+    private void surface(Zombie zombie) {
+        underwater = false;
+        zombie.effects.removeIf(effect ->
+                effect.type == ZombieEffectType.UNDERWATER);
     }
 }

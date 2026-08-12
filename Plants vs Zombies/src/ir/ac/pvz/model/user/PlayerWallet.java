@@ -4,14 +4,10 @@ public class PlayerWallet {
     private int coins;
     private int gems;
 
-    //Constructor
-
     public PlayerWallet() {
-        this.coins = 0;
-        this.gems = 0;
+        coins = 0;
+        gems = 0;
     }
-
-    //Getters
 
     public int getCoins() {
         return coins;
@@ -25,7 +21,13 @@ public class PlayerWallet {
         if (amount <= 0) {
             return TransactionStatus.INVALID_AMOUNT;
         }
-        this.coins += amount;
+
+        long result = (long) coins + amount;
+        if (result > Integer.MAX_VALUE) {
+            return TransactionStatus.INVALID_AMOUNT;
+        }
+
+        coins = (int) result;
         return TransactionStatus.SUCCESS;
     }
 
@@ -34,11 +36,12 @@ public class PlayerWallet {
             return TransactionStatus.INVALID_AMOUNT;
         }
 
-        if (this.coins < amount) {
+        if (coins < amount) {
             return TransactionStatus.INSUFFICIENT_FUND;
         }
 
-        this.coins -= amount;
+        coins -= amount;
+
         return TransactionStatus.SUCCESS;
     }
 
@@ -46,7 +49,15 @@ public class PlayerWallet {
         if (amount <= 0) {
             return TransactionStatus.INVALID_AMOUNT;
         }
-        this.gems += amount;
+
+        long result = (long) gems + amount;
+
+        if (result > Integer.MAX_VALUE) {
+            return TransactionStatus.INVALID_AMOUNT;
+        }
+
+        gems = (int) result;
+
         return TransactionStatus.SUCCESS;
     }
 
@@ -55,26 +66,31 @@ public class PlayerWallet {
             return TransactionStatus.INVALID_AMOUNT;
         }
 
-        if (this.gems < amount) {
+        if (gems < amount) {
             return TransactionStatus.INSUFFICIENT_FUND;
         }
 
-        this.gems -= amount;
+        gems -= amount;
+
         return TransactionStatus.SUCCESS;
     }
 
     public TransactionStatus convertGemsToCoins(int gems) {
-        if (gems <= 0) {
+        if (gems <= 0 || gems > Integer.MAX_VALUE / 100) {
             return TransactionStatus.INVALID_AMOUNT;
         }
 
         TransactionStatus spendStatus = spendGems(gems);
-
-        if (spendStatus == TransactionStatus.SUCCESS) {
-            addCoins(gems * 100);
-            return TransactionStatus.SUCCESS;
+        if (spendStatus != TransactionStatus.SUCCESS) {
+            return spendStatus;
         }
 
-        return spendStatus;
+        TransactionStatus addStatus = addCoins(gems * 100);
+        if (addStatus != TransactionStatus.SUCCESS) {
+            addGems(gems);
+            return addStatus;
+        }
+
+        return TransactionStatus.SUCCESS;
     }
 }

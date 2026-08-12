@@ -16,8 +16,6 @@ public class GameCommandController {
             "\\(?\\s*(-?\\d+)\\s*,\\s*(-?\\d+)\\s*\\)?");
     private static final Pattern COLLECT_SUN = Pattern.compile(
             "^collect sun -l (.+)$");
-    private static final Pattern COLLECT_LOOT = Pattern.compile(
-            "^collect loot -l (.+)$");
     private static final Pattern CHEAT_SUN = Pattern.compile(
             "^cheat add -n (-?\\d+) suns$");
     private static final Pattern PLANT = Pattern.compile(
@@ -136,7 +134,11 @@ public class GameCommandController {
     private String executeSimpleCommand(String command) {
         Matcher matcher = ADVANCE_TIME.matcher(command);
         if (matcher.matches()) {
-            advanceTime(Integer.parseInt(matcher.group(1)));
+            Integer count = parseInteger(matcher.group(1));
+            if (count == null) {
+                return "Invalid command.";
+            }
+            advanceTime(count);
             return "";
         }
         if (command.equals("show sun amount")) {
@@ -176,7 +178,7 @@ public class GameCommandController {
         Matcher matcher = COLLECT_SUN.matcher(command);
         if (matcher.matches()) {
             GridPosition position = parsePosition(matcher.group(1));
-            if (position == null) {
+            if (position == null || !session.getBoard().isInside(position)) {
                 return "Invalid location.";
             }
             if (session.collectSun(position)) {
@@ -184,25 +186,22 @@ public class GameCommandController {
             }
             return "No collectible sun at location.";
         }
-        matcher = COLLECT_LOOT.matcher(command);
-        if (matcher.matches()) {
-            GridPosition position = parsePosition(matcher.group(1));
-            if (position == null) {
-                return "Invalid location.";
-            }
-            if (session.collectLoot(position)) {
-                return "";
-            }
-            return "No collectible loot at location.";
-        }
         matcher = CHEAT_SUN.matcher(command);
         if (matcher.matches()) {
-            int amount = Integer.parseInt(matcher.group(1));
+            Integer amount = parseInteger(matcher.group(1));
+            if (amount == null) {
+                return "Invalid command.";
+            }
             if (amount < 0) {
                 return "Sun amount cannot be negative.";
             }
-            cheatAddSuns(amount);
-            return "";
+            try {
+                cheatAddSuns(amount);
+                return "";
+            }
+            catch (IllegalArgumentException exception) {
+                return exception.getMessage();
+            }
         }
         return null;
     }
@@ -226,8 +225,8 @@ public class GameCommandController {
         matcher = PLUCK.matcher(command);
         if (matcher.matches()) {
             GridPosition position = parsePosition(matcher.group(1));
-            if (position == null) {
-                return "No plant at location.";
+            if (position == null || !session.getBoard().isInside(position)) {
+                return "Invalid location.";
             }
             Plant plant = session.pluckPlant(position);
             if (plant == null) {
@@ -238,7 +237,10 @@ public class GameCommandController {
         matcher = FEED.matcher(command);
         if (matcher.matches()) {
             GridPosition position = parsePosition(matcher.group(1));
-            if (position != null && session.feedPlant(position)) {
+            if (position == null || !session.getBoard().isInside(position)) {
+                return "Invalid location.";
+            }
+            if (session.feedPlant(position)) {
                 return "";
             }
             return "Plant cannot be fed.";
@@ -249,7 +251,7 @@ public class GameCommandController {
         Matcher matcher = TILE_STATUS.matcher(command);
         if (matcher.matches()) {
             GridPosition position = parsePosition(matcher.group(1));
-            if (position == null) {
+            if (position == null || !session.getBoard().isInside(position)) {
                 return "Invalid location.";
             }
             return printer.showTileStatus(session.getBoard(), position);
@@ -257,7 +259,10 @@ public class GameCommandController {
         matcher = SPAWN_ZOMBIE.matcher(command);
         if (matcher.matches()) {
             GridPosition position = parsePosition(matcher.group(2));
-            if (position == null || session.cheatSpawnZombie(
+            if (position == null || !session.getBoard().isInside(position)) {
+                return "Invalid location.";
+            }
+            if (session.cheatSpawnZombie(
                     matcher.group(1).trim(), position.x, position.y) == null) {
                 return "Zombie cannot be spawned.";
             }
@@ -270,8 +275,20 @@ public class GameCommandController {
         if (!matcher.matches()) {
             return null;
         }
-        return toInternalPosition(Integer.parseInt(matcher.group(1)),
-                Integer.parseInt(matcher.group(2)));
+        Integer x = parseInteger(matcher.group(1));
+        Integer y = parseInteger(matcher.group(2));
+        if (x == null || y == null) {
+            return null;
+        }
+        return toInternalPosition(x, y);
+    }
+    private Integer parseInteger(String value) {
+        try {
+            return Integer.valueOf(value);
+        }
+        catch (NumberFormatException exception) {
+            return null;
+        }
     }
     private GridPosition toInternalPosition(int userX, int userY) {
         if (userX < 1 || userY < 1) {

@@ -15,6 +15,8 @@ public final class BalanceDefaults {
     public static final float PIANIST_MUSIC_LOOP_SECONDS =
             floatValue("pianist.musicLoopSeconds");
     public static final int HUNTER_ICE_HEALTH = intValue("hunter.iceHealth");
+    public static final float HUNTER_THROW_COOLDOWN_SECONDS =
+            floatValue("hunter.throwCooldownSeconds");
     public static final int OCTOPUS_BLOCK_HEALTH = intValue("octopus.blockHealth");
     public static final int BASE_POISON_DPS = intValue("poison.baseDps");
     public static final int UPGRADED_POISON_DPS = intValue("poison.upgradedDps");

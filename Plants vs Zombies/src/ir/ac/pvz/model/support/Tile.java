@@ -5,6 +5,7 @@ import ir.ac.pvz.model.core.Zombie;
 import ir.ac.pvz.model.enums.PlantTag;
 import ir.ac.pvz.model.enums.TileType;
 import ir.ac.pvz.model.plants.ExplodeONut;
+import ir.ac.pvz.model.support.ArmorPiece;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -105,9 +106,16 @@ public class Tile {
             builder.append("zombie: ")
                     .append(zombie.getType())
                     .append(", health: ").append(zombie.currentHealth)
-                    .append(", armor: ").append(zombie.getRemainingArmorHealth())
+                    .append(", speed: ").append(zombie.speed)
+                    .append(", attack: ").append(zombie.attackDamage)
+                    .append(", waveCost: ").append(zombie.waveCost)
                     .append(", effects: ").append(zombie.effects)
                     .append(System.lineSeparator());
+            for (ArmorPiece piece : zombie.armorPieces) {
+                builder.append("    armor: ").append(piece.name)
+                        .append(", health: ").append(piece.health)
+                        .append(System.lineSeparator());
+            }
         }
         if (obstacle != null) {
             builder.append("obstacle: ")

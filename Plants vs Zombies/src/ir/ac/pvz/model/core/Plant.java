@@ -90,7 +90,7 @@ public abstract class Plant extends GameObject implements IUpgradable {
         if (cooldownRemaining > 0f) {
             cooldownRemaining = Math.max(0f, cooldownRemaining - 0.1f);
         }
-        if (lifeSpanSeconds > 0f && ageSeconds + 0.0001f >= lifeSpanSeconds) {
+        if (lifeSpanSeconds > 0f && ageSeconds + 0.001f >= lifeSpanSeconds) {
             die();
         }
     }
@@ -143,8 +143,8 @@ public abstract class Plant extends GameObject implements IUpgradable {
         if (normalized.equals("hotpotato") && tile.obstacle instanceof FrozenBlock) {
             return true;
         }
-        if (normalized.equals("gravebuster") && tile.obstacle instanceof Tombstone) {
-            return true;
+        if (normalized.equals("gravebuster")) {
+            return tile.obstacle instanceof Tombstone;
         }
         if (tile.hasObstacle()) {
             return false;

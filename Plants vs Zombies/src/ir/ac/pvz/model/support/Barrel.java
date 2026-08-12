@@ -37,9 +37,9 @@ public class Barrel {
 
     private ImpZombie createConfiguredImp() {
         ImpZombie imp = new ImpZombie();
-        // Page 37: spawned Imps use the same Repository data as wave Imps.
         ZombieDataRepository.getInstance().applyTo(imp, "ImpZombie");
         imp.setIdentity("ImpZombie", "ImpZombie");
+        imp.canSpawnPlantFood = true;
         return imp;
     }
 }

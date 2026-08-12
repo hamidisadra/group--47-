@@ -64,7 +64,8 @@ public final class PlantDataRepository implements PlantDefinitionRepository {
             producer.productionInterval = definition.actionInterval;
         }
         if (plant instanceof ShooterPlant
-                && normalize(definition.abilityType).equals("shootprojectile")) {
+                && normalize(definition.abilityType).equals("shootprojectile")
+                && !normalize(definition.name).equals("peapod")) {
             ((ShooterPlant) plant).multiShot = Math.max(1,
                     (int) Math.round(definition.abilityValue));
         }
@@ -141,7 +142,10 @@ public final class PlantDataRepository implements PlantDefinitionRepository {
         }
         for (String value : text.split(",")) {
             PlantTag tag = resolveTag(value);
-            if (tag != null && !tags.contains(tag)) {
+            if (tag == null) {
+                throw new IllegalStateException("Unknown plant tag: " + value.trim());
+            }
+            if (!tags.contains(tag)) {
                 tags.add(tag);
             }
         }
@@ -205,8 +209,8 @@ public final class PlantDataRepository implements PlantDefinitionRepository {
                 }
                 definitions.put(normalize(definition.name), definition);
             }
-            if (definitions.size() < 69) {
-                throw new IOException("plants.json must contain at least the 69 documented plant rows.");
+            if (definitions.size() != 69) {
+                throw new IOException("plants.json must contain exactly 69 plant rows.");
             }
             return new PlantDataRepository(definitions);
         }

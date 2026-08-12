@@ -24,6 +24,7 @@ public class SunManager {
     public float specialSunChance;
     public float radioactiveSunChance;
     public float skySunFallDurationSeconds;
+    private float skySunDropIntervalMultiplier;
     private final List<Sun> suns;
     private final Map<Plant, Sun> plantSuns;
     private final RandomGenerator random;
@@ -35,12 +36,16 @@ public class SunManager {
         this(startingSun, board, new Random());
     }
     public SunManager(int startingSun, Board board, RandomGenerator random) {
+        if (startingSun < 0) {
+            throw new IllegalArgumentException("Starting sun cannot be negative.");
+        }
         this.currentSunAmount = startingSun;
         this.lastSkyDropTick = 0;
         this.normalSunChance = 0.80f;
         this.specialSunChance = 0.15f;
         this.radioactiveSunChance = 0.05f;
         this.skySunFallDurationSeconds = 5f;
+        this.skySunDropIntervalMultiplier = 1f;
         this.suns = new ArrayList<>();
         this.plantSuns = new HashMap<>();
         if (random == null) {
@@ -50,9 +55,21 @@ public class SunManager {
         this.board = board;
     }
     public float calculateDropIntervalSeconds(float elapsedSeconds) {
-        return Math.max(6f + 0.05f * elapsedSeconds, 12f);
+        float baseInterval = Math.max(6f + 0.05f * elapsedSeconds, 12f);
+        return baseInterval * skySunDropIntervalMultiplier;
+    }
+    public void setSkySunDropIntervalMultiplier(float multiplier) {
+        if (multiplier <= 0f) {
+            throw new IllegalArgumentException(
+                    "Sky sun interval multiplier must be positive.");
+        }
+        skySunDropIntervalMultiplier = multiplier;
     }
     public Sun dropSkySun(Board board) {
+        if (board == null) {
+            throw new IllegalArgumentException("Board cannot be null.");
+        }
+        validateSunChances();
         this.board = board;
         GridPosition position = new GridPosition(random.nextInt(board.columns), random.nextInt(board.rows));
         float roll = random.nextFloat();
@@ -77,7 +94,8 @@ public class SunManager {
         return sun;
     }
     public Sun producePlantSun(Plant plant) {
-        if (!(plant instanceof ISunProducer) || plantSuns.containsKey(plant)) {
+        if (!(plant instanceof ISunProducer) || plant.location == null
+                || plantSuns.containsKey(plant)) {
             return null;
         }
         int amount = ((ISunProducer) plant).produceSun();
@@ -111,8 +129,12 @@ public class SunManager {
         return sun;
     }
     public boolean collectSun(GridPosition position) {
+        if (position == null) {
+            return false;
+        }
         for (Sun sun : new ArrayList<>(suns)) {
-            if (!sun.isAlive || !sun.groundPosition.equals(position)) {
+            if (!sun.isAlive || sun.groundPosition == null
+                    || !sun.groundPosition.equals(position)) {
                 continue;
             }
             if (sun.type == FallingSunType.RADIOACTIVE && sun.isFalling) {
@@ -128,7 +150,14 @@ public class SunManager {
         return false;
     }
     public void addSuns(int count) {
-        currentSunAmount += count;
+        if (count < 0) {
+            throw new IllegalArgumentException("Sun amount cannot be negative.");
+        }
+        long result = (long) currentSunAmount + count;
+        if (result > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Sun amount exceeds the supported limit.");
+        }
+        currentSunAmount = (int) result;
     }
     public int showSunAmount() {
         return currentSunAmount;
@@ -193,6 +222,9 @@ public class SunManager {
         return plantSuns.containsKey(plant);
     }
     public boolean spendSuns(int count) {
+        if (count < 0) {
+            throw new IllegalArgumentException("Sun cost cannot be negative.");
+        }
         if (currentSunAmount < count) {
             return false;
         }
@@ -217,6 +249,16 @@ public class SunManager {
                 iterator.remove();
                 plantSuns.values().removeIf(value -> value == sun);
             }
+        }
+    }
+    private void validateSunChances() {
+        if (normalSunChance < 0f || specialSunChance < 0f
+                || radioactiveSunChance < 0f) {
+            throw new IllegalStateException("Sun probabilities cannot be negative.");
+        }
+        float total = normalSunChance + specialSunChance + radioactiveSunChance;
+        if (Math.abs(total - 1f) > 0.0001f) {
+            throw new IllegalStateException("Sun probabilities must add up to 1.");
         }
     }
     private void removeSun(Sun sun) {

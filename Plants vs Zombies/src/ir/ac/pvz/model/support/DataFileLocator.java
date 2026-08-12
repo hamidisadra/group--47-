@@ -43,6 +43,7 @@ public final class DataFileLocator {
             paths.add(Path.of(configured, fileName));
         }
         paths.add(Path.of("assets", "Data", fileName));
+        paths.add(Path.of("..", "assets", "Data", fileName));
         paths.add(Path.of("pvz_src", "assets", "Data", fileName));
         paths.add(Path.of("src", "assets", "Data", fileName));
         return paths;

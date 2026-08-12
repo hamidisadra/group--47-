@@ -9,8 +9,16 @@ import ir.ac.pvz.model.zombies.BarrelRollerZombie;
 import ir.ac.pvz.model.zombies.ImpZombie;
 import ir.ac.pvz.model.zombies.JesterZombie;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ProjectilePathResolver {
+    private final Consumer<Zombie> spawnPreparer;
+    public ProjectilePathResolver() {
+        this(zombie -> { });
+    }
+    public ProjectilePathResolver(Consumer<Zombie> spawnPreparer) {
+        this.spawnPreparer = spawnPreparer == null ? zombie -> { } : spawnPreparer;
+    }
     public boolean deliver(Projectile projectile, Zombie target, Board board) {
         if (projectile == null || target == null || board == null) {
             return false;
@@ -118,6 +126,7 @@ public class ProjectilePathResolver {
     private void spawnBarrelImps(Barrel barrel, Board board) {
         List<ImpZombie> imps = barrel.breakAndSpawnImps();
         for (ImpZombie imp : imps) {
+            spawnPreparer.accept(imp);
             board.placeZombie(imp, imp.currentPosition);
         }
         board.removeLooseBarrel(barrel);

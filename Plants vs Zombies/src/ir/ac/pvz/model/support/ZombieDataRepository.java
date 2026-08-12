@@ -25,7 +25,7 @@ public final class ZombieDataRepository implements ZombieDefinitionRepository {
             "MoveSpeedMultiplierWhileJuggling", "DelayBetweenKnightings",
             "ChargingTime", "LaserCooldownTime", "LaunchCountdown",
             "EnragedDamageScale", "EnragedSpeedScale",
-            "ArcadeMachineHealth"
+            "RunningSpeedScale", "ArcadeMachineHealth", "BarrelHealth"
     };
     private static final ZombieDataRepository INSTANCE = load();
     private final Map<String, ZombieDefinition> definitions;
@@ -119,8 +119,8 @@ public final class ZombieDataRepository implements ZombieDefinitionRepository {
                     definitions.put(normalize(definition.alias), definition);
                 }
             }
-            if (definitions.size() < 27) {
-                throw new IOException("zombies.json must contain at least 27 records.");
+            if (definitions.size() < 28) {
+                throw new IOException("zombies.json must contain at least 28 records.");
             }
             return new ZombieDataRepository(definitions);
         } catch (IOException exception) {

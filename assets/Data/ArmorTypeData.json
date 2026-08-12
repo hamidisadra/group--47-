@@ -133,7 +133,7 @@
     "objdata": {
       "ClassName": "NewspaperArmor",
       "ArmorType": "Newspaper",
-      "BaseHealth": 800,
+      "BaseHealth": 190,
       "ArmorFlags": [
         "damageable"
       ],

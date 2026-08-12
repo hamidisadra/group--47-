@@ -27,7 +27,9 @@ public class TravelLog {
             return;
         }
         for (Quest quest : quests) {
-            String status = quest.isCompleted() ? "completed" : quest.getCurrentProgress() + "/" + quest.getTargetProgress();
+            String status = quest.isCompleted() ? "completed"
+                    : quest.getCurrentProgress() + "/"
+                    + quest.getTargetProgress();
             System.out.println("[" + quest.getPriority() + "] " + quest.getTitle() + " - " + status);
         }
     }

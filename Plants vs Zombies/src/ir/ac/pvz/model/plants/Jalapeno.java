@@ -18,7 +18,7 @@ public class Jalapeno extends ExplosivePlant {
         }
         explodedInLane = true;
         board.getZombiesInLane(center.y)
-                .forEach(zombie -> zombie.takeDamage(explosionDamage));
+                .forEach(zombie -> zombie.takeFireDamage(explosionDamage));
         die();
     }
 }

@@ -108,7 +108,9 @@ public class ScoreTracker {
 
     private void detectFlawlessDefence(GameStatistics gameStatistics) {
         if (gameStatistics.getLostPlants() == 0 &&  gameStatistics.getKilledZombies() > 0) {
-            events.add(new ScoreEvent(ScoreEventType.FLAWLESS_DEFENSE, gameStatistics.getLastZombieKillTick(), gameStatistics.getKilledZombies()));
+            events.add(new ScoreEvent(ScoreEventType.FLAWLESS_DEFENSE,
+                    gameStatistics.getLastZombieKillTick(),
+                    gameStatistics.getKilledZombies()));
         }
     }
 }

@@ -10,9 +10,13 @@ public class Pot {
     private double growthHours;
 
     public Pot(int x, int y, boolean locked) {
+        if (x < 1 || y < 1) {
+            throw new IllegalArgumentException("Pot coordinates must be positive.");
+        }
         this.x = x;
         this.y = y;
         this.locked = locked;
+        resetPlantState();
     }
 
     public int getX() {
@@ -28,7 +32,7 @@ public class Pot {
     }
 
     public void unlock() {
-        this.locked = false;
+        locked = false;
     }
 
     public boolean isEmpty() {
@@ -44,10 +48,19 @@ public class Pot {
     }
 
     public void plantSeed(String plantType, boolean marigold) {
-        this.plantType = plantType;
+        if (locked) {
+            throw new IllegalStateException("This pot is locked.");
+        }
+        if (!isEmpty()) {
+            throw new IllegalStateException("This pot is already occupied.");
+        }
+        if (plantType == null || plantType.isBlank()) {
+            throw new IllegalArgumentException("Plant type cannot be empty.");
+        }
+        this.plantType = plantType.trim();
         this.marigold = marigold;
-        this.growthHours = marigold ? 2.0 : 8.0;
-        this.plantedAt = System.currentTimeMillis();
+        growthHours = marigold ? 2.0 : 8.0;
+        plantedAt = System.currentTimeMillis();
     }
 
     public double getRemainingHours() {
@@ -55,8 +68,7 @@ public class Pot {
             return 0;
         }
         double elapsedHours = (System.currentTimeMillis() - plantedAt) / 3600000.0;
-        double remaining = growthHours - elapsedHours;
-        return Math.max(0, remaining);
+        return Math.max(0, growthHours - elapsedHours);
     }
 
     public boolean isReady() {
@@ -64,17 +76,27 @@ public class Pot {
     }
 
     public void growInstantly() {
-        this.plantedAt = System.currentTimeMillis() - (long) (growthHours * 3600000);
+        if (locked || isEmpty()) {
+            throw new IllegalStateException("There is no growing plant here.");
+        }
+        if (isReady()) {
+            return;
+        }
+        plantedAt = System.currentTimeMillis() - (long) Math.ceil(growthHours * 3600000.0);
     }
 
     public HarvestResult harvest() {
-        if (marigold) {
-            plantType = null;
-            return new HarvestResult(500, null);
+        if (locked || isEmpty()) {
+            throw new IllegalStateException("There is nothing to collect here.");
         }
-        String harvestedPlant = plantType;
-        plantType = null;
-        return new HarvestResult(0, harvestedPlant);
+        if (!isReady()) {
+            throw new IllegalStateException("This plant is not fully grown yet.");
+        }
+        HarvestResult result = marigold
+                ? new HarvestResult(500, null)
+                : new HarvestResult(0, plantType);
+        resetPlantState();
+        return result;
     }
 
     public PotStatus getStatus() {
@@ -84,9 +106,13 @@ public class Pot {
         if (isEmpty()) {
             return PotStatus.EMPTY;
         }
-        if (isReady()) {
-            return PotStatus.READY;
-        }
-        return PotStatus.GROWING;
+        return isReady() ? PotStatus.READY : PotStatus.GROWING;
+    }
+
+    private void resetPlantState() {
+        plantType = null;
+        marigold = false;
+        plantedAt = 0L;
+        growthHours = 0.0;
     }
 }

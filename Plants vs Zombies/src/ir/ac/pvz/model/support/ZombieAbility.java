@@ -38,6 +38,9 @@ public class ZombieAbility {
     public boolean blocksFreeze(Zombie zombie) {
         return false;
     }
+    public boolean blocksFireDamage(Zombie zombie) {
+        return false;
+    }
     public void onDamaged(Zombie zombie, int armorPiecesBefore,
                           int armorPiecesAfter) {
     }

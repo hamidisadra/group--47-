@@ -38,10 +38,6 @@ public final class ZombieSpawner {
         this(board, stageConfig, defaultRandom(stageConfig));
     }
 
-    /**
-     * The scored game fixes the seed so every player faces the same zombies
-     * on the same day. Without a seed the spawner stays fully random.
-     */
     private static RandomGenerator defaultRandom(StageConfig stageConfig) {
         if (stageConfig != null && stageConfig.getRandomSeed() != null) {
             return new Random(stageConfig.getRandomSeed());
@@ -95,6 +91,7 @@ public final class ZombieSpawner {
             }
             String type = chooseWeightedType(candidates);
             Zombie zombie = createZombie(type);
+            prepareSpawnedZombie(zombie);
             int lane = chooseRandomLane(board);
             ContinuousPosition position = new ContinuousPosition(board.columns - 1, lane);
             placeZombie(zombie, position);
@@ -104,10 +101,20 @@ public final class ZombieSpawner {
         return zombies;
     }
     public Zombie spawnZombie(String type, ContinuousPosition position) {
-        Zombie zombie = createZombie(type);
-        if (zombie != null && position != null) {
-            placeZombie(zombie, position);
+        if (board == null || position == null) {
+            return null;
         }
+        GridPosition tilePosition = new GridPosition(
+                (int) Math.floor(position.x), position.y);
+        if (!board.isInside(tilePosition)) {
+            return null;
+        }
+        Zombie zombie = createZombie(type);
+        if (zombie == null) {
+            return null;
+        }
+        prepareSpawnedZombie(zombie);
+        placeZombie(zombie, position);
         return zombie;
     }
     public int chooseRandomLane(Board targetBoard) {
@@ -165,9 +172,11 @@ public final class ZombieSpawner {
         if (zombie == null) {
             return null;
         }
-        if (zombie != null) {
-            zombie.setIdentity(canonicalType(type), canonicalType(type));
-        }
+        ZombieDefinition definition = zombieRepository.getByZombieType(type);
+        String canonical = definition == null
+                ? canonicalType(type) : definition.runtimeType;
+        zombie.setIdentity(canonical, canonical);
+        applyDifficulty(zombie);
         return zombie;
     }
     private boolean[] calculateReachableCosts(int limit) {
@@ -218,6 +227,35 @@ public final class ZombieSpawner {
             }
         }
         return maximum;
+    }
+    public void prepareSpawnedZombie(Zombie zombie) {
+        if (zombie != null) {
+            zombie.isGlowing = zombie.canSpawnPlantFood
+                    && random.nextFloat() < 0.05f;
+        }
+    }
+    private void applyDifficulty(Zombie zombie) {
+        int scaledHealth = stageConfig.scaleZombieStat(zombie.health);
+        zombie.health = scaledHealth;
+        zombie.currentHealth = scaledHealth;
+        zombie.attackDamage = stageConfig.scaleZombieStat(zombie.attackDamage);
+        zombie.damageToPlant = stageConfig.scaleZombieStat(zombie.damageToPlant);
+        zombie.waveCost = stageConfig.scaleZombieWaveCost(zombie.waveCost);
+        zombie.initialWaveCost = zombie.waveCost;
+        if (zombie instanceof ArcadeZombie arcadeZombie
+                && arcadeZombie.arcadeMachine != null) {
+            arcadeZombie.arcadeMachine.health = stageConfig.scaleZombieStat(
+                    arcadeZombie.arcadeMachine.health);
+        }
+        if (zombie.armorPieces.isEmpty() && zombie.armor != null) {
+            zombie.armor.armorHp = stageConfig.scaleZombieStat(
+                    zombie.armor.armorHp);
+        }
+        for (ir.ac.pvz.model.support.ArmorPiece piece : zombie.armorPieces) {
+            int scaledArmor = stageConfig.scaleZombieStat(piece.health);
+            piece.health = scaledArmor;
+            piece.armorHp = scaledArmor;
+        }
     }
     private int selectionWeight(String type) {
         ZombieDefinition definition = zombieRepository.getByZombieType(type);

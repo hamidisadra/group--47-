@@ -13,6 +13,9 @@ public final class ComposableZombie extends Zombie {
         setIdentity(type, type);
         selectionWeight = definition.weight;
         canSpawnPlantFood = definition.canSpawnPlantFood;
+        if (!canSpawnPlantFood) {
+            isGlowing = false;
+        }
         for (String armorAlias : definition.getArmorAliases()) {
             addArmor(armorAlias);
         }

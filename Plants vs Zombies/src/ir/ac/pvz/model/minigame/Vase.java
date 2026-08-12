@@ -45,7 +45,9 @@ public class Vase {
 
         switch (type) {
             case PLANT_VASE:
-                content = unlockedPlants.isEmpty() ? "seedpacket:marigold" : "seedpacket:" + unlockedPlants.get(random.nextInt(unlockedPlants.size()));
+                content = unlockedPlants.isEmpty() ? "seedpacket:marigold"
+                        : "seedpacket:" + unlockedPlants.get(
+                        random.nextInt(unlockedPlants.size()));
                 break;
             case GHOUL_VASE:
                 content = "zombie:gargantuar";

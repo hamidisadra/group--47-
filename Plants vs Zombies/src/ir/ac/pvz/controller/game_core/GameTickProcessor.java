@@ -94,13 +94,23 @@ public class GameTickProcessor {
             }
         }
     }
+    public void reconcileExternalStateChange() {
+        removeDestroyedObjects();
+        if (session.status == GameStatus.RUNNING) {
+            updateWaveState();
+        }
+    }
     private void updateSpecialSpawns() {
         for (SpecialSpawnEvent event
                 : session.getStageConfig().specialSpawnEvents) {
-            if (event.tick <= clock.currentTick
-                    && processedSpecialSpawns.add(event)) {
-                session.spawnZombieFromSpecialTile(event.zombieType,
-                        event.position);
+            if (event.tick > clock.currentTick
+                    || processedSpecialSpawns.contains(event)) {
+                continue;
+            }
+            Zombie spawned = session.spawnZombieFromSpecialTile(
+                    event.zombieType, event.position);
+            if (spawned != null) {
+                processedSpecialSpawns.add(event);
             }
         }
     }
@@ -166,6 +176,10 @@ public class GameTickProcessor {
             }
 
             zombieBehaviorController.update(zombie, session);
+            if (zombie instanceof TurquoiseZombie
+                    && ((TurquoiseZombie) zombie).isStealingSun()) {
+                continue;
+            }
             if (zombie.isHypnotized) {
                 updateHypnotizedZombie(zombie);
             }
@@ -292,6 +306,7 @@ public class GameTickProcessor {
             return;
         }
         for (ImpZombie imp : barrel.breakAndSpawnImps()) {
+            session.prepareSpawnedZombie(imp);
             board.placeZombie(imp, imp.currentPosition);
         }
         board.removeLooseBarrel(barrel);
@@ -320,6 +335,13 @@ public class GameTickProcessor {
                 && (int) Math.floor(zombie.currentPosition.x) == plant.location.x;
     }
     private void moveZombie(Zombie zombie) {
+        if (zombie instanceof KingZombie) {
+            return;
+        }
+        if (zombie instanceof FishermanZombie fisherman
+                && fisherman.staysInRightmostColumn) {
+            return;
+        }
         zombie.move(clock.getTickDurationSeconds());
         relocateZombie(zombie);
     }
@@ -356,6 +378,9 @@ public class GameTickProcessor {
         if (tile.slipDeltaRow == 0) {
             return;
         }
+        if (resolveDodoFlightFromSlipperyTile(zombie, x)) {
+            return;
+        }
         int targetLane = zombie.lane + tile.slipDeltaRow;
         if (targetLane < 0 || targetLane >= board.rows) {
             return;
@@ -363,6 +388,15 @@ public class GameTickProcessor {
         tile.moveZombieBySlip(zombie);
         board.removeZombieEverywhere(zombie);
         board.getTile(new GridPosition(x, zombie.lane)).addZombie(zombie);
+    }
+    private boolean resolveDodoFlightFromSlipperyTile(Zombie zombie, int x) {
+        for (ZombieAbility ability : zombie.abilities) {
+            if (ability instanceof DodoFlightAbility) {
+                return ((DodoFlightAbility) ability)
+                        .escapeSlipperyTile(zombie, session, x);
+            }
+        }
+        return false;
     }
     private void removeDestroyedObjects(Tile tile) {
         for (Plant plant : new ArrayList<>(tile.getPlants())) {
@@ -404,8 +438,7 @@ public class GameTickProcessor {
     private void explodeTorchwoodLane(Plant plant, int damage) {
         for (Zombie zombie : board.getZombiesInLane(plant.location.y)) {
             zombie.lastDamageSource = plant;
-            zombie.takeDamage(damage);
-            zombie.melt();
+            zombie.takeFireDamage(damage);
         }
     }
     private void processZombieDeath(Zombie zombie) {
@@ -417,9 +450,7 @@ public class GameTickProcessor {
         statistics.recordZombieKilled(zombie, clock.currentTick);
         zombieBehaviorController.remove(zombie);
         LootType loot = lootDropService.rollLoot(zombie);
-        session.registerLootDrop(loot, new GridPosition(
-                Math.max(0, (int) Math.floor(zombie.currentPosition.x)),
-                zombie.lane));
+        lootDropService.applyLoot(loot, session);
     }
     private void releaseZombieResources(Zombie zombie) {
         if (zombie instanceof RaZombie) {

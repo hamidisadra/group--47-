@@ -9,6 +9,7 @@ import ir.ac.pvz.model.support.Board;
 import ir.ac.pvz.model.support.GridPosition;
 import ir.ac.pvz.model.support.LawnMower;
 import ir.ac.pvz.model.support.PlantStatusView;
+import ir.ac.pvz.model.support.Tile;
 import ir.ac.pvz.model.support.ZombieEffect;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,24 +17,42 @@ import java.util.List;
 public class GamePrinter {
     public String showMap(GameSession session) {
         StringBuilder builder = new StringBuilder();
-        builder.append("wave: ").append(session.currentWaveNumber)
+        builder.append("wave: ").append(session.getCurrentWaveNumber())
                 .append(System.lineSeparator());
-        builder.append("plant foods: ").append(session.plantFoodCount)
+        builder.append("plant foods: ").append(session.getPlantFoodCount())
                 .append(System.lineSeparator());
-        builder.append("suns: ").append(session.currentSunAmount)
+        builder.append("suns: ").append(session.getCurrentSunAmount())
                 .append(System.lineSeparator());
-        for (ir.ac.pvz.model.support.LootDrop drop : session.getPendingLoot()) {
-            builder.append("loot ").append(drop.type.name().toLowerCase())
-                    .append(" at ").append(drop.position.toUserString())
-                    .append(System.lineSeparator());
-        }
         for (LawnMower mower : session.getLawnMowers()) {
             builder.append("lawn mower row ").append(mower.relatedRow + 1)
                     .append(": ").append(mowerStatus(mower))
                     .append(System.lineSeparator());
         }
-        builder.append(session.getBoard().printMap());
+        Board board = session.getBoard();
+        builder.append(board.printMap());
+        appendTerrainDetails(builder, board);
+        appendZombiePositions(builder, board);
         return builder.toString();
+    }
+    private void appendTerrainDetails(StringBuilder builder, Board board) {
+        builder.append("terrain details:").append(System.lineSeparator());
+        for (int row = 0; row < board.rows; row++) {
+            for (int column = 0; column < board.columns; column++) {
+                Tile tile = board.getTile(new GridPosition(column, row));
+                builder.append("    ").append(tile.position.toUserString())
+                        .append(": ").append(tile.type)
+                        .append(System.lineSeparator());
+            }
+        }
+    }
+    private void appendZombiePositions(StringBuilder builder, Board board) {
+        builder.append("zombie positions:").append(System.lineSeparator());
+        for (Zombie zombie : board.getAllAliveZombies()) {
+            builder.append("    ").append(zombie.getType()).append(": (")
+                    .append(zombie.currentPosition.x + 1f).append(", ")
+                    .append(zombie.lane + 1).append(')')
+                    .append(System.lineSeparator());
+        }
     }
     private String mowerStatus(LawnMower mower) {
         if (mower.activated) {
@@ -45,24 +64,43 @@ public class GamePrinter {
         List<PlantStatusView> statusViews = new ArrayList<>();
         for (Plant plant : session.getPlantCatalog()) {
             float cooldown = session.getCooldown(plant.type);
+            boolean canPlant = cooldown <= 0f
+                    && session.getCurrentSunAmount() >= plant.sunCost
+                    && hasPlantableTile(session.getBoard(), plant);
             statusViews.add(new PlantStatusView(plant.type, plant.sunCost,
-                    cooldown <= 0f && session.currentSunAmount >= plant.sunCost,
-                    cooldown));
+                    canPlant, cooldown));
         }
         return statusViews;
     }
+    private boolean hasPlantableTile(Board board, Plant plant) {
+        for (int row = 0; row < board.rows; row++) {
+            for (int column = 0; column < board.columns; column++) {
+                Tile tile = board.getTile(new GridPosition(column, row));
+                if (plant.canPlantOn(tile)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     public String showTileStatus(Board board, GridPosition position) {
-        if (board == null || !board.isInside(position)) {
+        if (board == null || position == null || !board.isInside(position)) {
             return "";
         }
         return board.getTile(position).getStatus();
     }
     public String zombiesInfo(Board board) {
+        if (board == null) {
+            return "No zombies on the board.";
+        }
         StringBuilder builder = new StringBuilder();
         for (int row = 0; row < board.rows; row++) {
             for (Zombie zombie : board.getZombiesInLane(row)) {
                 appendZombie(builder, zombie);
             }
+        }
+        if (builder.length() == 0) {
+            return "No zombies on the board.";
         }
         return builder.toString();
     }

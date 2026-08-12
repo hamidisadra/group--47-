@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class Beghouled extends MiniGame {
+public final class Beghouled extends MiniGame {
     private static final String[] PLANT_TYPES = {"peashooter", "wall-nut", "puff-shroom", "cabbage-pult", "melon-pult"};
 
     private static final int SPAWN_INTERVAL = 30;

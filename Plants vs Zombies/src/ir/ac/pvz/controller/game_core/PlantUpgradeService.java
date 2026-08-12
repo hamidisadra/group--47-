@@ -34,9 +34,17 @@ public class PlantUpgradeService {
             return UpgradeResult.NOT_ENOUGH_COINS;
         }
         if (!wallet.spendSeedPackets(plant.type, upgrade.seedPacketCost)) {
+            wallet.refundCoins(upgrade.coinCost);
             return UpgradeResult.NOT_ENOUGH_SEED_PACKETS;
         }
-        upgrade.applyTo(plant);
+        try {
+            upgrade.applyTo(plant);
+        }
+        catch (RuntimeException exception) {
+            wallet.refundCoins(upgrade.coinCost);
+            wallet.refundSeedPackets(plant.type, upgrade.seedPacketCost);
+            throw exception;
+        }
         return UpgradeResult.SUCCESS;
     }
     public UpgradeResult upgrade(Plant plant, UpgradeResourceWallet wallet) {
