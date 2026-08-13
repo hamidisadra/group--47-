@@ -56,20 +56,25 @@ public abstract class BaseScreen extends ScreenAdapter {
         BorderedTable dialog = new BorderedTable();
         dialog.pad(70f);
         dialog.defaults().pad(8f);
-
         dialog.add(new Label(title, skin, "big")).colspan(2).padBottom(28f);
         dialog.row();
 
         return dialog;
     }
 
-    protected void showDialog(Table dialog) {
+    protected Table rootWithBackground() {
         stage.clear();
+
         Table root = new Table();
         root.setFillParent(true);
         root.setBackground(background);
-        root.add(dialog);
         stage.addActor(root);
+
+        return root;
+    }
+
+    protected void showDialog(Table dialog) {
+        rootWithBackground().add(dialog);
     }
 
     protected TextField textField(String hint) {
