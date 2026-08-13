@@ -95,6 +95,8 @@ public class User {
             if (!news.isRead()) unreadNews.add(news);
         }
 
+        //unreadNews.add(new News("hi", NewsType.LEVEL_UNLOCK));
+
         return unreadNews;
     }
 

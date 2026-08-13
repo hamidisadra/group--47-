@@ -1,0 +1,14 @@
+{
+com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle: {
+	default: {
+		imageUp: buttons_hud_news_normal
+		imageDown: buttons_hud_news_selected
+		imageOver: buttons_hud_news_selected copy
+	}
+	unreadNews: {
+		imageUp: buttons_hud_news_normal_unread
+		imageDown: buttons_hud_news_selected
+		imageOver: buttons_hud_news_selected copy
+	}
+}
+}

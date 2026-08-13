@@ -118,7 +118,7 @@ public class LoginScreen extends BaseScreen {
         menuManager.loginUser(user);
         userManager.saveAll();
 
-        success("Logged in successfully!");
+        game.setScreen(new MainScreen(game));
     }
 
     private void buildForgot() {

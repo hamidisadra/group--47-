@@ -1,7 +1,7 @@
 {
   "sadra": {
     "username": "sadra",
-    "passwordHash": "316ed8c72572929fad610d5e3d1fe896fe1f90ac6a0fd826de81b663f6a595b9",
+    "passwordHash": "2b7369ba5b616523ca35bf06879e2b7934dbf026b7b04388b57fa5657025aa52",
     "nickName": "sdrhmd",
     "email": "sadra2@gmail.com",
     "gender": "MALE",
@@ -209,6 +209,6 @@
       "plantFoodCount": 0,
       "maxPlantFood": 3
     },
-    "stayLoggedIn": false
+    "stayLoggedIn": true
   }
 }

@@ -1,0 +1,34 @@
+
+news.png
+size: 256, 256
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+buttons_hud_news_normal
+  rotate: false
+  xy: 1, 78
+  size: 75, 72
+  orig: 75, 72
+  offset: 0, 0
+  index: -1
+buttons_hud_news_normal_unread
+  rotate: false
+  xy: 1, 152
+  size: 100, 101
+  orig: 100, 101
+  offset: 0, 0
+  index: -1
+buttons_hud_news_selected
+  rotate: false
+  xy: 103, 181
+  size: 75, 72
+  orig: 75, 72
+  offset: 0, 0
+  index: -1
+buttons_hud_news_selected copy
+  rotate: false
+  xy: 180, 181
+  size: 75, 72
+  orig: 75, 72
+  offset: 0, 0
+  index: -1
