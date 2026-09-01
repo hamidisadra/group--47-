@@ -3,8 +3,8 @@
     "aliases": [
       "ZombieDefault"
     ],
-  "GameType": "BasicZombie",
-  "RuntimeType": "BasicZombie",
+    "GameType": "BasicZombie",
+    "RuntimeType": "BasicZombie",
     "objclass": "ZombiePropertySheet",
     "objdata": {
       "ArtCenter": {
@@ -74,8 +74,8 @@
     "aliases": [
       "ZombieArmor1"
     ],
-  "GameType": "ConeheadZombie",
-  "RuntimeType": "ConeheadZombie",
+    "GameType": "ConeheadZombie",
+    "RuntimeType": "ConeheadZombie",
     "objclass": "ZombiePropertySheet",
     "objdata": {
       "ArtCenter": {
@@ -148,8 +148,8 @@
     "aliases": [
       "ZombieArmor2"
     ],
-  "GameType": "BucketheadZombie",
-  "RuntimeType": "BucketheadZombie",
+    "GameType": "BucketheadZombie",
+    "RuntimeType": "BucketheadZombie",
     "objclass": "ZombiePropertySheet",
     "objdata": {
       "ArtCenter": {
@@ -222,8 +222,8 @@
     "aliases": [
       "ZombieArmor4"
     ],
-  "GameType": "BlockheadZombie",
-  "RuntimeType": "BlockheadZombie",
+    "GameType": "BlockheadZombie",
+    "RuntimeType": "BlockheadZombie",
     "objclass": "ZombiePropertySheet",
     "objdata": {
       "ArtCenter": {
@@ -296,8 +296,8 @@
     "aliases": [
       "ZombieDarkArmor3"
     ],
-  "GameType": "KnightZombie",
-  "RuntimeType": "KnightZombie",
+    "GameType": "KnightZombie",
+    "RuntimeType": "KnightZombie",
     "objclass": "ZombiePropertySheet",
     "objdata": {
       "ArtCenter": {
@@ -371,8 +371,8 @@
     "aliases": [
       "ZombieGargantuar"
     ],
-  "GameType": "Gargantuar",
-  "RuntimeType": "Gargantuar",
+    "GameType": "Gargantuar",
+    "RuntimeType": "Gargantuar",
     "objclass": "ZombieGargantuarProps",
     "objdata": {
       "AlmanacOffset": {
@@ -394,7 +394,7 @@
       "CanBeFlickedOff": false,
       "CanSpawnPlantFood": false,
       "Cost": 150,
-      "EatDPS": 0,
+      "EatDPS": 1500,
       "ExplodesWhenMowed": true,
       "FlickIsLaneRestricted": true,
       "GroundTrackName": "ground_swatch",
@@ -489,7 +489,7 @@
       "SoundOnAsh": "Play_Zomb_Global_Gargantuar_Mvmt_Death_Ash",
       "SoundOnElectrocute": "Play_Zomb_Global_Gargantuar_Mvmt_Shock",
       "SoundOnIdle": "Play_Zomb_Egypt_Gargantuar_Mvmt_Idle",
-      "Speed": 0.12,
+      "Speed": 0.24,
       "StaticArtImageAsset": "IMAGE_GARGANTUAR",
       "ThrowImpDuration": 1,
       "WavePointCost": 1500,
@@ -510,8 +510,8 @@
     "aliases": [
       "ZombieImp"
     ],
-  "GameType": "ImpZombie",
-  "RuntimeType": "ImpZombie",
+    "GameType": "ImpZombie",
+    "RuntimeType": "ImpZombie",
     "objclass": "ZombiePropertySheet",
     "objdata": {
       "ArtCenter": {
@@ -586,8 +586,8 @@
     "aliases": [
       "ZombieRa"
     ],
-  "GameType": "RaZombie",
-  "RuntimeType": "RaZombie",
+    "GameType": "RaZombie",
+    "RuntimeType": "RaZombie",
     "objclass": "ZombieRaProps",
     "objdata": {
       "ArtCenter": {
@@ -658,9 +658,11 @@
     "aliases": [
       "ZombieExplorer"
     ],
-  "GameType": "ExplorerZombie",
-  "RuntimeType": "ExplorerZombie",
-  "Abilities": ["torch"],
+    "GameType": "ExplorerZombie",
+    "RuntimeType": "ExplorerZombie",
+    "Abilities": [
+      "torch"
+    ],
     "objclass": "ZombieExplorerProps",
     "objdata": {
       "ArtCenter": {
@@ -738,8 +740,8 @@
     "aliases": [
       "ZombieTombRaiser"
     ],
-  "GameType": "TombRaiserZombie",
-  "RuntimeType": "TombRaiserZombie",
+    "GameType": "TombRaiserZombie",
+    "RuntimeType": "TombRaiserZombie",
     "objclass": "ZombieTombRaiserProps",
     "objdata": {
       "# TombRaiser specific properties ": 0,
@@ -815,9 +817,12 @@
     "aliases": [
       "ZombieIceAgeDodo"
     ],
-  "GameType": "DodoRiderZombie",
-  "RuntimeType": "DodoRiderZombie",
-  "Abilities": ["dodoflight", "freezeimmunity"],
+    "GameType": "DodoRiderZombie",
+    "RuntimeType": "DodoRiderZombie",
+    "Abilities": [
+      "dodoflight",
+      "freezeimmunity"
+    ],
     "objclass": "ZombieIceAgeDodoProps",
     "objdata": {
       "AddRandomChanceForJumpPerGridWalked": 0.1,
@@ -929,9 +934,11 @@
     "aliases": [
       "ZombieIceAgeHunter"
     ],
-  "GameType": "HunterZombie",
-  "RuntimeType": "HunterZombie",
-  "Abilities": ["freezeimmunity"],
+    "GameType": "HunterZombie",
+    "RuntimeType": "HunterZombie",
+    "Abilities": [
+      "freezeimmunity"
+    ],
     "objclass": "ZombieIceAgeHunterProps",
     "objdata": {
       "Actions": [
@@ -1008,9 +1015,11 @@
     "aliases": [
       "ZombieIceAgeTroglobite"
     ],
-  "GameType": "Troglobite",
-  "RuntimeType": "Troglobite",
-  "Abilities": ["freezeimmunity"],
+    "GameType": "Troglobite",
+    "RuntimeType": "Troglobite",
+    "Abilities": [
+      "freezeimmunity"
+    ],
     "objclass": "ZombieIceAgeTroglobiteProps",
     "objdata": {
       "Actions": [
@@ -1086,8 +1095,8 @@
     "aliases": [
       "ZombieBeachFisherman"
     ],
-  "GameType": "FishermanZombie",
-  "RuntimeType": "FishermanZombie",
+    "GameType": "FishermanZombie",
+    "RuntimeType": "FishermanZombie",
     "objclass": "ZombieBeachFishermanProps",
     "objdata": {
       "AllowedLowPlants": [],
@@ -1173,8 +1182,8 @@
     "aliases": [
       "ZombieBeachOctopus"
     ],
-  "GameType": "OctopusZombie",
-  "RuntimeType": "OctopusZombie",
+    "GameType": "OctopusZombie",
+    "RuntimeType": "OctopusZombie",
     "objclass": "ZombieBeachOctopusProps",
     "objdata": {
       "Actions": [
@@ -1247,9 +1256,11 @@
     "aliases": [
       "ZombieBeachSnorkel"
     ],
-  "GameType": "SnorkelZombie",
-  "RuntimeType": "SnorkelZombie",
-  "Abilities": ["snorkel"],
+    "GameType": "SnorkelZombie",
+    "RuntimeType": "SnorkelZombie",
+    "Abilities": [
+      "snorkel"
+    ],
     "objclass": "ZombieBeachSnorkelProps",
     "objdata": {
       "ArtCenter": {
@@ -1449,8 +1460,8 @@
     "aliases": [
       "ZombieDarkJuggler"
     ],
-  "GameType": "JesterZombie",
-  "RuntimeType": "JesterZombie",
+    "GameType": "JesterZombie",
+    "RuntimeType": "JesterZombie",
     "objclass": "ZombieDarkJugglerProps",
     "objdata": {
       "AngleAgnosticProjectiles": [
@@ -1633,8 +1644,8 @@
     "aliases": [
       "ZombieWizard"
     ],
-  "GameType": "WizardZombie",
-  "RuntimeType": "WizardZombie",
+    "GameType": "WizardZombie",
+    "RuntimeType": "WizardZombie",
     "objclass": "ZombieDarkWizardProps",
     "objdata": {
       "Actions": [
@@ -1707,8 +1718,8 @@
     "aliases": [
       "ZombieDarkKing"
     ],
-  "GameType": "KingZombie",
-  "RuntimeType": "KingZombie",
+    "GameType": "KingZombie",
+    "RuntimeType": "KingZombie",
     "objclass": "ZombieDarkKingProps",
     "objdata": {
       "ArtCenter": {
@@ -1779,7 +1790,7 @@
         "z": 1.2
       },
       "SkipHeadDropState": true,
-      "Speed": 0.185,
+      "Speed": 0,
       "ValidKnightTargets": [
         "dark",
         "dark_armor1",
@@ -1800,9 +1811,11 @@
     "aliases": [
       "ZombieDarkImpDragon"
     ],
-  "GameType": "ImpDragon",
-  "RuntimeType": "ImpDragon",
-  "Abilities": ["fireimmunity"],
+    "GameType": "ImpDragon",
+    "RuntimeType": "ImpDragon",
+    "Abilities": [
+      "fireimmunity"
+    ],
     "objclass": "ZombiePropertySheet",
     "objdata": {
       "ArtCenter": {
@@ -1878,8 +1891,8 @@
     "aliases": [
       "ZombieModernAllStar"
     ],
-  "GameType": "FootballZombie",
-  "RuntimeType": "FootballZombie",
+    "GameType": "FootballZombie",
+    "RuntimeType": "FootballZombie",
     "objclass": "ZombieModernAllStarProps",
     "objdata": {
       "ArtCenter": {
@@ -1957,9 +1970,11 @@
     "aliases": [
       "ZombieLostCityJane"
     ],
-  "GameType": "ParasolZombie",
-  "RuntimeType": "ParasolZombie",
-  "Abilities": ["lobbershield"],
+    "GameType": "ParasolZombie",
+    "RuntimeType": "ParasolZombie",
+    "Abilities": [
+      "lobbershield"
+    ],
     "objclass": "ZombieLostCityJaneProps",
     "objdata": {
       "ArtCenter": {
@@ -2066,8 +2081,8 @@
     "aliases": [
       "ZombieCrystalSkull"
     ],
-  "GameType": "TurquoiseZombie",
-  "RuntimeType": "TurquoiseZombie",
+    "GameType": "TurquoiseZombie",
+    "RuntimeType": "TurquoiseZombie",
     "objclass": "ZombieCrystalSkullProps",
     "objdata": {
       "ArtCenter": {
@@ -2148,8 +2163,8 @@
     "aliases": [
       "ZombieProspector"
     ],
-  "GameType": "ProspectorZombie",
-  "RuntimeType": "ProspectorZombie",
+    "GameType": "ProspectorZombie",
+    "RuntimeType": "ProspectorZombie",
     "objclass": "ZombieProspectorProps",
     "objdata": {
       "Apex": 250,
@@ -2223,8 +2238,8 @@
     "aliases": [
       "ZombiePiano"
     ],
-  "GameType": "PianistZombie",
-  "RuntimeType": "PianistZombie",
+    "GameType": "PianistZombie",
+    "RuntimeType": "PianistZombie",
     "objclass": "ZombiePianoProps",
     "objdata": {
       "ArtCenter": {
@@ -2317,9 +2332,11 @@
     "aliases": [
       "ZombieNewspaper"
     ],
-  "GameType": "NewspaperZombie",
-  "RuntimeType": "NewspaperZombie",
-  "Abilities": ["newspaperenrage"],
+    "GameType": "NewspaperZombie",
+    "RuntimeType": "NewspaperZombie",
+    "Abilities": [
+      "newspaperenrage"
+    ],
     "objclass": "ZombieNewspaperProps",
     "objdata": {
       "ArtCenter": {
@@ -2394,8 +2411,8 @@
     "aliases": [
       "ZombieArcade"
     ],
-  "GameType": "ArcadeZombie",
-  "RuntimeType": "ArcadeZombie",
+    "GameType": "ArcadeZombie",
+    "RuntimeType": "ArcadeZombie",
     "objclass": "ZombieArcadeProps",
     "objdata": {
       "ArcadeMachineHealth": 1100,
@@ -2422,7 +2439,7 @@
         "mX": 10,
         "mY": 10
       },
-      "Hitpoints": 1100,
+      "Hitpoints": 490,
       "JamStyle": "jam_8bit",
       "ScaledProps": [
         {
@@ -2482,6 +2499,74 @@
       "Speed": 0.185,
       "WavePointCost": 500,
       "Weight": 1000
+    }
+  },
+  {
+    "aliases": [
+      "ZombotanyPeashooter"
+    ],
+    "GameType": "PeashooterZombie",
+    "RuntimeType": "PeashooterZombie",
+    "objclass": "ZombiePropertySheet",
+    "objdata": {
+      "CanSpawnPlantFood": true,
+      "Cost": 150,
+      "EatDPS": 100,
+      "Hitpoints": 190,
+      "Speed": 0.1,
+      "WavePointCost": 200,
+      "Weight": 1000
+    }
+  },
+  {
+    "aliases": [
+      "ZombotanyWallnut"
+    ],
+    "GameType": "WallnutZombie",
+    "RuntimeType": "WallnutZombie",
+    "objclass": "ZombiePropertySheet",
+    "objdata": {
+      "CanSpawnPlantFood": true,
+      "Cost": 150,
+      "EatDPS": 100,
+      "Hitpoints": 1400,
+      "Speed": 0.1,
+      "WavePointCost": 300,
+      "Weight": 800
+    }
+  },
+  {
+    "aliases": [
+      "ZombotanyJalapeno"
+    ],
+    "GameType": "JalapenoZombie",
+    "RuntimeType": "JalapenoZombie",
+    "objclass": "ZombiePropertySheet",
+    "objdata": {
+      "CanSpawnPlantFood": true,
+      "Cost": 150,
+      "EatDPS": 100,
+      "Hitpoints": 190,
+      "Speed": 0.185,
+      "WavePointCost": 350,
+      "Weight": 700
+    }
+  },
+  {
+    "aliases": [
+      "ZombotanySquash"
+    ],
+    "GameType": "SquashZombie",
+    "RuntimeType": "SquashZombie",
+    "objclass": "ZombiePropertySheet",
+    "objdata": {
+      "CanSpawnPlantFood": true,
+      "Cost": 150,
+      "EatDPS": 100,
+      "Hitpoints": 190,
+      "Speed": 0.5,
+      "WavePointCost": 250,
+      "Weight": 700
     }
   }
 ]
