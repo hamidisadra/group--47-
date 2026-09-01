@@ -73,7 +73,11 @@ public abstract class BaseMenuScreen extends ScreenAdapter {
             bar.add(back).width(130f).height(46f).padRight(14f).left();
         }
         topBar = new TopBar(stage);
-        bar.add(topBar).growX();
+
+        if (MenuManager.getInstance().getActiveUser() != null) {
+            bar.add(topBar).growX();
+        }
+
         root.add(bar).growX().top().row();
 
         Label heading = Ui.label(title, "big_outline");

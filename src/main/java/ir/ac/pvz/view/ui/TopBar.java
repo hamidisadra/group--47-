@@ -62,11 +62,14 @@ public class TopBar extends Table {
 
     public final void refresh() {
         User user = MenuManager.getInstance().getActiveUser();
-        if (user == null) {
-            coinsLabel.setText("0");
-            gemsLabel.setText("0");
+        boolean signedIn = user != null;
+
+        setVisible(signedIn);
+
+        if (!signedIn) {
             return;
         }
+
         coinsLabel.setText(String.valueOf(user.getWallet().getCoins()));
         gemsLabel.setText(String.valueOf(user.getWallet().getGems()));
     }
